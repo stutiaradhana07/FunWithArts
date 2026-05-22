@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="shared.js"></script>
+    <style>
+        :root { --accent: #D7A88D; --bg: #Fdfbf9; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--body-font); background: var(--bg); color: #222; }
+        nav { padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        nav a { text-decoration: none; color: #111; font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; font-weight: bold; }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 5% 100px; }
+        h1 { font-family: var(--header-font); font-style: italic; font-size: 3rem; margin-bottom: 24px; }
+        .search-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+        .search-bar input { flex: 1; padding: 16px 20px; border-radius: 50px; border: 1px solid #ddd; font-size: 1rem; outline: none; }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar button { padding: 16px 28px; border-radius: 50px; border: none; background: #111; color: #fff; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
+        .search-bar button:hover { background: var(--accent); color: #111; }
+        .meta { color: #666; margin-bottom: 32px; min-height: 1.2em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px; }
+        .card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+        .card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+        .card .body { padding: 16px; }
+        .card h3 { font-family: var(--header-font); font-style: italic; font-size: 1.3rem; margin-bottom: 6px; }
+        .card .price { font-family: var(--art-font); color: var(--accent); font-weight: bold; }
+        .card a { text-decoration: none; color: inherit; display: block; }
+        .empty { text-align: center; padding: 60px 20px; color: #888; font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">FUN WITH Art</a>
+        <a href="collection.html">Collection</a>
+    </nav>
+    <main class="wrap">
+        <h1>Search the studio</h1>
+        <form class="search-bar" data-site-search>
+            <input type="search" name="q" id="search-input" placeholder="Search ceramics, vases, decor..." autocomplete="off" />
+            <button type="submit">Search</button>
+        </form>
+        <p class="meta" id="search-meta"></p>
+        <div id="search-results" class="grid"></div>
+    </main>
+    <script>
+        const input = document.getElementById('search-input');
+        const meta = document.getElementById('search-meta');
+        const grid = document.getElementById('search-results');
+        const params = new URLSearchParams(window.location.search);
+        const initialQ = params.get('q') || '';
+
+        function renderResults(payload) {
+            const items = (payload.results || []).map((p) => window.UdaanAPI.mapApiProduct(p));
+            meta.textContent = payload.count
+                ? `${payload.count} result${payload.count === 1 ? '' : 's'} for “${payload.query}”`
+                : `No results for “${payload.query}”`;
+
+            if (!items.length) {
+                grid.innerHTML = '<p class="empty">Try a different name or category.</p>';
+                return;
+            }
+
+            grid.innerHTML = items.map((item) => `
+                <article class="card">
+                    <a href="product.html" data-product-id="${item.productId || item.id}">
+                        <img src="${item.img}" alt="${item.title}" onerror="this.src='https://placehold.co/400x500/EAE6DB/111?text=No+Image'">
+                        <div class="body">
+                            <h3>${item.title}</h3>
+                            <span class="price">${window.UdaanAPI.formatMoney(item.price)}</span>
+                        </div>
+                    </a>
+                </article>
+            `).join('');
+
+            grid.querySelectorAll('a[data-product-id]').forEach((link) => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const item = items.find((p) => String(p.id) === link.getAttribute('data-product-id'));
+                    if (item) localStorage.setItem(window.UdaanAPI.STORAGE_KEYS.activeProduct, JSON.stringify(item));
+                    window.location.href = `product.html`;
+                });
+            });
+        }
+
+        async function runSearch(q) {
+            const query = q.trim();
+            if (query.length < 2) {
+                meta.textContent = 'Type at least 2 characters to search.';
+                grid.innerHTML = '';
+                return;
+            }
+            meta.textContent = 'Searching...';
+            try {
+                const payload = await window.UdaanAPI.searchProducts(query);
+                renderResults(payload);
+                const url = new URL(window.location.href);
+                url.searchParams.set('q', query);
+                window.history.replaceState({}, '', url);
+            } catch (err) {
+                meta.textContent = err.message || 'Search failed.';
+                grid.innerHTML = '';
+            }
+        }
+
+        if (initialQ) {
+            input.value = initialQ;
+            runSearch(initialQ);
+        }
+
+        document.querySelector('[data-site-search]').addEventListener('submit', (e) => {
+            e.preventDefault();
+            runSearch(input.value);
+        });
+    </script>
+</body>
+</html>

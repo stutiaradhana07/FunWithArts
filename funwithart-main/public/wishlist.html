@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved | Fun With Art Ceramics Delhi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <style>
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #EAE6DB; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--body-font); color: var(--text-color); overflow-x: hidden; background-color: var(--bg-color); }
+        nav { background: rgba(234, 230, 219, 0.85); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; }
+        .back-link { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: #888; text-decoration: none; }
+        .container { max-width: 1400px; margin: 80px auto 120px; padding: 0 5%; }
+        .page-title { font-family: var(--header-font); font-size: 4rem; font-style: italic; color: #111; margin-bottom: 20px; text-align: center; }
+        .page-note { text-align: center; color: #666; margin-bottom: 40px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; }
+        .product-card { animation: fadeIn 0.8s ease forwards; }
+        .image-wrapper { overflow: hidden; margin-bottom: 15px; width: 100%; aspect-ratio: 4 / 3; position: relative; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); }
+        .product-image { width: 100%; height: 100%; object-fit: cover; }
+        .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 5px; }
+        .product-title { font-family: var(--header-font); font-size: 1.5rem; font-style: italic; }
+        .price { font-family: var(--art-font); font-weight: 600; color: var(--accent-color); }
+        .action-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid #ccc; background: transparent; cursor: pointer; }
+        .wishlist-btn svg { fill: #D7A88D; stroke: #D7A88D; }
+        .empty-state { text-align: center; padding: 100px 0; }
+        .empty-state h2 { font-family: var(--header-font); font-style: italic; font-size: 3rem; margin-bottom: 20px; }
+        .shop-btn { display: inline-block; margin-top: 20px; padding: 15px 40px; border: 1px solid #111; color: #111; text-decoration: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; }
+        .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; }
+        .toast { background: #111; color: #fff; padding: 15px 30px; border-radius: 50px; opacity: 0; transition: 0.4s; }
+        .toast.show { opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo-fusion"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <a href="collection.html" class="back-link">← Continue Shopping</a>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Saved for Later</h1>
+        <p class="page-note" id="wishlist-note">Your saved ceramics.</p>
+        <div id="wishlist-grid" class="gallery-grid"></div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="shared.js"></script>
+    <script>
+        let wishlistData = [];
+        let cartItems = [];  // legacy-shaped from API, loaded on demand
+
+        window.showToast = function(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        };
+
+        function renderWishlist() {
+            const grid = document.getElementById('wishlist-grid');
+            if (!wishlistData.length) {
+                grid.innerHTML = '<div class="empty-state"><h2>Your collection is empty.</h2><a href="collection.html" class="shop-btn">Discover Ceramics</a></div>';
+                return;
+            }
+
+            grid.innerHTML = wishlistData.map((item) => `
+                <article class="product-card" data-product-id="${item.productId || item.id}">
+                    <div class="image-wrapper">
+                        <img src="${item.imgSrc || item.img || ''}" class="product-image" alt="${item.title}">
+                    </div>
+                    <div class="meta-row">
+                        <div>
+                            <h3 class="product-title">${item.title}</h3>
+                            <span class="price">${window.UdaanAPI.formatMoney(item.basePrice || item.price)}</span>
+                        </div>
+                        <div>
+                            <button class="action-btn wishlist-btn" data-remove-id="${item.productId || item.id}" aria-label="Remove">♥</button>
+                            <button class="action-btn" data-cart-id="${item.productId || item.id}" aria-label="Add to cart">🛍</button>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+
+            grid.querySelectorAll('[data-remove-id]').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const productId = Number(btn.getAttribute('data-remove-id'));
+                    const item = wishlistData.find((w) => String(w.productId || w.id) === String(productId));
+                    if (!item) return;
+                    try {
+                        if (window.UdaanAPI.isLoggedIn()) {
+                            await window.UdaanAPI.removeFromWishlist(productId);
+                        } else {
+                            const local = window.UdaanAPI.getLocalWishlist().filter(
+                                (w) => String(w.productId || w.id) !== String(productId)
+                            );
+                            window.UdaanAPI.setLocalWishlist(local);
+                        }
+                        wishlistData = await window.UdaanAPI.loadWishlistCache();
+                        renderWishlist();
+                        window.UdaanAPI.updateBadges();
+                        showToast('Removed from saved.');
+                    } catch (error) {
+                        showToast(error.message || 'Could not remove item.');
+                    }
+                });
+            });
+
+            grid.querySelectorAll('[data-cart-id]').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const productId = Number(btn.getAttribute('data-cart-id'));
+                    if (!productId) return;
+                    try {
+                        await window.UdaanAPI.addToCart(productId, 1);
+                        showToast('Added to bag!');
+                        window.UdaanAPI.updateBadges();
+                    } catch (e) {
+                        showToast(e.message || 'Could not add to bag.');
+                    }
+                });
+            });
+        }
+
+        async function init() {
+            const note = document.getElementById('wishlist-note');
+            if (window.UdaanAPI.isLoggedIn()) {
+                note.textContent = 'Synced with your studio account.';
+            } else {
+                note.textContent = 'Saved on this device. Sign in to sync across devices.';
+            }
+            wishlistData = await window.UdaanAPI.loadWishlistCache();
+            renderWishlist();
+        }
+
+        init();
+    </script>
+</body>
+</html>

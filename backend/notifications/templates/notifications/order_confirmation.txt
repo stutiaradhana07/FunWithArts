@@ -1,0 +1,25 @@
+Thank you for your order, {{ order.shipping_first_name }}!
+
+Your order #{{ order.id }} has been confirmed and is being handcrafted with care in our studio. We'll let you know as soon as it ships.
+
+── ORDER SUMMARY ──────────────────────────────
+{% for item in items %}
+  {{ item.product_name }}  × {{ item.quantity }}  —  ₹{{ item.line_total }}
+{% endfor %}
+──────────────────────────────────────────────
+Subtotal:  ₹{{ order.subtotal }}
+Shipping:  ₹{{ order.shipping_fee }}
+TOTAL:     ₹{{ order.total_amount }}
+──────────────────────────────────────────────
+
+SHIPPING TO:
+{{ order.shipping_first_name }} {{ order.shipping_last_name }}
+{{ order.shipping_address_line_1 }}{% if order.shipping_address_line_2 %}, {{ order.shipping_address_line_2 }}{% endif %}
+{{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_pincode }}
+
+Payment method: {{ order.get_payment_method_display }}
+
+Questions? Reply to this email or reach us at {{ support_email }}.
+
+—
+Udaan Studio · New Delhi · Handcrafted with patience.

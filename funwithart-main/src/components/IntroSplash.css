@@ -1,0 +1,416 @@
+.intro-splash {
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  opacity: 0;
+  background: #2a1f1a;
+  transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.intro-splash--visible {
+  opacity: 1;
+}
+
+.intro-splash--exit {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* —— Rich gradient layers (no photos) —— */
+.intro-splash__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.intro-splash__gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.intro-splash__gradient--base {
+  z-index: 0;
+  background: linear-gradient(
+    155deg,
+    #1f1612 0%,
+    #3d2a22 22%,
+    #5c4338 45%,
+    #8b6355 68%,
+    #c9a88e 88%,
+    #e8d5c8 100%
+  );
+  opacity: 1;
+}
+
+.intro-splash__gradient--shift {
+  z-index: 1;
+  background: radial-gradient(
+      ellipse 90% 70% at 15% 20%,
+      rgba(215, 168, 141, 0.55) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 85% 75%,
+      rgba(196, 137, 106, 0.4) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 50% 100%,
+      rgba(74, 50, 40, 0.5) 0%,
+      transparent 60%
+    );
+  opacity: 0;
+  transition: opacity 2s ease 0.2s;
+}
+
+.intro-splash--visible .intro-splash__gradient--shift {
+  opacity: 1;
+}
+
+.intro-splash__gradient--warm {
+  z-index: 2;
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 45%,
+    rgba(253, 251, 249, 0.18) 0%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 1.8s ease 0.5s;
+}
+
+.intro-splash--visible .intro-splash__gradient--warm {
+  opacity: 1;
+}
+
+.intro-splash--exit .intro-splash__gradient {
+  opacity: 0;
+  transition: opacity 2.2s ease;
+}
+
+/* —— Cursor-follow glow —— */
+.intro-splash__cursor-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    220px circle at var(--cursor-x) var(--cursor-y),
+    rgba(255, 230, 210, 0.55) 0%,
+    rgba(215, 168, 141, 0.28) 25%,
+    rgba(196, 137, 106, 0.08) 50%,
+    transparent 70%
+  );
+  transition: opacity 0.5s ease;
+  mix-blend-mode: soft-light;
+}
+
+.intro-splash__cursor-glow--soft {
+  z-index: 4;
+  background: radial-gradient(
+    380px circle at var(--cursor-x) var(--cursor-y),
+    rgba(215, 168, 141, 0.22) 0%,
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+}
+
+.intro-splash--visible .intro-splash__cursor-glow {
+  opacity: 1;
+}
+
+.intro-splash--exit .intro-splash__cursor-glow {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+/* —— Pottery doodles —— */
+.intro-doodles {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  color: rgba(253, 251, 249, 0.55);
+}
+
+.intro-doodle {
+  position: absolute;
+  width: clamp(48px, 8vw, 88px);
+  height: auto;
+  opacity: 0;
+  transform: scale(0.85) rotate(-6deg);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.intro-splash--visible .intro-doodle {
+  animation: doodleFadeIn 1.2s ease forwards, doodleFloat 5s ease-in-out 1.2s infinite;
+}
+
+.intro-doodle--1 {
+  top: 12%;
+  left: 8%;
+  animation-delay: 0.2s, 0.3s;
+}
+
+.intro-doodle--2 {
+  top: 18%;
+  right: 10%;
+  width: clamp(56px, 9vw, 96px);
+  animation-delay: 0.8s, 0.5s;
+  transform: rotate(8deg);
+}
+
+.intro-doodle--3 {
+  bottom: 22%;
+  left: 6%;
+  width: clamp(64px, 11vw, 110px);
+  animation-delay: 1.4s, 0.65s;
+}
+
+.intro-doodle--4 {
+  bottom: 28%;
+  right: 8%;
+  animation-delay: 0.5s, 0.45s;
+}
+
+.intro-doodle--5 {
+  top: 42%;
+  left: 4%;
+  width: clamp(40px, 7vw, 72px);
+  opacity: 0.7;
+  animation-delay: 2s, 0.8s;
+}
+
+.intro-doodle--6 {
+  top: 38%;
+  right: 5%;
+  width: clamp(36px, 6vw, 56px);
+  animation-delay: 1.1s, 0.55s;
+}
+
+.intro-doodle--7 {
+  bottom: 12%;
+  left: 42%;
+  width: clamp(70px, 12vw, 120px);
+  animation-delay: 1.7s, 0.7s;
+}
+
+.intro-doodle--8 {
+  top: 8%;
+  left: 48%;
+  width: clamp(28px, 5vw, 44px);
+  color: rgba(215, 168, 141, 0.7);
+  animation-delay: 0.3s, 0.4s;
+}
+
+@keyframes doodleFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  to {
+    opacity: 0.85;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes doodleFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+
+.intro-splash--exit .intro-doodle {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  animation: none;
+}
+
+/* —— Brand card —— */
+.intro-splash__content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 1.5rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1) 0.5s,
+    transform 1.2s cubic-bezier(0.19, 1, 0.22, 1) 0.5s;
+}
+
+.intro-splash--visible .intro-splash__content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.intro-splash--exit .intro-splash__content {
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 2s ease, transform 2.2s ease;
+}
+
+.intro-splash__card {
+  padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 5vw, 3.2rem);
+  border-radius: 28px;
+  background: rgba(253, 251, 249, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 24px 70px rgba(17, 17, 17, 0.2),
+    0 0 0 1px rgba(215, 168, 141, 0.15) inset;
+}
+
+.intro-splash__eyebrow {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #6b5348;
+  margin-bottom: 0.85rem;
+  font-weight: 700;
+}
+
+.intro-splash__line-1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #1a1410;
+  margin-bottom: 0.1rem;
+}
+
+.intro-splash__line-2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: clamp(3.8rem, 13vw, 8rem);
+  line-height: 0.92;
+  color: #b87d5c;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(215, 168, 141, 0.35);
+}
+
+.intro-splash__rule {
+  width: min(200px, 50vw);
+  height: 2px;
+  margin: 1.25rem auto 1rem;
+  background: linear-gradient(90deg, transparent, #d7a88d, transparent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1) 0.95s;
+}
+
+.intro-splash--visible .intro-splash__rule {
+  transform: scaleX(1);
+}
+
+.intro-splash__tagline {
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(0.78rem, 1.9vw, 0.92rem);
+  letter-spacing: 0.1em;
+  color: #4a3d36;
+  font-weight: 400;
+  line-height: 1.5;
+  max-width: 22em;
+  margin: 0 auto;
+}
+
+/* —— Loader —— */
+.intro-splash__loader {
+  position: absolute;
+  bottom: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 1s ease 0.75s;
+}
+
+.intro-splash--visible .intro-splash__loader {
+  opacity: 1;
+}
+
+.intro-splash--exit .intro-splash__loader {
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.intro-splash__loader-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(253, 251, 249, 0.75);
+  font-weight: 700;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+.intro-splash__loader-track {
+  width: clamp(120px, 20vw, 180px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.intro-splash__loader-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #c4896a, #f5e6d8, #d7a88d);
+  box-shadow: 0 0 14px rgba(215, 168, 141, 0.7);
+  animation: introLoader 6.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes introLoader {
+  to {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .intro-doodle--5,
+  .intro-doodle--7 {
+    display: none;
+  }
+
+  .intro-splash__cursor-glow {
+    background: radial-gradient(
+      160px circle at var(--cursor-x) var(--cursor-y),
+      rgba(255, 230, 210, 0.5) 0%,
+      transparent 65%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-doodle {
+    animation: doodleFadeIn 1s ease forwards !important;
+  }
+
+  .intro-splash__gradient--shift,
+  .intro-splash__gradient--warm {
+    transition: none;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="shared.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --accent: #D7A88D;
+            --accent-dark: #c4957a;
+            --accent-light: rgba(215, 168, 141, 0.12);
+            --bg: #Fdfbf9;
+            --card-bg: #fff;
+            --text: #222;
+            --text-muted: #777;
+            --text-light: #aaa;
+            --border: rgba(0,0,0,0.06);
+            --header-font: 'Playfair Display', serif;
+            --art-font: 'Syne', sans-serif;
+            --body-font: 'Lato', sans-serif;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
+            --shadow: 0 10px 30px rgba(0,0,0,0.04);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.06);
+            --radius: 20px;
+            --radius-sm: 14px;
+        }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text);
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: rgba(253, 251, 249, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo-fusion {
+            text-decoration: none;
+            color: #111;
+            font-family: var(--art-font);
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .logo-fusion .accent {
+            font-family: var(--header-font);
+            color: var(--accent);
+            font-size: 2rem;
+            font-style: italic;
+            margin-left: 2px;
+        }
+        .nav-links { display: flex; align-items: center; gap: 24px; }
+        .nav-links a {
+            text-decoration: none;
+            color: #111;
+            font-family: var(--art-font);
+            font-size: 0.78rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .nav-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #111;
+            transition: 0.3s;
+        }
+        .nav-icon:hover { background: rgba(0,0,0,0.05); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.62rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--art-font);
+            font-weight: bold;
+        }
+
+        /* ── PAGE LAYOUT ── */
+        .account-wrapper {
+            flex: 1;
+            max-width: 1200px;
+            margin: 40px auto 80px;
+            padding: 0 5%;
+            width: 100%;
+        }
+
+        /* ── WELCOME BANNER ── */
+        .welcome-banner {
+            background: linear-gradient(135deg, #fff 0%, #fdf6f2 100%);
+            border-radius: 24px;
+            padding: 40px 44px;
+            margin-bottom: 36px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .welcome-text h1 {
+            font-family: var(--header-font);
+            font-size: 2.6rem;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+        .welcome-text p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .welcome-text .user-email {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+        .welcome-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 50px;
+            background: #111;
+            color: #fff;
+            text-decoration: none;
+            font-family: var(--art-font);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.78rem;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.25s;
+        }
+        .btn:hover { background: var(--accent-dark); }
+        .btn-outline {
+            background: transparent;
+            color: #111;
+            border: 1px solid #111;
+        }
+        .btn-outline:hover {
+            background: #111;
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 8px 18px;
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+        }
+        .btn-accent {
+            background: var(--accent);
+            color: #111;
+        }
+        .btn-accent:hover { background: var(--accent-dark); }
+
+        /* ── DASHBOARD GRID ── */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 28px 30px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+        .dashboard-card:hover { box-shadow: var(--shadow-lg); }
+        .dashboard-card.full-width { grid-column: 1 / -1; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            font-family: var(--header-font);
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        /* ── QUICK ACTIONS GRID ── */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 900px) {
+            .quick-actions-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        .quick-action-card {
+            background: #fafaf8;
+            border-radius: var(--radius-sm);
+            padding: 22px 20px;
+            text-decoration: none;
+            color: #111;
+            border: 1px solid transparent;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .quick-action-card:hover {
+            border-color: var(--accent);
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(215, 168, 141, 0.12);
+        }
+        .quick-action-card .qa-icon { font-size: 1.5rem; }
+        .quick-action-card .qa-label {
+            font-family: var(--art-font);
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .quick-action-card .qa-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Highlight for Track Order */
+        .quick-action-card.track-highlight {
+            background: linear-gradient(135deg, #fdf6f2, #fff);
+            border: 1px solid rgba(215, 168, 141, 0.3);
+        }
+        .quick-action-card.track-highlight:hover {
+            border-color: var(--accent);
+            background: #fff;
+        }
+
+        /* ── MENU CARD (replaces quick actions for specific sections) ── */
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .menu-item:hover {
+            background: #fafaf8;
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+        .menu-item .mi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .menu-item .mi-content { flex: 1; }
+        .menu-item .mi-label {
+            font-family: var(--art-font);
+            font-size: 0.78rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .menu-item .mi-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .menu-item .mi-arrow {
+            color: var(--accent);
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .menu-item:hover .mi-arrow { opacity: 1; }
+
+        /* Danger variant */
+        .menu-item.danger:hover {
+            background: #fff5f5;
+            border-color: #f8d7da;
+        }
+        .menu-item.danger .mi-label { color: #c0392b; }
+        .menu-item.danger .mi-icon { background: rgba(192, 57, 43, 0.1); }
+
+        /* ── MINI ORDER LIST ── */
+        .mini-order {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0ede9;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .mini-order:last-child { border-bottom: none; }
+        .mini-order .mo-id {
+            font-family: var(--art-font);
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #888;
+        }
+        .mini-order .mo-date { font-size: 0.85rem; color: var(--text-muted); }
+        .mini-order .mo-total {
+            font-family: var(--header-font);
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+        .status-badge {
+            font-family: var(--art-font);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+        .status-badge.confirmed { background: #d4edda; color: #155724; }
+        .status-badge.shipped { background: #cce5ff; color: #004085; }
+        .status-badge.delivered { background: #d4edda; color: #155724; }
+        .status-badge.cancelled { background: #f8d7da; color: #721c24; }
+
+        /* ── ADDRESS CARD ── */
+        .address-block {
+            background: #fafaf8;
+            border-radius: var(--radius-sm);
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            border: 1px solid #eee;
+        }
+        .address-block .addr-name {
+            font-family: var(--art-font);
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .address-block .addr-detail {
+            font-size: 0.92rem;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .empty-state p { margin-bottom: 16px; font-size: 0.95rem; }
+
+        /* ── LOADING ── */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-family: var(--art-font);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        /* ── TOAST ── */
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            background: #111;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-family: var(--art-font);
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateY(16px);
+            transition: all 0.35s;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ── FOOTER ── */
+        .site-footer {
+            background: #111;
+            color: #fff;
+            padding: 60px 5% 30px;
+            margin-top: auto;
+        }
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+        .footer-brand h2 {
+            font-family: var(--header-font);
+            font-size: 2rem;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+        .footer-brand p { color: #888; line-height: 1.6; max-width: 300px; }
+        .footer-col h4 {
+            font-family: var(--art-font);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 12px; }
+        .footer-col ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-family: var(--body-font);
+            transition: 0.3s;
+        }
+        .footer-col ul li a:hover { color: #fff; padding-left: 5px; }
+        .footer-bottom {
+            border-top: 1px solid #222;
+            text-align: center;
+            padding-top: 24px;
+            color: #666;
+            font-size: 0.82rem;
+            font-family: var(--art-font);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 800px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .welcome-banner { flex-direction: column; align-items: flex-start; }
+            .welcome-text h1 { font-size: 2rem; }
+            .quick-actions-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .nav-links a { font-size: 0.68rem; letter-spacing: 1px; margin-left: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── NAVIGATION ── -->
+    <nav>
+        <a href="/" class="logo-fusion">
+            FUN WITH <span class="accent">Art</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/collection">Collection</a>
+            <a href="/studio">Studio</a>
+            <a href="/wishlist" class="nav-icon" title="Wishlist">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <span class="badge-count" id="wishlist-count">0</span>
+            </a>
+            <a href="/cart" class="nav-icon" title="Cart">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                <span class="badge-count" id="cart-count">0</span>
+            </a>
+            <a href="/account" class="nav-icon" title="My Account" style="width:auto;padding:0 16px;border-radius:50px;border:1px solid var(--accent);color:var(--accent);font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;font-weight:bold;">
+                Account
+            </a>
+        </div>
+    </nav>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="account-wrapper" id="account-root">
+        <div class="loading-spinner">Loading your studio...</div>
+    </main>
+
+    <!-- ── TOAST CONTAINER ── -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Fun With Art</h2>
+                <p>Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="/collection">All Ceramics</a></li>
+                    <li><a href="/studio">Studio Classes</a></li>
+                    <li><a href="/about">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/support">FAQ</a></li>
+                    <li><a href="/support">Shipping & Returns</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/legal">Terms of Service</a></li>
+                    <li><a href="/legal">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var root = document.getElementById('account-root');
+
+            // ── Auth Guard: redirect unauthenticated users ──
+            if (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn()) {
+                root.innerHTML = renderUnauthenticated();
+                return;
+            }
+
+            var auth = window.UdaanAPI.getAuth();
+            var user = auth ? auth.user || {} : {};
+
+            // ── Fetch data in parallel ──
+            Promise.all([
+                window.UdaanAPI.fetchOrders().catch(function () { return []; }),
+                window.UdaanAPI.fetchWishlist().catch(function () { return []; }),
+                fetchProfile().catch(function () { return null; }),
+            ]).then(function (results) {
+                var orders = results[0];
+                var wishlist = results[1];
+                var profile = results[2];
+                root.innerHTML = renderDashboard(user, orders, wishlist, profile);
+            }).catch(function () {
+                root.innerHTML = renderDashboard(user, [], [], null);
+            });
+
+            // ── Fetch user profile ──
+            function fetchProfile() {
+                return fetch((window.UdaanAPI.apiBase || '') + '/users/profile/', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Token ' + (auth ? auth.token : ''),
+                    },
+                }).then(function (r) {
+                    if (!r.ok) return null;
+                    return r.json();
+                });
+            }
+
+            // ── Unauthenticated state ──
+            function renderUnauthenticated() {
+                return '<div class="welcome-banner" style="text-align:center;justify-content:center;">' +
+                    '<div style="text-align:center;width:100%;">' +
+                    '<h1 style="margin-bottom:12px;font-family:var(--header-font);font-style:italic;font-size:2.2rem;">Studio Access</h1>' +
+                    '<p style="color:#666;margin-bottom:24px;">Sign in to manage your orders, wishlist, and profile.</p>' +
+                    '<a href="/login" class="btn">Sign In</a>' +
+                    '</div></div>';
+            }
+
+            // ── Main dashboard render ──
+            function renderDashboard(userData, orders, wishlist, profile) {
+                var displayName = escapeHtml(userData.username || 'friend');
+                var userEmail = escapeHtml(userData.email || '');
+                var recentOrders = orders.slice(0, 3);
+
+                return [
+                    // Welcome Banner
+                    '<div class="welcome-banner">',
+                        '<div class="welcome-text">',
+                            '<h1>Hello, ' + displayName + '.</h1>',
+                            '<p>Welcome back to your studio dashboard.</p>',
+                            userEmail ? '<p class="user-email">' + userEmail + '</p>' : '',
+                        '</div>',
+                        '<div class="welcome-actions">',
+                            '<a href="/orders" class="btn">Track Your Order</a>',
+                            '<a href="/collection" class="btn btn-outline">Shop New</a>',
+                        '</div>',
+                    '</div>',
+
+                    // Dashboard Grid
+                    '<div class="dashboard-grid">',
+
+                        // ── Quick Actions (full-width, 3-col grid) ──
+                        '<div class="dashboard-card full-width">',
+                            '<div class="card-header">',
+                                '<h2>Quick Actions</h2>',
+                                '<div class="card-icon">&#9889;</div>',
+                            '</div>',
+                            '<div class="quick-actions-grid">',
+                                '<a href="/orders" class="quick-action-card track-highlight">',
+                                    '<span class="qa-icon">&#128230;</span>',
+                                    '<span class="qa-label">Track Order</span>',
+                                    '<span class="qa-desc">View order status, shipping updates & history</span>',
+                                '</a>',
+                                '<a href="/orders" class="quick-action-card">',
+                                    '<span class="qa-icon">&#128203;</span>',
+                                    '<span class="qa-label">Order History</span>',
+                                    '<span class="qa-desc">' + orders.length + ' order' + (orders.length !== 1 ? 's' : '') + ' placed</span>',
+                                '</a>',
+                                '<a href="/wishlist" class="quick-action-card">',
+                                    '<span class="qa-icon">&#9829;&#65039;</span>',
+                                    '<span class="qa-label">My Wishlist</span>',
+                                    '<span class="qa-desc">' + wishlist.length + ' saved item' + (wishlist.length !== 1 ? 's' : '') + '</span>',
+                                '</a>',
+                            '</div>',
+                        '</div>',
+
+                        // ── Account Menu (left column) ──
+                        '<div class="dashboard-card">',
+                            '<div class="card-header">',
+                                '<h2>Account</h2>',
+                                '<div class="card-icon">&#128100;</div>',
+                            '</div>',
+                            '<div class="menu-list">',
+                                '<a href="/orders" class="menu-item">',
+                                    '<div class="mi-icon">&#128230;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Track Order</div>',
+                                        '<div class="mi-desc">Real-time status of your shipments</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</a>',
+                                '<a href="/orders" class="menu-item">',
+                                    '<div class="mi-icon">&#128203;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Order History</div>',
+                                        '<div class="mi-desc">View all past purchases</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</a>',
+                                '<a href="/wishlist" class="menu-item">',
+                                    '<div class="mi-icon">&#9829;&#65039;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Wishlist</div>',
+                                        '<div class="mi-desc">' + wishlist.length + ' item' + (wishlist.length !== 1 ? 's' : '') + ' saved for later</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</a>',
+                                '<div class="menu-item" id="menu-saved-addresses" style="cursor:pointer;">',
+                                    '<div class="mi-icon">&#128205;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Saved Addresses</div>',
+                                        '<div class="mi-desc">Manage shipping addresses</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</div>',
+                            '</div>',
+                        '</div>',
+
+                        // ── Recent Orders (right column) ──
+                        '<div class="dashboard-card">',
+                            '<div class="card-header">',
+                                '<h2>Recent Orders</h2>',
+                                '<div class="card-icon">&#128203;</div>',
+                            '</div>',
+                            renderRecentOrders(recentOrders),
+                        '</div>',
+
+                        // ── Saved Addresses (full-width) ──
+                        '<div class="dashboard-card full-width" id="addresses-section">',
+                            '<div class="card-header">',
+                                '<h2>Saved Addresses</h2>',
+                                '<div class="card-icon">&#127968;</div>',
+                            '</div>',
+                            renderAddress(profile),
+                        '</div>',
+
+                        // ── Account Settings + Help ──
+                        '<div class="dashboard-card full-width">',
+                            '<div class="card-header">',
+                                '<h2>Settings & Support</h2>',
+                                '<div class="card-icon">&#9881;&#65039;</div>',
+                            '</div>',
+                            '<div class="menu-list">',
+                                '<div class="menu-item" style="cursor:pointer;" id="menu-account-settings">',
+                                    '<div class="mi-icon">&#9881;&#65039;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Account Settings</div>',
+                                        '<div class="mi-desc">Update your name, email, phone & preferences</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</div>',
+                                '<a href="/support" class="menu-item">',
+                                    '<div class="mi-icon">&#10067;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Help & Support</div>',
+                                        '<div class="mi-desc">FAQs, shipping info, contact us</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</a>',
+                                '<div class="menu-item danger" style="cursor:pointer;" id="btn-logout">',
+                                    '<div class="mi-icon">&#128682;</div>',
+                                    '<div class="mi-content">',
+                                        '<div class="mi-label">Sign Out</div>',
+                                        '<div class="mi-desc">Log out of your studio account</div>',
+                                    '</div>',
+                                    '<span class="mi-arrow">&#8594;</span>',
+                                '</div>',
+                            '</div>',
+                        '</div>',
+
+                    '</div>',
+                ].join('');
+            }
+
+            // ── Recent Orders ──
+            function renderRecentOrders(orders) {
+                if (!orders.length) {
+                    return '<div class="empty-state">' +
+                        '<div class="empty-icon">&#128231;</div>' +
+                        '<p>No orders yet.</p>' +
+                        '<a href="/collection" class="btn btn-sm">Start Shopping</a>' +
+                        '</div>';
+                }
+
+                return orders.map(function (order) {
+                    var created = new Date(order.created_at).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                    });
+                    var status = window.UdaanAPI.formatOrderStatus(order.status);
+
+                    return '<div class="mini-order">' +
+                        '<div>' +
+                            '<div class="mo-id">Order #' + order.id + '</div>' +
+                            '<div class="mo-date">' + created + ' &middot; ' + (order.payment_method || '').toUpperCase() + '</div>' +
+                        '</div>' +
+                        '<span class="status-badge ' + order.status + '">' + status + '</span>' +
+                        '<span class="mo-total">' + window.UdaanAPI.formatMoney(order.total_amount) + '</span>' +
+                        '</div>';
+                }).join('') + (
+                    orders.length > 0
+                        ? '<div style="text-align:center;margin-top:16px;">' +
+                            '<a href="/orders" class="btn btn-outline btn-sm">View All Orders &#8594;</a></div>'
+                        : ''
+                );
+            }
+
+            // ── Saved Address ──
+            function renderAddress(profile) {
+                if (!profile || (!profile.address_line_1 && !profile.city)) {
+                    return '<div class="empty-state">' +
+                        '<div class="empty-icon">&#127968;</div>' +
+                        '<p>No saved address yet.</p>' +
+                        '<p style="font-size:0.82rem;">Your default shipping address will appear here after your first order.</p>' +
+                        '</div>';
+                }
+
+                var lines = [
+                    profile.address_line_1,
+                    profile.address_line_2,
+                    profile.city,
+                    profile.state,
+                    profile.pincode,
+                ].filter(Boolean);
+
+                return [
+                    '<div class="address-block">',
+                        '<div class="addr-name">Default Shipping Address</div>',
+                        '<div class="addr-detail">' + lines.map(escapeHtml).join('<br>') + '</div>',
+                        profile.phone
+                            ? '<div style="margin-top:6px;color:#888;font-size:0.85rem;">&#128222; ' + escapeHtml(profile.phone) + '</div>'
+                            : '',
+                    '</div>',
+                    '<p style="font-size:0.78rem;color:#aaa;text-align:center;">Addresses are saved from your orders automatically.</p>',
+                ].join('');
+            }
+
+            // ── Utility ──
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function showToast(message) {
+                var container = document.getElementById('toast-container');
+                var toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(function () { toast.classList.add('show'); }, 10);
+                setTimeout(function () {
+                    toast.classList.remove('show');
+                    setTimeout(function () { toast.remove(); }, 400);
+                }, 3000);
+            }
+
+            // ── Event Delegation ──
+            root.addEventListener('click', function (e) {
+                var target = e.target;
+
+                // Sign Out
+                if (target.closest('#btn-logout')) {
+                    window.UdaanAPI.logoutUser().then(function () {
+                        window.location.href = '/login';
+                    });
+                    return;
+                }
+
+                // Account Settings placeholder
+                if (target.closest('#menu-account-settings')) {
+                    showToast('Account Settings will be available soon!');
+                    return;
+                }
+
+                // Saved Addresses — scroll to addresses section
+                if (target.closest('#menu-saved-addresses')) {
+                    var section = document.getElementById('addresses-section');
+                    if (section) {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        section.style.boxShadow = '0 0 0 3px var(--accent)';
+                        setTimeout(function () {
+                            section.style.boxShadow = '';
+                        }, 1500);
+                    }
+                    return;
+                }
+            });
+
+            // ── Update badges ──
+            if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                window.UdaanAPI.updateBadges();
+            }
+        })();
+    </script>
+</body>
+</html>

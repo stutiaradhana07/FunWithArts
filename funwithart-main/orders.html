@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --accent-color: #D7A88D; --bg-color: #Fdfbf9; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        body { font-family: var(--body-font); color: #222; background: var(--bg-color); min-height: 100vh; }
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a { text-decoration: none; color: #111; font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 24px; font-weight: bold; }
+        .nav-links a:hover { color: var(--accent-color); }
+        .container { max-width: 900px; margin: 60px auto 100px; padding: 0 5%; }
+        h1 { font-family: var(--header-font); font-size: 3rem; font-style: italic; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 40px; }
+
+        /* ── Guest Lookup Form ── */
+        .lookup-card { background: #fff; border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .lookup-card h2 { font-family: var(--header-font); font-style: italic; font-size: 1.5rem; margin-bottom: 6px; }
+        .lookup-card .hint { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
+        .lookup-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+        .lookup-field { flex: 1; min-width: 200px; }
+        .lookup-field label { display: block; font-family: var(--art-font); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+        .lookup-field input { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 12px; font-family: var(--body-font); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+        .lookup-field input:focus { border-color: var(--accent-color); }
+        .lookup-error { color: #c0392b; font-size: 0.9rem; margin-top: 8px; display: none; }
+        .lookup-error.visible { display: block; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 50px; background: #111; color: #fff; text-decoration: none; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; border: none; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: transparent; color: #111; border: 1px solid #111; margin-left: 10px; }
+        .btn-outline:hover { background: #111; color: #fff; opacity: 1; }
+        .divider-text { text-align: center; color: #aaa; font-family: var(--art-font); font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin: 32px 0 20px; position: relative; }
+        .divider-text::before, .divider-text::after { content: ''; position: absolute; top: 50%; width: 30%; height: 1px; background: #ddd; }
+        .divider-text::before { left: 0; }
+        .divider-text::after { right: 0; }
+
+        /* ── Tracking Stepper ── */
+        .tracking-stepper { display: flex; align-items: flex-start; justify-content: space-between; margin: 20px 0 12px; padding: 0; position: relative; }
+        .tracking-stepper::before { content: ''; position: absolute; top: 18px; left: 30px; right: 30px; height: 3px; background: #e8e5e1; z-index: 0; }
+        .tracking-step { display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; z-index: 1; flex: 1; }
+        .tracking-step .dot { width: 38px; height: 38px; border-radius: 50%; background: #e8e5e1; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: all 0.35s ease; }
+        .tracking-step .label { font-family: var(--art-font); font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: #bbb; margin-top: 8px; transition: color 0.35s ease; max-width: 80px; line-height: 1.3; }
+        .tracking-step .date { font-size: 0.7rem; color: #999; margin-top: 4px; }
+
+        /* Completed step */
+        .tracking-step.completed .dot { background: #2e7d32; color: #fff; }
+        .tracking-step.completed .label { color: #2e7d32; font-weight: 700; }
+        /* Active (in-progress) step */
+        .tracking-step.active .dot { background: var(--accent-color); color: #fff; box-shadow: 0 0 0 6px rgba(215,168,141,0.25); animation: pulse-dot 2s infinite; }
+        .tracking-step.active .label { color: #111; font-weight: 700; }
+        @keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 4px rgba(215,168,141,0.25); } 50% { box-shadow: 0 0 0 10px rgba(215,168,141,0.08); } }
+
+        /* Cancelled overrides */
+        .tracking-stepper.cancelled .tracking-step.completed .dot { background: #c0392b; }
+        .tracking-stepper.cancelled .tracking-step.completed .label { color: #c0392b; }
+        .tracking-stepper.cancelled::before { background: #e8c5c5; }
+
+        /* ── Order Card ── */
+        .order-card { background: #fff; border-radius: 20px; padding: 28px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .order-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+        .order-id { font-family: var(--art-font); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: #888; }
+        .order-status { font-family: var(--art-font); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; padding: 6px 14px; border-radius: 50px; background: rgba(215, 168, 141, 0.2); }
+        .order-status.pending { background: #fff3cd; }
+        .order-status.cancelled { background: #f8d7da; }
+        .order-status.confirmed, .order-status.shipped, .order-status.delivered { background: #d4edda; }
+        .order-meta { color: #666; font-size: 0.95rem; }
+        .order-total { font-family: var(--header-font); font-size: 1.6rem; font-style: italic; }
+        .order-items { border-top: 1px solid #eee; padding-top: 16px; margin-top: 16px; }
+        .order-item { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 0.95rem; }
+        .empty-state, .auth-prompt { text-align: center; padding: 80px 20px; }
+        .empty-state h2, .auth-prompt h2 { font-family: var(--header-font); font-style: italic; font-size: 2rem; margin-bottom: 16px; }
+        .loading { text-align: center; padding: 60px; color: #888; font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; }
+
+        @media (max-width: 600px) {
+            .tracking-step .label { font-size: 0.55rem; max-width: 60px; }
+            .tracking-step .dot { width: 30px; height: 30px; font-size: 0.75rem; }
+            .tracking-stepper::before { top: 15px; left: 20px; right: 20px; }
+            .lookup-row { flex-direction: column; }
+            .lookup-field { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo-fusion"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-links">
+            <a href="/collection">Shop</a>
+            <a href="/studio">Studio</a>
+            <a href="/wishlist">Saved</a>
+            <a href="/account" id="account-link">Account</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Track Your Order</h1>
+        <p class="subtitle" id="orders-subtitle">Follow your ceramics from the studio to your doorstep.</p>
+
+        <!-- Guest Lookup (always visible) -->
+        <div class="lookup-card" id="lookup-section">
+            <h2>Quick Lookup</h2>
+            <p class="hint">Enter your order ID and the email you used at checkout.</p>
+            <div class="lookup-row">
+                <div class="lookup-field">
+                    <label for="lookup-order-id">Order ID</label>
+                    <input type="text" id="lookup-order-id" placeholder="e.g. 42" inputmode="numeric">
+                </div>
+                <div class="lookup-field">
+                    <label for="lookup-email">Contact Email</label>
+                    <input type="email" id="lookup-email" placeholder="you@example.com">
+                </div>
+                <button class="btn" id="lookup-btn">Track Order</button>
+            </div>
+            <p class="lookup-error" id="lookup-error"></p>
+        </div>
+
+        <div class="divider-text" id="divider-text">Your Order History</div>
+
+        <div id="orders-root" class="loading">Loading orders...</div>
+    </main>
+
+    <script src="shared.js"></script>
+    <script>
+        // ── Order status → tracking step mapping ──
+        const STATUS_STEP = { pending: 1, confirmed: 2, shipped: 3, delivered: 4 };
+        const STEP_LABELS = ['Order Placed', 'Confirmed', 'Shipped', 'Delivered'];
+        const STEP_ICONS = ['📝', '✅', '📦', '🏠'];
+
+        function buildTrackingStepper(order) {
+            const currentStep = STATUS_STEP[order.status] || 0;
+            const isCancelled = order.status === 'cancelled';
+            const stepperClass = isCancelled ? 'tracking-stepper cancelled' : 'tracking-stepper';
+
+            let stepsHtml = '';
+            for (let i = 0; i < 4; i++) {
+                const stepNum = i + 1;
+                let cls = '';
+                if (isCancelled && stepNum <= currentStep) {
+                    cls = 'completed';
+                } else if (!isCancelled && stepNum < currentStep) {
+                    cls = 'completed';
+                } else if (!isCancelled && stepNum === currentStep) {
+                    cls = 'active';
+                }
+                stepsHtml +=
+                    '<div class="tracking-step ' + cls + '">' +
+                    '<div class="dot">' + (cls === 'completed' && !isCancelled ? '✓' : cls === 'completed' && isCancelled ? '✕' : STEP_ICONS[i]) + '</div>' +
+                    '<span class="label">' + STEP_LABELS[i] + '</span>' +
+                    '</div>';
+            }
+
+            return '<div class="' + stepperClass + '">' + stepsHtml + '</div>';
+        }
+
+        function renderOrders(orders) {
+            if (!orders.length) {
+                document.getElementById('orders-root').innerHTML =
+                    '<div class="empty-state"><h2>No orders yet</h2><p>When you place an order, it will appear here.</p>' +
+                    '<a href="/collection" class="btn">Browse Collection</a></div>';
+                return;
+            }
+
+            document.getElementById('orders-root').innerHTML = orders.map((order) => {
+                const itemsHtml = (order.items || []).map((item) =>
+                    '<div class="order-item"><span>' + item.product_name + ' × ' + item.quantity +
+                    '</span><span>' + window.UdaanAPI.formatMoney(item.line_total) + '</span></div>'
+                ).join('');
+
+                const created = new Date(order.created_at).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                });
+
+                return '<article class="order-card">' +
+                    '<div class="order-head"><div>' +
+                    '<div class="order-id">Order #' + order.id + '</div>' +
+                    '<p class="order-meta">' + created + ' · ' + order.payment_method.toUpperCase() + '</p></div>' +
+                    '<span class="order-status ' + order.status + '">' + window.UdaanAPI.formatOrderStatus(order.status) + '</span></div>' +
+                    buildTrackingStepper(order) +
+                    '<div class="order-total">' + window.UdaanAPI.formatMoney(order.total_amount) + '</div>' +
+                    '<p class="order-meta" style="margin-top:8px;">Ship to ' + order.shipping_city + ', ' + order.shipping_pincode + '</p>' +
+                    '<div class="order-items">' + itemsHtml + '</div></article>';
+            }).join('');
+        }
+
+        function showLookupError(msg) {
+            const el = document.getElementById('lookup-error');
+            el.textContent = msg;
+            el.classList.add('visible');
+        }
+
+        function clearLookupError() {
+            const el = document.getElementById('lookup-error');
+            el.textContent = '';
+            el.classList.remove('visible');
+        }
+
+        function showAuthPrompt() {
+            document.getElementById('orders-root').innerHTML =
+                '<div class="auth-prompt"><h2>Please sign in</h2><p>Your orders are linked to your studio account.</p>' +
+                '<a href="/login?next=/orders" class="btn">Sign In</a>' +
+                '<a href="/collection" class="btn btn-outline">Continue Shopping</a></div>';
+        }
+
+        function showLookupResult(order) {
+            document.getElementById('divider-text').textContent = 'Lookup Result';
+            renderOrders([order]);
+        }
+
+        // ── Guest Lookup Handler ──
+        document.getElementById('lookup-btn').addEventListener('click', async () => {
+            clearLookupError();
+            const orderId = document.getElementById('lookup-order-id').value.trim();
+            const email = document.getElementById('lookup-email').value.trim();
+
+            if (!orderId || !email) {
+                showLookupError('Please provide both order ID and email.');
+                return;
+            }
+            if (!/^\d+$/.test(orderId)) {
+                showLookupError('Order ID must be a number.');
+                return;
+            }
+
+            const btn = document.getElementById('lookup-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Looking up...';
+            btn.disabled = true;
+
+            try {
+                const order = await window.UdaanAPI.guestOrderLookup(orderId, email);
+                showLookupResult(order);
+            } catch (error) {
+                showLookupError(error.message || 'Order not found. Check your order ID and email.');
+                document.getElementById('divider-text').textContent = 'Your Order History';
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ── Init ──
+        async function init() {
+            const accountLink = document.getElementById('account-link');
+            accountLink.href = '/account';
+            if (window.UdaanAPI.isLoggedIn()) {
+                accountLink.textContent = 'My Account';
+                document.getElementById('orders-subtitle').textContent =
+                    'Signed in as ' + window.UdaanAPI.getAuth().user.username + '.';
+
+                try {
+                    renderOrders(await window.UdaanAPI.fetchOrders());
+                } catch (error) {
+                    document.getElementById('orders-root').innerHTML =
+                        '<div class="empty-state"><h2>Could not load orders</h2><p>' + error.message + '</p></div>';
+                }
+            } else {
+                accountLink.textContent = 'Sign In';
+                accountLink.href = '/login';
+                showAuthPrompt();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

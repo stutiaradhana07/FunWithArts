@@ -1,0 +1,81 @@
+{# Order Shipped – HTML #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Order Has Shipped – Udaan Studio</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f9f5f0;font-family:'Georgia',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9f5f0;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#2d2a26;padding:32px 40px;text-align:center;">
+              <h1 style="color:#d4a574;margin:0;font-size:22px;font-weight:400;letter-spacing:1px;">UDAAN STUDIO</h1>
+              <p style="color:#a89880;margin:8px 0 0;font-size:14px;">Handcrafted Ceramics · New Delhi</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <h2 style="color:#2d2a26;margin:0 0 8px;font-size:20px;font-weight:400;">Your order is on the way, {{ order.shipping_first_name }}!</h2>
+              <p style="color:#6b6058;font-size:15px;line-height:1.6;margin:0 0 24px;">
+                Great news — your order <strong>#{{ order.id }}</strong> has been carefully packed and handed over to our shipping partner. It's now making its way to you.
+              </p>
+
+              <!-- Order summary table -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:24px;">
+                <thead>
+                  <tr style="border-bottom:2px solid #e8ddd0;">
+                    <th style="text-align:left;padding:10px 0;color:#8c8176;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Item</th>
+                    <th style="text-align:center;padding:10px 0;color:#8c8176;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Qty</th>
+                    <th style="text-align:right;padding:10px 0;color:#8c8176;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in items %}
+                  <tr style="border-bottom:1px solid #f0e8dd;">
+                    <td style="padding:12px 0;color:#3d3833;font-size:14px;">{{ item.product_name }}</td>
+                    <td style="padding:12px 0;text-align:center;color:#6b6058;font-size:14px;">{{ item.quantity }}</td>
+                    <td style="padding:12px 0;text-align:right;color:#3d3833;font-size:14px;">₹{{ item.line_total }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <hr style="border:none;border-top:1px solid #e8ddd0;margin:28px 0;">
+
+              <!-- Shipping Address -->
+              <h3 style="color:#2d2a26;margin:0 0 8px;font-size:15px;font-weight:400;">Shipping To</h3>
+              <p style="color:#6b6058;font-size:14px;line-height:1.6;margin:0;">
+                {{ order.shipping_first_name }} {{ order.shipping_last_name }}<br>
+                {{ order.shipping_address_line_1 }}{% if order.shipping_address_line_2 %}, {{ order.shipping_address_line_2 }}{% endif %}<br>
+                {{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_pincode }}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f9f5f0;padding:24px 40px;text-align:center;">
+              <p style="color:#8c8176;font-size:12px;line-height:1.6;margin:0;">
+                Questions about your order? Reply to this email or reach us at<br>
+                <a href="mailto:{{ support_email }}" style="color:#b8926a;text-decoration:none;">{{ support_email }}</a>
+              </p>
+              <p style="color:#b0a599;font-size:11px;margin:16px 0 0;">
+                Udaan Studio · New Delhi, India · Handcrafted with patience.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

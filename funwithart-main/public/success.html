@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | Fun With Art</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        a, button { cursor: pointer; }
+
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh;}
+
+        /* FLOATING BACKGROUND SHAPES */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; opacity: 1; }
+        .cutu-shape { position: absolute; fill: var(--accent-color); opacity: 0.3; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05)); }
+        @keyframes floatA { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 50% { transform: translateY(-20px) rotate(8deg) scale(1.05); } }
+        .shape-1 { top: 15%; left: 8%; width: 100px; animation: floatA 8s ease-in-out infinite; }
+        .shape-3 { top: 80%; right: 10%; width: 85px; animation: floatA 9s ease-in-out infinite; animation-delay: 2s; }
+
+        /* NAV BAR (Cleaned up for success page) */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: center; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; transition: transform 0.3s; }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+
+        /* SUCCESS CONTAINER */
+        .success-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 150px 5% 100px; position: relative; z-index: 5; }
+        .success-card { background: #fff; padding: 60px 40px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); max-width: 600px; width: 100%; text-align: center; }
+        
+        .success-icon { font-size: 5rem; margin-bottom: 20px; line-height: 1; }
+        .success-card h1 { font-family: var(--header-font); font-size: 3rem; font-style: italic; margin-bottom: 15px; color: #111; }
+        .success-card p { font-family: var(--body-font); font-size: 1.1rem; color: #666; line-height: 1.6; margin-bottom: 30px; }
+        
+        .order-number { background: #fafafa; padding: 20px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 40px; }
+        .order-number span { display: block; font-family: var(--art-font); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 5px; font-weight: bold;}
+        .order-number strong { font-family: var(--body-font); font-size: 1.5rem; color: var(--accent-color); }
+
+        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .primary-btn { padding: 18px 40px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; font-size: 0.95rem; text-decoration: none; }
+        .primary-btn:hover { background: var(--accent-color); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(215, 168, 141, 0.3); }
+        
+        .secondary-btn { padding: 18px 40px; background: transparent; color: #111; border: 2px solid #eee; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; font-size: 0.95rem; text-decoration: none; }
+        .secondary-btn:hover { border-color: #111; background: #fafafa; }
+
+        /* FOOTER */
+        .footer-bottom { background: #111; text-align: center; padding: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); position: relative; z-index: 5;}
+    </style>
+</head>
+<body>
+
+    <div class="floating-dreamscape">
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-1" viewBox="0 0 100 100"><path d="M30,10 L70,10 L65,30 Q90,60 70,90 L30,90 Q10,60 35,30 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
+    </div>
+
+    <nav>
+        <a href="index.html" class="logo-fusion">
+            <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
+        </a>
+    </nav>
+
+    <div class="success-wrapper">
+        <div class="success-card">
+            <div class="success-icon">✨</div>
+            <h1>Your art is on the way!</h1>
+            <p>Thank you for supporting slow living and handmade ceramics. We are getting our hands dirty packing your order right now. A confirmation email has been sent to your inbox.</p>
+            
+            <div class="order-number">
+                <span>Order Reference</span>
+                <strong id="random-order">#FWA-00000</strong>
+            </div>
+
+            <div class="btn-group">
+                <a href="collection.html" class="primary-btn">Keep Shopping</a>
+                <a href="index.html" class="secondary-btn">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer" style="background: #111; color: #fff; padding: 80px 5% 40px; position: relative; z-index: 5;">
+        <div style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 60px;">
+            <div class="footer-brand" style="grid-column: span 2;">
+                <h2 style="font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px;">Fun With Art</h2>
+                <p style="font-family: var(--body-font); color: #888; line-height: 1.6; max-width: 300px;">Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Shop</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="collection.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">All Ceramics</a></li>
+                    <li style="margin-bottom: 15px;"><a href="studio.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Studio Classes</a></li>
+                    <li style="margin-bottom: 15px;"><a href="about.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Support</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">FAQ</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Shipping & Returns</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Legal</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Terms of Service</a></li>
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom" style="border-top: 1px solid #222; text-align: center; padding-top: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font);">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Generate a random order number for realism!
+        document.getElementById('random-order').innerText = '#FWA-' + Math.floor(10000 + Math.random() * 90000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+Your order is on the way, {{ order.shipping_first_name }}!
+
+Great news — your order #{{ order.id }} has been carefully packed and handed over to our shipping partner. It's now making its way to you.
+
+── ORDER SUMMARY ──────────────────────────────
+{% for item in items %}
+  {{ item.product_name }}  × {{ item.quantity }}  —  ₹{{ item.line_total }}
+{% endfor %}
+──────────────────────────────────────────────
+
+SHIPPING TO:
+{{ order.shipping_first_name }} {{ order.shipping_last_name }}
+{{ order.shipping_address_line_1 }}{% if order.shipping_address_line_2 %}, {{ order.shipping_address_line_2 }}{% endif %}
+{{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_pincode }}
+
+Questions? Reply to this email or reach us at {{ support_email }}.
+
+—
+Udaan Studio · New Delhi · Handcrafted with patience.

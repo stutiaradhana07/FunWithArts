@@ -1,0 +1,20 @@
+You're booked — {{ workshop.title }}!
+
+Hi {{ user.first_name|default:user.username }}, your spot is confirmed. We can't wait to create with you at the studio.
+
+── WORKSHOP DETAILS ───────────────────────────
+Workshop:    {{ workshop.title }}
+Instructor:  {{ workshop.instructor }}
+Date:        {{ workshop.date|date:"l, F j, Y" }}
+Time:        {{ workshop.time|time:"g:i A" }}
+Duration:    {{ workshop.duration }} minutes
+Seats:       {{ booking.seats }}
+──────────────────────────────────────────────
+
+📍 Studio: Udaan Studio, New Delhi, India
+   Please arrive 10 minutes early.
+
+Need to reschedule? Reply to this email or reach us at {{ support_email }}.
+
+—
+Udaan Studio · New Delhi · Handcrafted with patience.
