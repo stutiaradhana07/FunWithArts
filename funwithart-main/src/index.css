@@ -254,49 +254,102 @@ body.legacy-route-active {
   }
 }
 
+/* ========== DISABLE ALL PAGE TRANSITIONS & CURTAIN SWEEPS ========== */
+
+/* Kill the curtain overlay completely */
+.page-transition-overlay,
+.page-transition-overlay--active,
+.page-transition-curtain,
+.page-transition-curtain__base,
+.page-transition-curtain__glow,
+.page-transition-curtain__noise,
+.page-transition-curtain__sheen,
+.page-transition-curtain__speckles {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Stop exit / enter animations on the legacy shell */
+.legacy-page-shell--exiting {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.legacy-page-shell--entering {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Remove the subtle fade‑in on new content */
+.legacy-page-content {
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+/* Hide any remaining loading spinners or messages */
+.legacy-loading,
+.loading-curtain {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  animation: none !important;
+}
+
 /* ──────────────── Blog Styles ──────────────── */
 
-/* ── Shared Nav ── */
-.blog-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2rem;
-  background: rgba(253, 251, 249, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+/* ── Standard Nav (matching collection.html) ── */
+
+
+/* Nav */
+nav#main-nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+nav#main-nav.hide { transform: translateY(-100%); }
+
+.logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+.logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+.english-part { font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+.hindi-char { font-family: 'Playfair Display', serif; color: var(--accent-color, #D7A88D); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+
+.nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px; }
+.nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: 0.3s; background: transparent; border: none; color: #111; text-decoration: none; }
+.nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+.nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color, #D7A88D); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: 'Syne', sans-serif; font-weight: bold; opacity: 0; transition: 0.3s; }
+
+.nav-account-link { font-family: 'Syne', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+.nav-account-link:hover { background: #111; color: #fff; }
+.nav-account-link.is-logged-in { border-color: var(--accent-color, #D7A88D); color: var(--accent-color, #D7A88D); }
+
+.nav-links { display: flex; align-items: center; }
+.desktop-links a { text-decoration: none; color: #111; font-family: 'Syne', sans-serif; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold; }
+.desktop-links a:hover, .desktop-links a.active { color: var(--accent-color, #D7A88D); }
+.blog-nav-links {
+  position: absolute;
+  left: 43.7%;
+  transform: translateX(-50%);
+  justify-content: center;
+  margin: 0;
+  width: max-content;
 }
-.blog-nav__logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #2e2e2e;
-  text-decoration: none;
-  letter-spacing: -0.01em;
+.blog-nav-links a:first-child {
+  margin-left: 0;
 }
-.blog-nav__links {
-  display: flex;
-  gap: 1.75rem;
-}
-.blog-nav__links a {
-  font-family: 'Lato', sans-serif;
-  font-size: 0.875rem;
-  color: #5a5a5a;
-  text-decoration: none;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  transition: color 0.25s;
-}
-.blog-nav__links a:hover,
-.blog-nav__active {
-  color: #2e2e2e;
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .blog-nav-links {
+    position: static;
+    transform: none;
+    width: auto;
+  }
 }
 
 /* ── Loading / Error / Empty ── */
@@ -383,12 +436,11 @@ body.legacy-route-active {
 
 /* ── Blog Index ── */
 .blog-index {
-  min-height: 100vh;
   background: #fdfbf9;
   font-family: 'Lato', sans-serif;
 }
 .blog-index__main {
-  padding-top: 68px;
+  padding: 3rem 0 2rem;
 }
 
 /* ── Hero Card ── */
@@ -482,7 +534,7 @@ body.legacy-route-active {
 
 /* ── Grid Section ── */
 .blog-index__grid-section {
-  padding: 0 2rem 4rem;
+  padding: 0 2rem 2rem;
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -565,8 +617,8 @@ body.legacy-route-active {
 
 /* ── Blog Post ── */
 .blog-post {
-  min-height: 100vh;
   background: #fdfbf9;
+  padding-bottom: 1rem;
 }
 
 /* ── Parallax Header ── */
@@ -576,7 +628,7 @@ body.legacy-route-active {
   height: 55vh;
   min-height: 420px;
   overflow: hidden;
-  margin-top: 68px;
+  margin-top: 80px;
 }
 .blog-header__bg {
   position: absolute;
@@ -653,7 +705,7 @@ body.legacy-route-active {
 
 /* ── Reading Column ── */
 .blog-content {
-  padding: 0 2rem 3rem;
+  padding: 0 2rem 2rem;
   max-width: 740px;
   margin: 0 auto;
 }
@@ -777,7 +829,7 @@ body.legacy-route-active {
 .blog-footer {
   background: #fdfbf9;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 2rem;
+  padding: 1.5rem 2rem;
 }
 .blog-footer__inner {
   max-width: 1280px;
@@ -856,4 +908,90 @@ body.legacy-route-active {
     flex-direction: column;
     text-align: center;
   }
+}
+
+/* Keep only navigation-transition overrides. */
+.page-transition-overlay, 
+.page-transition-curtain,
+.page-transition-curtain__base,
+.page-transition-curtain__glow {
+    all: unset !important;
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: fixed !important;
+    z-index: -9999 !important; /* Move it behind everything */
+}
+
+/* Prevent the shell from being hidden by route-transition classes. */
+.legacy-page-shell, 
+.legacy-page-shell--intro-pending,
+.legacy-page-shell--entering,
+.legacy-page-shell--exiting {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    filter: none !important;
+}
+
+/* Stop leftover route blur only. */
+.legacy-page-content {
+    filter: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* FORCE CENTERING LOGIC */
+.studio-nav-container {
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
+
+.studio-nav {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 80px;
+  padding: 0 40px;
+}
+
+.nav-center {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+}
+
+.nav-center a {
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.nav-center a.active {
+  color: #d2b48c;
+  font-weight: bold;
+}
+
+.nav-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.pill-btn {
+  border: 1px solid #d2b48c;
+  padding: 7px 20px;
+  border-radius: 50px;
+  font-size: 11px;
+  color: #d2b48c;
+  text-decoration: none;
+  font-weight: 600;
 }

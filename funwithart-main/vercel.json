@@ -1,0 +1,29 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/addresses", "destination": "/addresses.html" },
+    { "source": "/cart", "destination": "/cart.html" },
+    { "source": "/checkout", "destination": "/checkout.html" },
+    { "source": "/collection", "destination": "/collection.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/forgot-password", "destination": "/forgot-password.html" },
+    { "source": "/legal", "destination": "/legal.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/order-history", "destination": "/order-history.html" },
+    { "source": "/orders", "destination": "/orders.html" },
+    { "source": "/product", "destination": "/product.html" },
+    { "source": "/reset-password", "destination": "/reset-password.html" },
+    { "source": "/search", "destination": "/search.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/studio", "destination": "/studio.html" },
+    { "source": "/success", "destination": "/success.html" },
+    { "source": "/support", "destination": "/support.html" },
+    { "source": "/wishlist", "destination": "/wishlist.html" },
+    { "source": "/workshop-confirmation", "destination": "/workshop-confirmation.html" },
+    { "source": "/legacy", "destination": "/legacy-index.html" }
+  ]
+}

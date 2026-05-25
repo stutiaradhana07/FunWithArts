@@ -1,0 +1,56 @@
+# ── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.so
+
+# ── Virtual Environment ────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Django ─────────────────────────────────────────────────────────────────
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# ── Node / Frontend ────────────────────────────────────────────────────────
+node_modules/
+funwithart-main/dist/
+funwithart-main/node_modules/
+*.local
+
+# ── Secrets & Environment ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.production
+
+# ── IDE ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Misc ───────────────────────────────────────────────────────────────────
+*.log
+_fix.py
+fix.js
+backend_audit.md
+FIXES_APPLIED.md
+2.0
+
+# ── Python cache in backend apps ───────────────────────────────────────────
+backend/**/migrations/__pycache__/
+backend/**/__pycache__/

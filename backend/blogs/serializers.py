@@ -14,23 +14,33 @@ class NewsletterSubscribeSerializer(serializers.Serializer):
 
 class PostListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for the blog feed — excludes full content."""
-    author_name = serializers.CharField(source='author.get_full_name', read_only=True)
+    author_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
-            'id', 'title', 'slug', 'cover_image', 'excerpt',
-            'author_name', 'status', 'created_at', 'updated_at',
+            'id', 'title', 'slug', 'cover_image', 'cover_image_position',
+            'excerpt', 'title_is_bold', 'title_is_italic', 'title_font_size',
+            'title_color', 'author_name', 'status', 'published_at',
+            'created_at', 'updated_at',
         ]
+
+    def get_author_name(self, obj):
+        return obj.author.get_full_name() or obj.author.username
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
     """Full serializer for a single blog post — includes all content."""
-    author_name = serializers.CharField(source='author.get_full_name', read_only=True)
+    author_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
-            'id', 'title', 'slug', 'cover_image', 'excerpt',
-            'content', 'author_name', 'status', 'created_at', 'updated_at',
+            'id', 'title', 'slug', 'cover_image', 'cover_image_position',
+            'excerpt', 'content', 'title_is_bold', 'title_is_italic',
+            'title_font_size', 'title_color', 'author_name', 'status',
+            'published_at', 'created_at', 'updated_at',
         ]
+
+    def get_author_name(self, obj):
+        return obj.author.get_full_name() or obj.author.username

@@ -51,11 +51,11 @@ def _send_order_confirmation(order):
     context = {
         'order': order,
         'items': items,
-        'studio_name': 'Udaan Studio',
+        'studio_name': 'Fun with Art',
         'support_email': settings.DEFAULT_FROM_EMAIL,
     }
 
-    subject = f'Order Confirmed – Udaan Studio #{order.id}'
+    subject = f'Order Confirmed – Fun with Art #{order.id}'
     body_plain = render_to_string('notifications/order_confirmation.txt', context)
     body_html = render_to_string('notifications/order_confirmation.html', context)
 
@@ -68,11 +68,11 @@ def _send_shipping_notification(order):
     context = {
         'order': order,
         'items': items,
-        'studio_name': 'Udaan Studio',
+        'studio_name': 'Fun with Art',
         'support_email': settings.DEFAULT_FROM_EMAIL,
     }
 
-    subject = f'Your Udaan Studio order #{order.id} is on the way!'
+    subject = f'Your Fun with Art order #{order.id} is on the way!'
     body_plain = render_to_string('notifications/order_shipped.txt', context)
     body_html = render_to_string('notifications/order_shipped.html', context)
 
@@ -90,22 +90,25 @@ def on_workshop_booked(sender, instance, created, **kwargs):
     if not created:
         return
 
-    workshop = instance.workshop
-    context = {
-        'booking': instance,
-        'workshop': workshop,
-        'user': instance.user,
-        'studio_name': 'Udaan Studio',
-        'support_email': settings.DEFAULT_FROM_EMAIL,
-    }
+    try:
+        workshop = instance.workshop
+        context = {
+            'booking': instance,
+            'workshop': workshop,
+            'user': instance.user,
+            'studio_name': 'Fun with Art',
+            'support_email': settings.DEFAULT_FROM_EMAIL,
+        }
 
-    subject = f'Workshop Booked: {workshop.title} – Udaan Studio'
-    body_plain = render_to_string('notifications/workshop_booked.txt', context)
-    body_html = render_to_string('notifications/workshop_booked.html', context)
+        subject = f'Workshop Booked: {workshop.title} – Fun with Art'
+        body_plain = render_to_string('notifications/workshop_booked.txt', context)
+        body_html = render_to_string('notifications/workshop_booked.html', context)
 
-    recipient = instance.user.email
-    if not recipient:
-        logger.warning('Workshop booking %s has no user email; skipping.', instance.pk)
-        return
+        recipient = instance.user.email
+        if not recipient:
+            logger.warning('Workshop booking %s has no user email; skipping.', instance.pk)
+            return
 
-    send_email_async(subject, body_plain, body_html, [recipient])
+        send_email_async(subject, body_plain, body_html, [recipient])
+    except Exception:
+        logger.exception('Failed to send workshop booking email (non-fatal)')

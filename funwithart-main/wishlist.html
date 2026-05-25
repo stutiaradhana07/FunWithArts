@@ -3,57 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saved | Fun With Art Ceramics Delhi</title>
+    <title>Saved | Fun With Art Ceramics</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+
     <style>
-        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #EAE6DB; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        :root {
+            --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9;
+            --text-color: #222; --card-bg: rgba(255,255,255,0.7);
+            --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: var(--body-font); color: var(--text-color); overflow-x: hidden; background-color: var(--bg-color); }
-        nav { background: rgba(234, 230, 219, 0.85); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        a, button { cursor: pointer; }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow-x: hidden;
+        }
+
+        /* NAV BAR */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        nav.hide { transform: translateY(-100%); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s; }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
         .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
-        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; }
-        .back-link { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: #888; text-decoration: none; }
-        .container { max-width: 1400px; margin: 80px auto 120px; padding: 0 5%; }
-        .page-title { font-family: var(--header-font); font-size: 4rem; font-style: italic; color: #111; margin-bottom: 20px; text-align: center; }
-        .page-note { text-align: center; color: #666; margin-bottom: 40px; }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; }
-        .product-card { animation: fadeIn 0.8s ease forwards; }
-        .image-wrapper { overflow: hidden; margin-bottom: 15px; width: 100%; aspect-ratio: 4 / 3; position: relative; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); }
-        .product-image { width: 100%; height: 100%; object-fit: cover; }
-        .meta-row { display: flex; justify-content: space-between; align-items: center; padding: 5px; }
-        .product-title { font-family: var(--header-font); font-size: 1.5rem; font-style: italic; }
-        .price { font-family: var(--art-font); font-weight: 600; color: var(--accent-color); }
-        .action-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid #ccc; background: transparent; cursor: pointer; }
-        .wishlist-btn svg { fill: #D7A88D; stroke: #D7A88D; }
-        .empty-state { text-align: center; padding: 100px 0; }
-        .empty-state h2 { font-family: var(--header-font); font-style: italic; font-size: 3rem; margin-bottom: 20px; }
-        .shop-btn { display: inline-block; margin-top: 20px; padding: 15px 40px; border: 1px solid #111; color: #111; text-decoration: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; }
-        .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; }
-        .toast { background: #111; color: #fff; padding: 15px 30px; border-radius: 50px; opacity: 0; transition: 0.4s; }
-        .toast.show { opacity: 1; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
+        .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color); }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; opacity: 0; transition: 0.3s; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent-color); color: var(--accent-color); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+        /* Content Layout */
+        .container { max-width: 1400px; margin: 140px auto 120px; padding: 0 5%; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 26px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.86);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+            color: var(--primary-color);
+            text-decoration: none;
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        .back-link-arrow {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .page-title { 
+            font-family: var(--header-font); 
+            font-size: clamp(3rem, 8vw, 5rem); 
+            font-style: italic; 
+            color: var(--primary-color);
+            margin-bottom: 10px; 
+            text-align: center; 
+        }
+
+        .page-note { 
+            text-align: center; 
+            font-family: var(--body-font);
+            color: #666;
+            margin-bottom: 60px;
+            letter-spacing: 1px;
+        }
+
+        /* Product Gallery */
+        .gallery-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 60px 40px; 
+        }
+
+        .product-card { position: relative; animation: fadeIn 1s ease forwards; }
+
+        /* THE ARTISAN MORPH IMAGE */
+        .image-wrapper { 
+            overflow: hidden; 
+            margin-bottom: 25px; 
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            position: relative; 
+            background: #F8F5F2; 
+            /* Start with standard rounded corners */
+            border-radius: 20px; 
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        .product-card:hover .image-wrapper { 
+            /* Morphing into blob-like pottery forms on hover */
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+
+        .product-image { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: transform 0.8s ease;
+        }
+        .product-card:hover .product-image { transform: scale(1.1) rotate(2deg); }
+
+        .meta-row { display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+        .product-title { 
+            font-family: var(--header-font); 
+            font-size: 1.8rem; 
+            font-style: italic; 
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .price { 
+            font-family: var(--art-font);
+            font-weight: 400;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        /* Action Buttons */
+        .card-actions { display: flex; gap: 15px; align-items: center; }
+
+        .btn-bag {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: var(--art-font);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-bag:hover {
+            background: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(215, 168, 141, 0.3);
+        }
+
+        .btn-remove {
+            background: white;
+            border: 1px solid #eee;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            background: #FFEBEE;
+            border-color: #FFEBEE;
+            color: #E63946;
+            transform: scale(1.1);
+        }
+
+        /* Empty State */
+        .empty-state h2 { 
+            font-family: var(--header-font); 
+            font-style: italic; 
+            font-size: clamp(2rem, 5vw, 3.5rem); 
+            margin-bottom: 30px; 
+        }
+
+        /* Toast */
+        .toast {
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
+            font-family: var(--art-font);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            padding: 18px 40px;
+            border-radius: 50px;
+            border: 1px solid rgba(215, 168, 141, 0.3);
+        }
+
+        @media (max-width: 768px) { .nav-links { display: none; } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html" class="logo-fusion"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
-        <a href="collection.html" class="back-link">← Continue Shopping</a>
+
+    <nav id="main-nav">
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-links desktop-links">
+            <a href="/" class="nav-route" data-target="/">Home</a>
+            <a href="/collection" class="nav-route" data-target="/collection">Collection</a>
+            <a href="javascript:void(0)" class="nav-route" data-target="/studio">Studio</a>
+            <a href="/blogs" class="nav-route" data-target="/blogs">Blogs</a>
+            <a href="javascript:void(0)" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
+        </div>
+        <div class="nav-actions">
+            <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon nav-route" data-target="cart.html"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
     </nav>
 
     <div class="container">
-        <h1 class="page-title">Saved for Later</h1>
-        <p class="page-note" id="wishlist-note">Your saved ceramics.</p>
+        <a href="/account" class="back-link">
+            <span class="back-link-arrow">&#8592;</span>
+            <span>Back to Dashboard</span>
+        </a>
+        <h1 class="page-title">Curated Pieces</h1>
+        <p class="page-note" id="wishlist-note">Your private studio collection.</p>
         <div id="wishlist-grid" class="gallery-grid"></div>
     </div>
 
     <div class="toast-container" id="toast-container"></div>
 
-    <script src="shared.js"></script>
     <script>
+
+        /* ── LENIS SMOOTH SCROLL ── */
+        try {
+            const lenis = new Lenis({ duration: 1.8, smooth: true });
+            let scrollY = 0; let lastScrollY = window.scrollY;
+            const mainNav = document.getElementById('main-nav');
+
+            lenis.on('scroll', (e) => {
+                scrollY = e.scroll;
+                if (scrollY > lastScrollY && scrollY > 150) { mainNav.classList.add('hide'); }
+                else { mainNav.classList.remove('hide'); }
+                lastScrollY = scrollY;
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+        } catch(e) { console.log("Smooth scroll disabled for safety."); }
+
         let wishlistData = [];
-        let cartItems = [];  // legacy-shaped from API, loaded on demand
 
         window.showToast = function(message) {
             const container = document.getElementById('toast-container');
@@ -68,48 +284,47 @@
         function renderWishlist() {
             const grid = document.getElementById('wishlist-grid');
             if (!wishlistData.length) {
-                grid.innerHTML = '<div class="empty-state"><h2>Your collection is empty.</h2><a href="collection.html" class="shop-btn">Discover Ceramics</a></div>';
+                grid.innerHTML = `
+                    <div class="empty-state" style="text-align:center; padding:100px 0;">
+                        <h2>Your collection is empty.</h2>
+                        <a href="collection.html" class="btn-bag" style="text-decoration:none; display:inline-block;">Discover Ceramics</a>
+                    </div>`;
                 return;
             }
 
             grid.innerHTML = wishlistData.map((item) => `
-                <article class="product-card" data-product-id="${item.productId || item.id}">
+                <article class="product-card">
                     <div class="image-wrapper">
                         <img src="${item.imgSrc || item.img || ''}" class="product-image" alt="${item.title}">
                     </div>
                     <div class="meta-row">
-                        <div>
-                            <h3 class="product-title">${item.title}</h3>
-                            <span class="price">${window.UdaanAPI.formatMoney(item.basePrice || item.price)}</span>
-                        </div>
-                        <div>
-                            <button class="action-btn wishlist-btn" data-remove-id="${item.productId || item.id}" aria-label="Remove">♥</button>
-                            <button class="action-btn" data-cart-id="${item.productId || item.id}" aria-label="Add to cart">🛍</button>
+                        <h3 class="product-title">${item.title}</h3>
+                        <span class="price">${window.UdaanAPI.formatMoney(item.basePrice || item.price)}</span>
+                        <div class="card-actions">
+                             <button class="btn-remove" data-remove-id="${item.productId || item.id}" title="Remove Item">✕</button>
+                             <button class="btn-bag" data-cart-id="${item.productId || item.id}">Add to Bag</button>
                         </div>
                     </div>
                 </article>
             `).join('');
 
+            // ... re-attach your event listeners (data-remove-id and data-cart-id) ...
             grid.querySelectorAll('[data-remove-id]').forEach((btn) => {
                 btn.addEventListener('click', async () => {
                     const productId = Number(btn.getAttribute('data-remove-id'));
-                    const item = wishlistData.find((w) => String(w.productId || w.id) === String(productId));
-                    if (!item) return;
                     try {
                         if (window.UdaanAPI.isLoggedIn()) {
                             await window.UdaanAPI.removeFromWishlist(productId);
                         } else {
-                            const local = window.UdaanAPI.getLocalWishlist().filter(
-                                (w) => String(w.productId || w.id) !== String(productId)
-                            );
+                            const local = window.UdaanAPI.getLocalWishlist().filter(w => String(w.productId || w.id) !== String(productId));
                             window.UdaanAPI.setLocalWishlist(local);
                         }
                         wishlistData = await window.UdaanAPI.loadWishlistCache();
                         renderWishlist();
                         window.UdaanAPI.updateBadges();
-                        showToast('Removed from saved.');
+                        showToast('Removed from collection.');
                     } catch (error) {
-                        showToast(error.message || 'Could not remove item.');
+                        showToast('Could not remove item.');
                     }
                 });
             });
@@ -117,13 +332,12 @@
             grid.querySelectorAll('[data-cart-id]').forEach((btn) => {
                 btn.addEventListener('click', async () => {
                     const productId = Number(btn.getAttribute('data-cart-id'));
-                    if (!productId) return;
                     try {
                         await window.UdaanAPI.addToCart(productId, 1);
-                        showToast('Added to bag!');
+                        showToast('Added to bag, Artisan!');
                         window.UdaanAPI.updateBadges();
                     } catch (e) {
-                        showToast(e.message || 'Could not add to bag.');
+                        showToast('Could not add to bag.');
                     }
                 });
             });
@@ -131,11 +345,7 @@
 
         async function init() {
             const note = document.getElementById('wishlist-note');
-            if (window.UdaanAPI.isLoggedIn()) {
-                note.textContent = 'Synced with your studio account.';
-            } else {
-                note.textContent = 'Saved on this device. Sign in to sync across devices.';
-            }
+            note.textContent = window.UdaanAPI.isLoggedIn() ? 'Synced with your studio account.' : 'Saved on this device.';
             wishlistData = await window.UdaanAPI.loadWishlistCache();
             renderWishlist();
         }

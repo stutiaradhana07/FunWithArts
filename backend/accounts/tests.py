@@ -52,3 +52,26 @@ class AccountsAPITests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', response.json())
+
+    def test_me_patch_updates_username(self):
+        self.client.post(
+            '/api/auth/register/',
+            {'username': 'oldname', 'email': 'old@example.com', 'password': 'pass1234!'},
+            content_type='application/json',
+        )
+        login_response = self.client.post(
+            '/api/auth/login/',
+            {'username': 'oldname', 'password': 'pass1234!'},
+            content_type='application/json',
+        )
+        token = login_response.json()['token']
+
+        response = self.client.patch(
+            '/api/auth/me/',
+            {'username': 'newname'},
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {token}',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['username'], 'newname')

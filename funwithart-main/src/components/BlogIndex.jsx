@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import BlogNavbar from './BlogNavbar';
 
 function formatBlogDate(dateStr) {
   if (!dateStr) return '';
@@ -11,17 +12,30 @@ function formatBlogDate(dateStr) {
   });
 }
 
+function getPostCover(post) {
+  return (
+    post.cover_image ||
+    post.image_url ||
+    post.image ||
+    'https://placehold.co/1200x800/EAE6DB/3D2A20?text=Fun+With+Art'
+  );
+}
+
+function getPostExcerpt(post) {
+  return post.excerpt || post.summary || 'A new studio story is on the wheel.';
+}
+
 function BlogCard({ post, featured }) {
   if (featured) {
     return (
       <Link to={`/blogs/${post.slug}`} className="blog-hero-card">
         <div className="blog-hero-card__image">
-          <img src={post.cover_image} alt={post.title} />
+          <img src={getPostCover(post)} alt={post.title} />
           <div className="blog-hero-card__overlay" />
           <div className="blog-hero-card__content">
             <span className="blog-hero-card__label">Featured Story</span>
             <h1 className="blog-hero-card__title">{post.title}</h1>
-            <p className="blog-hero-card__excerpt">{post.excerpt}</p>
+            <p className="blog-hero-card__excerpt">{getPostExcerpt(post)}</p>
             <span className="blog-hero-card__cta">
               Read Story
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -38,11 +52,11 @@ function BlogCard({ post, featured }) {
   return (
     <Link to={`/blogs/${post.slug}`} className="blog-card">
       <div className="blog-card__image-wrap">
-        <img src={post.cover_image} alt={post.title} className="blog-card__image" />
+        <img src={getPostCover(post)} alt={post.title} className="blog-card__image" />
       </div>
       <div className="blog-card__body">
         <h3 className="blog-card__title">{post.title}</h3>
-        <p className="blog-card__excerpt">{post.excerpt}</p>
+        <p className="blog-card__excerpt">{getPostExcerpt(post)}</p>
         <div className="blog-card__meta">
           <span className="blog-card__author">By {post.author_name || 'Udaan Studio'}</span>
           <span className="blog-card__sep">·</span>
@@ -57,6 +71,8 @@ export default function BlogIndex() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const lenisRef = useRef(null);
+  const rafRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,19 +88,63 @@ export default function BlogIndex() {
           setError('Unable to load stories. Please try again.');
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window.Lenis !== 'function') {
+      return undefined;
+    }
+
+    try {
+      const lenis = new window.Lenis({ duration: 1.8, smooth: true });
+      lenisRef.current = lenis;
+      let lastScrollY = window.scrollY;
+      const mainNav = document.getElementById('main-nav');
+
+      lenis.on('scroll', (e) => {
+        const scrollY = e.scroll;
+        if (scrollY > lastScrollY && scrollY > 150) {
+          mainNav?.classList.add('hide');
+        } else {
+          mainNav?.classList.remove('hide');
+        }
+        lastScrollY = scrollY;
+      });
+
+      function raf(time) {
+        lenis.raf(time);
+        rafRef.current = requestAnimationFrame(raf);
+      }
+
+      rafRef.current = requestAnimationFrame(raf);
+    } catch (e) {
+      lenisRef.current = null;
+    }
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      lenisRef.current?.destroy();
+      lenisRef.current = null;
+    };
   }, []);
 
   if (loading) {
     return (
       <div className="blog-loading">
         <div className="blog-loading__spinner" />
-        <p>Gathering stories from the studio…</p>
+        <p>Gathering stories...</p>
       </div>
     );
   }
@@ -97,7 +157,7 @@ export default function BlogIndex() {
     );
   }
 
-  if (posts.length === 0) {
+  if (!posts.length) {
     return (
       <div className="blog-empty">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -116,37 +176,25 @@ export default function BlogIndex() {
 
   return (
     <div className="blog-index">
-      {/* ── Nav (matches site aesthetic) ── */}
-      <nav className="blog-nav">
-        <Link to="/" className="blog-nav__logo">Fun With Art</Link>
-        <div className="blog-nav__links">
-          <Link to="/collection">Collection</Link>
-          <Link to="/studio">Studio</Link>
-          <Link to="/blogs" className="blog-nav__active">Blogs</Link>
-        </div>
-      </nav>
+      <BlogNavbar />
 
       <main className="blog-index__main">
-        {/* ── Hero Section ── */}
-        {featured && <BlogCard post={featured} featured />}
-
-        {/* ── Grid Section ── */}
-        {grid.length > 0 && (
+        {featured ? <BlogCard post={featured} featured /> : null}
+        {grid.length > 0 ? (
           <section className="blog-index__grid-section">
             <h2 className="blog-index__grid-heading">More from the Studio</h2>
             <div className="blog-grid">
               {grid.map((post) => (
-                <BlogCard key={post.id} post={post} />
+                <BlogCard key={post.id || post.slug} post={post} />
               ))}
             </div>
           </section>
-        )}
+        ) : null}
       </main>
 
-      {/* ── Footer ── */}
       <footer className="blog-footer">
         <div className="blog-footer__inner">
-          <p>© {new Date().getFullYear()} Fun With Art — Handcrafted in New Delhi</p>
+          <p>© {new Date().getFullYear()} Fun With Art - Handcrafted in New Delhi</p>
           <div className="blog-footer__links">
             <Link to="/contact">Contact</Link>
             <Link to="/support">Support</Link>

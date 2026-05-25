@@ -8,6 +8,7 @@
       name="description"
       content="Art you can hold. Hand-thrown, sustainable, and minimalist terracotta pottery crafted in our New Delhi studio."
     />
+    <meta name="google-signin-client_id" content="576569277083-rkco6ojbej4m1r2mmjtvn71rlq2oph54.apps.googleusercontent.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,9 +16,10 @@
       rel="stylesheet"
     />
     <script>
-      window.__UDAAN_API_BASE__ = '/api';
+      window.__UDAAN_API_BASE__ = '%VITE_API_URL%';
     </script>
     <script src="/shared.js"></script>
+    <script src="https://accounts.google.com/gsi/client?onload=onGoogleLibraryLoad" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
   </head>
   <body>

@@ -71,7 +71,8 @@ def order_list_create(request):
 def order_detail(request, pk):
     """
     GET /api/orders/<id>/ → Retrieve a specific order.
-    Staff can see any order; regular users can only see their own.
+    - Authenticated users: Can view their own orders or staff can view any.
+    - Guest users: Cannot access this endpoint (use guest_order_lookup instead).
     """
     if request.user.is_staff:
         order = get_object_or_404(Order, pk=pk)

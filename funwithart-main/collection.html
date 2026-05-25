@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
 
     <style>
@@ -43,8 +44,8 @@
         .shape-5 { top: 40%; left: 50%; width: 50px; animation: floatC 6s ease-in-out infinite; opacity: 0.5; }
 
         /* WIPE TRANSITION */
-        .page-wipe { position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%; background: var(--accent-color); z-index: 99999; transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1); }
-        .page-wipe.active { transform: translateY(-100%); }
+        .page-wipe { display: none !important; }
+        .page-wipe.active { transform: none !important; }
 
         /* NAV BAR */
         nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
@@ -127,6 +128,18 @@
         .price-row { display: flex; justify-content: space-between; align-items: center; }
         .price { font-family: var(--art-font); color: var(--accent-color); font-weight: 700; letter-spacing: 1px; }
 
+        /* ── Star Ratings ── */
+        .stars-row { margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .star-rating { display: inline-flex; gap: 1px; align-items: center; }
+        .star-rating--sm .star-icon { width: 13px; height: 13px; }
+        .star-rating--md .star-icon { width: 18px; height: 18px; }
+        .star-rating--lg .star-icon { width: 24px; height: 24px; }
+        .star-icon--full { fill: #E8A317; color: #E8A317; }
+        .star-icon--half { fill: none; color: #E8A317; }
+        .star-icon--empty { fill: none; color: #D4C5B2; stroke: #D4C5B2; stroke-width: 0.5px; }
+        .star-rating--empty { font-family: var(--body-font); font-size: 0.75rem; color: #999; font-style: italic; }
+        .review-count-text { font-family: var(--body-font); font-size: 0.8rem; color: #888; margin-left: 2px; }
+
         .product-badge { position: absolute; top: 20px; left: 20px; color: #fff; padding: 6px 14px; font-size: 0.65rem; font-family: var(--body-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 30px; z-index: 10; pointer-events: none; display: flex; align-items: center; gap: 6px; }
         .badge-new { background: var(--primary-color); color: var(--bg-color); }
         
@@ -176,7 +189,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-5" viewBox="0 0 100 100"><path d="M50,0 Q50,50 100,50 Q50,50 50,100 Q50,50 0,50 Q50,50 50,0 Z"/></svg>
     </div>
 
-    <div class="page-wipe" id="page-wipe"><span class="page-wipe-logo">Fun With Art</span></div>
+    <div class="page-wipe" id="page-wipe"></div>
 
     <nav id="main-nav">
         <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
@@ -206,6 +219,7 @@
         <div class="toolbar">
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="latest">Latest</button>
                 <button class="filter-btn" data-filter="decor">Decor</button>
                 <button class="filter-btn" data-filter="vases">Vases</button>
                 <button class="filter-btn" data-filter="pots">Pots</button>
@@ -253,15 +267,15 @@
 
         /* --- FALLBACK CATALOG (used if API is offline) --- */
         const catalogFallback = [
-            { id: "p1", title: "Midnight Leaf Trio", price: 1800, img: "tall-vases.jpg", category: "vases", desc: "Deep, moody, and elegant. These tall vases feature delicate hand-etched leaf patterns.", badge: "Studio Exclusive" },
-            { id: "p2", title: "Kala Tikka Trio", price: 180, img: "Teen Shagun .jpg", category: "decor", desc: "Every aesthetic home needs a little black dot to keep the nazar away. Minimalist but totally desi." },
-            { id: "p3", title: "Nautanki Twins", price: 120, img: "character-pots.jpg", category: "pots", desc: "One with an orange collar, one green, and absolutely zero chill. Pure drama for any plant shelf." },
+            { id: "p1", title: "Midnight Leaf Trio", price: 1800, img: "tall-vases.jpg", category: "vases", desc: "Deep, moody, and elegant. These tall vases feature delicate hand-etched leaf patterns.", badge: "Studio Exclusive", isLatest: true },
+            { id: "p2", title: "Kala Tikka Trio", price: 180, img: "Teen Shagun .jpg", category: "decor", desc: "Every aesthetic home needs a little black dot to keep the nazar away. Minimalist but totally desi.", isLatest: true },
+            { id: "p3", title: "Nautanki Twins", price: 120, img: "character-pots.jpg", category: "pots", desc: "One with an orange collar, one green, and absolutely zero chill. Pure drama for any plant shelf.", isLatest: true },
             { id: "p4", title: "Babu Moshai Desk Set", price: 900, img: "desk-set.jpg", category: "decor", desc: "For that ultimate, respected boss-energy on the work desk." },
             { id: "p5", title: "Serenity Fountain", price: 5000, img: "fountain.jpg", category: "decor", desc: "Bring the soothing sound of water indoors. This tabletop fountain is hand-sculpted in raw terracotta.", badge: "Best Seller" },
             { id: "p6", title: "The Guardians", price: 200, img: "wall-faces.jpg", category: "decor", desc: "A beautiful pair of locally sourced Delhi clay figures, hand-thrown to create protectors for your windowsill." },
             { id: "p7", title: "Nakhrewala Mor", price: 50, img: "Mor ki Diya .png", category: "decor", desc: "Full of attitude and ready to steal the show at Diwali." },
             { id: "p8", title: "Chidiya Rani Pourer", price: 200, img: "Veena ji.png", category: "pots", desc: "Because she is definitely the queen of the garden." },
-            { id: "p9", title: "Terracotta Holder", price: 250, img: "wall-pen-holder.PNG", category: "decor", desc: "Keep your pens, incense, brushes, or even dried flowers perfectly organized.", badge: "Selling Fast" },
+            { id: "p9", title: "Terracotta Holder", price: 250, img: "wall-pen-holder.PNG", category: "decor", desc: "Keep your pens, incense, brushes, or even dried flowers perfectly organized.", badge: "Selling Fast", isLatest: true },
             { id: "p10", title: "Jaali Jaadui Bowls", price: 250, img: "Jaali Jaadui Bowls.png", category: "decor", desc: "Aesthetic, traditional, and casts magical shadows when light hits them." },
             { id: "p11", title: "Bachat Gullak", price: 150, img: "paisa jaisa.png", category: "decor", desc: "Bringing back 90s childhood memories. Store your spare change in pure terracotta." },
             { id: "p12", title: "Tapri Kulhad Set", price: 200, img: "The Tapri kulhad Set.png", category: "decor", desc: "Because these literally scream 'cutting chai in the monsoon'." },
@@ -275,6 +289,31 @@
             { id: "p20", title: "Jalpari Lantern", price: 600, img: "The Jalpari.png", category: "decor", desc: "Machhli jal ki rani hai, and she belongs on your aesthetic shelf." }
         ];
         let catalogDB = catalogFallback;
+
+        function normalizeCategory(category) {
+            const value = String(category || 'decor').trim().toLowerCase();
+            if (value === 'vase') return 'vases';
+            if (value === 'pot') return 'pots';
+            if (value === 'vases' || value === 'pots' || value === 'decor') return value;
+            return 'decor';
+        }
+
+        function normalizeCatalogItem(item) {
+            return {
+                ...item,
+                id: String(item.id),
+                productId: item.productId || item.id,
+                slug: item.slug || '',
+                title: item.title || item.name || '',
+                price: Number(item.price || 0),
+                img: item.img || item.image_url || item.image || '',
+                category: normalizeCategory(item.category),
+                desc: item.desc || item.description || '',
+                isLatest: Boolean(item.isLatest || item.is_new || item.isNew),
+                created_at: item.created_at || '',
+                badge: item.badge || ((item.isLatest || item.is_new || item.isNew) ? 'Latest Drop' : ''),
+            };
+        }
 
         /* --- SAFE LOCAL STORAGE PARSING --- */
         let cartItems = [];  // legacy-shaped from API, loaded async
@@ -302,7 +341,7 @@
                 
                 // NEW: Action Layer with BOTH Add button and Qty Controls
                 const card = `
-                    <div class="product-card" data-category="${item.category}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
+                    <div class="product-card" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
                         ${badgeHTML}
                         <div class="image-wrapper view-link">
                             <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
@@ -323,6 +362,7 @@
                             <div class="price-row">
                                 <span class="price">₹${item.price.toLocaleString('en-IN')}</span>
                             </div>
+                            <div class="stars-row">${window.UdaanAPI.renderStars(item.avg_rating, { showCount: true, count: item.review_count, size: 'sm' })}</div>
                         </div>
                     </div>
                 `;
@@ -338,7 +378,7 @@
                 try {
                     const products = await window.UdaanAPI.fetchProducts();
                     if (Array.isArray(products) && products.length) {
-                        catalogDB = products.map((product) => window.UdaanAPI.mapApiProduct(product));
+                        catalogDB = products.map((product) => normalizeCatalogItem(window.UdaanAPI.mapApiProduct(product)));
                     }
                     wishlistData = await window.UdaanAPI.loadWishlistCache();
                     await loadCartItems();
@@ -346,7 +386,8 @@
                     console.warn('Using fallback catalog:', error);
                 }
             }
-            renderGrid(catalogDB);
+            catalogDB = catalogDB.map(normalizeCatalogItem);
+            renderGrid(getVisibleCatalog());
         }
 
         initCatalog();
@@ -484,44 +525,64 @@
                     if(e.target.closest('.action-layer') || e.target.closest('.quick-save-btn')) return;
                     e.preventDefault();
                     const card = this.closest('.product-card');
-                    const prodData = catalogDB.find(p => p.id === card.getAttribute('data-id'));
+                    const prodData = catalogDB.find(p => String(p.id) === String(card.getAttribute('data-id')));
                     localStorage.setItem(storage.activeProduct, JSON.stringify(prodData));
-                    document.getElementById('page-wipe').classList.add('active');
-                    setTimeout(() => { window.location.href = `/product/${prodData.id}`; }, 620);
+                    window.location.href = `/product/${encodeURIComponent(prodData.slug || prodData.productId || prodData.id)}`;
                 });
             });
         }
 
         /* --- FILTERS & SORT --- */
         let activeCategory = 'all';
+        let activeSort = 'default';
+
+        function sortCatalog(items) {
+            const sorted = [...items];
+            if (activeSort === 'low-high') {
+                sorted.sort((a, b) => a.price - b.price);
+                return sorted;
+            }
+            if (activeSort === 'high-low') {
+                sorted.sort((a, b) => b.price - a.price);
+                return sorted;
+            }
+
+            sorted.sort((a, b) => {
+                if (a.isLatest !== b.isLatest) return Number(b.isLatest) - Number(a.isLatest);
+                const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return bTime - aTime;
+            });
+            return sorted;
+        }
+
+        function getVisibleCatalog() {
+            const filtered = catalogDB.filter((item) => {
+                if (activeCategory === 'all') return true;
+                if (activeCategory === 'latest') return item.isLatest;
+                return item.category === activeCategory;
+            });
+            return sortCatalog(filtered);
+        }
+
         document.querySelectorAll('.filter-btn').forEach(btn => { 
             btn.addEventListener('click', function() { 
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
-                this.classList.add('active'); activeCategory = this.getAttribute('data-filter').toLowerCase(); 
-                
-                document.querySelectorAll('.product-card').forEach(card => { 
-                    const cardCategory = card.getAttribute('data-category').toLowerCase(); 
-                    if (activeCategory === 'all' || cardCategory === activeCategory) { 
-                        card.style.display = 'block'; 
-                    } else { 
-                        card.style.display = 'none';
-                    } 
-                }); 
+                this.classList.add('active');
+                activeCategory = this.getAttribute('data-filter').toLowerCase();
+                renderGrid(getVisibleCatalog());
             }); 
         });
 
         document.getElementById('sort-dropdown').addEventListener('change', function() { 
-            let sortedData = [...catalogDB];
-            if(this.value === 'low-high') sortedData.sort((a,b) => a.price - b.price);
-            else if(this.value === 'high-low') sortedData.sort((a,b) => b.price - a.price);
-            renderGrid(sortedData);
+            activeSort = this.value;
+            renderGrid(getVisibleCatalog());
         });
 
         document.querySelectorAll('.nav-route').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault(); const target = this.getAttribute('data-target');
-                document.getElementById('page-wipe').classList.add('active');
-                setTimeout(() => { window.location.href = target; }, 620);
+                window.location.href = target;
             });
         });
 

@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from orders.models import Order
 from .models import Payment, Refund
@@ -33,17 +33,25 @@ def get_razorpay_client():
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def create_payment_order(request):
     """
-    Create a Razorpay order for given order
+    Create a Razorpay order for given order (supports guest & authenticated users).
     POST /api/payments/create-order/
+    Guests: Include order_id from guest order.
+    Authenticated: Can pay for own orders or guest orders.
     """
     serializer = PaymentCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     
     order_id = serializer.validated_data['order_id']
-    order = get_object_or_404(Order, id=order_id)
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return Response(
+            {'error': 'Order not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     
     # Verify order belongs to user or is guest order
     if order.user and order.user != request.user:
@@ -79,12 +87,12 @@ def create_payment_order(request):
             )
         
         response_data = {
-            'razorpay_order_id': razorpay_order['id'],
-            'amount': razorpay_order['amount'],
-            'currency': razorpay_order['currency'],
-            'receipt': razorpay_order['receipt'],
+            'razorpay_order_id': payment.razorpay_order_id,
+            'amount': int(order.total_amount * 100),
+            'currency': 'INR',
+            'receipt': f'order_{order.id}',
             'key_id': settings.RAZORPAY_KEY_ID,
-            'name': 'Udaan Studio',
+            'name': 'Fun with Art',
             'description': f'Payment for Order #{order.id}',
             'prefill': {
                 'email': order.contact_email,
@@ -102,10 +110,10 @@ def create_payment_order(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def verify_payment(request):
     """
-    Verify Razorpay payment and update order status
+    Verify Razorpay payment and update order status (supports guest & authenticated users).
     POST /api/payments/verify/
     """
     serializer = PaymentVerificationSerializer(data=request.data)

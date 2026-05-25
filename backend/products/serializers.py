@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Product, Review
+
+from .models import Product, ProductQuestion, Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -21,9 +22,53 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'user', 'product', 'created_at', 'is_verified_buyer']
 
-    def create(self, validated_data):
-        # is_verified_buyer is read-only, so we don't need to pass it
-        return super().create(validated_data)
+
+class ProductQuestionSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    answered_by_name = serializers.CharField(source='answered_by.username', read_only=True)
+    is_answered = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ProductQuestion
+        fields = [
+            'id',
+            'product',
+            'user',
+            'user_name',
+            'asker_name',
+            'question',
+            'answer_text',
+            'answered_by',
+            'answered_by_name',
+            'answered_at',
+            'created_at',
+            'updated_at',
+            'is_answered',
+        ]
+        read_only_fields = [
+            'id',
+            'product',
+            'user',
+            'user_name',
+            'answered_by',
+            'answered_by_name',
+            'answered_at',
+            'created_at',
+            'updated_at',
+            'is_answered',
+        ]
+
+
+class ProductQuestionAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductQuestion
+        fields = ['answer_text']
+
+    def validate_answer_text(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Answer text cannot be empty.')
+        return value
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -31,12 +76,15 @@ class ProductSerializer(serializers.ModelSerializer):
     isNew = serializers.BooleanField(source='is_new', read_only=True)
     avg_rating = serializers.FloatField(read_only=True)
     review_count = serializers.IntegerField(read_only=True)
+    category = serializers.CharField(source='category.name', default='', read_only=True)
+    slug = serializers.CharField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
             'id',
             'name',
+            'slug',
             'description',
             'price',
             'stock',

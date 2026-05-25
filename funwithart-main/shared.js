@@ -127,14 +127,24 @@
   }
 
   async function loginUser({ username, password }) {
-    const payload = await request('/auth/login/', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-    setAuth({ token: payload.token, user: payload.user });
-    await syncGuestWishlistToServer();
-    return payload;
-  }
+   const payload = await request('/auth/login/', {
+     method: 'POST',
+     body: JSON.stringify({ username, password }),
+   });
+   setAuth({ token: payload.token, user: payload.user });
+   await syncGuestWishlistToServer();
+   return payload;
+ }
+
+ async function googleLogin(idToken) {
+   const payload = await request('/auth/google/', {
+     method: 'POST',
+     body: JSON.stringify({ id_token: idToken }),
+   });
+   setAuth({ token: payload.token, user: payload.user });
+   await syncGuestWishlistToServer();
+   return payload;
+ }
 
   async function logoutUser() {
     try {
@@ -146,6 +156,20 @@
     } finally {
       setAuth(null);
     }
+  }
+
+  async function requestPasswordReset(email) {
+    return request('/auth/password_reset/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async function confirmPasswordReset(uidb64, token, newPassword) {
+    return request('/auth/password_reset_confirm/', {
+      method: 'POST',
+      body: JSON.stringify({ uidb64, token, new_password: newPassword }),
+    });
   }
 
   async function fetchBlogPosts() {
@@ -163,6 +187,47 @@
       setAuth({ ...auth, user: payload });
     }
     return payload;
+  }
+
+  async function fetchCurrentProfile() {
+    return request('/users/profile/');
+  }
+
+  async function updateCurrentUser(payload = {}) {
+    const nextUser = {};
+    const nextProfile = {};
+
+    if (payload.username != null) {
+      nextUser.username = String(payload.username).trim();
+    }
+
+    if (payload.phone != null) {
+      nextProfile.phone = String(payload.phone).trim();
+    }
+
+    let user = getAuth()?.user || null;
+    let profile = null;
+
+    if (Object.keys(nextUser).length > 0) {
+      user = await request('/auth/me/', {
+        method: 'PATCH',
+        body: JSON.stringify(nextUser),
+      });
+
+      const auth = getAuth();
+      if (auth) {
+        setAuth({ ...auth, user });
+      }
+    }
+
+    if (Object.keys(nextProfile).length > 0) {
+      profile = await request('/users/profile/', {
+        method: 'PATCH',
+        body: JSON.stringify(nextProfile),
+      });
+    }
+
+    return { ...(user || {}), ...(profile || {}) };
   }
 
   async function fetchOrders() {
@@ -187,11 +252,36 @@
     return request(`/workshops/${workshopId}/`);
   }
 
-  async function bookWorkshop(workshopId, seats = 1) {
-    return request('/workshops/book/', {
+  async function initiateWorkshopPayment(workshopId, seats = 1) {
+    return request('/workshops/initiate-payment/', {
       method: 'POST',
-      body: JSON.stringify({ workshop: workshopId, seats }),
+      body: JSON.stringify({ workshop_id: workshopId, seats }),
     });
+  }
+
+  async function verifyWorkshopPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
+    return request('/workshops/payment/verify/', {
+      method: 'POST',
+      body: JSON.stringify({ razorpay_order_id, razorpay_payment_id, razorpay_signature }),
+    });
+  }
+
+  async function initiateOrderPayment(orderId) {
+    return request('/payments/create-order/', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId }),
+    });
+  }
+
+  async function verifyOrderPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
+    return request('/payments/verify/', {
+      method: 'POST',
+      body: JSON.stringify({ razorpay_order_id, razorpay_payment_id, razorpay_signature }),
+    });
+  }
+
+  async function fetchMyBookings() {
+    return request('/workshops/bookings/');
   }
 
   async function fetchWishlist() {
@@ -219,6 +309,8 @@
       category: (product.category || 'decor').toLowerCase(),
       desc: product.description || '',
       badge: product.is_new || product.isNew ? 'New' : '',
+      avg_rating: product.avg_rating != null ? Number(product.avg_rating) : null,
+      review_count: product.review_count != null ? Number(product.review_count) : 0,
     };
   }
 
@@ -459,6 +551,11 @@
     if (_cartRefreshPromise) {
       await _cartRefreshPromise;
       _cartRefreshPromise = null;
+      // Update badge text now that we have the fresh count
+      if (cartCountEl) {
+        cartCountEl.innerText = _cachedCartCount;
+        cartCountEl.style.opacity = _cachedCartCount > 0 ? '1' : '0';
+      }
     }
 
     return { cartTotal: _cachedCartCount, wishlistCount: wishlistItems.length, wishlistItems };
@@ -468,7 +565,7 @@
     root.querySelectorAll('[data-account-link]').forEach((link) => {
       const auth = getAuth();
       const loggedOutHref = link.dataset.accountHrefLoggedOut || 'login.html';
-      const loggedInHref = link.dataset.accountHrefLoggedIn || 'orders.html';
+      const loggedInHref = link.dataset.accountHrefLoggedIn || 'account.html';
       const dest = auth?.user ? loggedInHref : loggedOutHref;
 
       if (link.classList.contains('nav-route')) {
@@ -606,6 +703,129 @@
     });
   }
 
+  // ── Reviews API helpers ───────────────────────────────────────────────────
+
+  /**
+   * Render star rating HTML (supports half-stars).
+   * @param {number|null} rating  e.g. 4.5, 3.0, null
+   * @param {object} [opts]
+   * @param {boolean} [opts.showCount]  append " (24)" after stars
+   * @param {number} [opts.count]       review count
+   * @param {string} [opts.size]        'sm' | 'md' | 'lg' (default 'sm')
+   * @param {boolean} [opts.clickable]  show "Write a review" / "No reviews yet" fallback
+   * @returns {string} HTML string
+   */
+  function renderStars(rating, opts = {}) {
+    const { showCount, count, size = 'sm', clickable } = opts;
+    const countVal = count != null ? Number(count) : 0;
+    const ratingVal = rating != null ? Number(rating) : null;
+
+    if (ratingVal == null && !clickable) {
+      return `<span class="star-rating star-rating--${size} star-rating--empty">No reviews yet</span>`;
+    }
+
+    if (ratingVal == null && clickable) {
+      return `<span class="star-rating star-rating--${size} star-rating--empty">No reviews yet</span>`;
+    }
+
+    let html = `<span class="star-rating star-rating--${size}">`;
+    const full = Math.floor(ratingVal);
+    const half = ratingVal - full >= 0.25 && ratingVal - full < 0.75;
+    const showFullStar = ratingVal - full >= 0.75;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < full) {
+        html += `<svg class="star-icon star-icon--full" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+      } else if (i === full && half) {
+        html += `<svg class="star-icon star-icon--half" viewBox="0 0 24 24"><defs><linearGradient id="half-grad"><stop offset="50%" stop-color="currentColor"/><stop offset="50%" stop-color="transparent" stop-opacity="0.3"/></linearGradient></defs><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#half-grad)" stroke="currentColor" stroke-width="0.5"/></svg>`;
+      } else if (i === full && showFullStar) {
+        html += `<svg class="star-icon star-icon--full" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+      } else {
+        html += `<svg class="star-icon star-icon--empty" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+      }
+    }
+
+    html += `</span>`;
+
+    if (showCount && countVal > 0) {
+      html += ` <span class="review-count-text">(${countVal})</span>`;
+    }
+
+    return html;
+  }
+
+  async function fetchProductReviews(productId, page = 1, pageSize = 5) {
+    return request(`/products/${productId}/reviews/?page=${page}&page_size=${pageSize}`);
+  }
+
+  async function fetchReviewSummary(productId) {
+    return request(`/products/${productId}/reviews/summary/`);
+  }
+
+  async function submitReview(productId, { rating, title, comment }) {
+    return request(`/products/${productId}/reviews/`, {
+      method: 'POST',
+      body: JSON.stringify({ rating, title: title || '', comment: comment || '' }),
+    });
+  }
+
+  async function fetchProductQuestions(productId) {
+    return request(`/products/${productId}/questions/`);
+  }
+
+  async function submitProductQuestion(productId, { askerName, question }) {
+    return request(`/products/${productId}/questions/`, {
+      method: 'POST',
+      body: JSON.stringify({
+        asker_name: askerName || 'Anonymous',
+        question: question || '',
+      }),
+    });
+  }
+
+  async function answerProductQuestion(productId, questionId, { answerText }) {
+    return request(`/products/${productId}/questions/${questionId}/answer/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ answer_text: answerText || '' }),
+    });
+  }
+
+  async function deleteProductQuestion(productId, questionId) {
+    return request(`/products/${productId}/questions/${questionId}/answer/`, {
+      method: 'DELETE',
+    });
+  }
+  
+  function updateNavLinks() {
+    const isLoggedIn = window.UdaanAPI?.isLoggedIn();
+    const signinLink = document.getElementById('nav-signin-link');
+    const signupLink = document.getElementById('nav-signup-link');
+
+    if (isLoggedIn) {
+        if (signinLink) {
+            signinLink.innerText = 'Account';
+            signinLink.href = '/account';
+            signinLink.classList.add('is-logged-in');
+        }
+        if (signupLink) {
+            signupLink.innerText = 'My Account';
+            signupLink.href = '/account';
+        }
+    } else {
+        // This part ensures that if they logout, it switches back to Sign In
+        if (signinLink) {
+            signinLink.innerText = 'Sign In';
+            signinLink.href = '/login';
+            signinLink.classList.remove('is-logged-in');
+        }
+    }
+}
+
+// Run it immediately
+document.addEventListener('DOMContentLoaded', updateNavLinks);
+// Run it again after a slight delay just in case the API is slow to initialize
+window.addEventListener('load', updateNavLinks);
+
   function wireSiteSearchForms(root = document) {
     root.querySelectorAll('[data-site-search]').forEach((form) => {
       if (form.dataset.searchWired === 'true') return;
@@ -627,6 +847,75 @@
       });
     });
   }
+
+  // ── Google Sign-In global helpers ───────────────────────────────────────
+
+  /**
+   * Default credential callback — used on pages other than /login.
+   * Overridden by login.html with a page-specific handler that manipulates
+   * form buttons and shows inline errors.
+   */
+  window.handleGoogleCredentialResponse = async function (response) {
+    const idToken = response.credential;
+    if (!idToken) {
+      console.error('Google sign-in did not return a credential.');
+      return;
+    }
+
+    try {
+      await window.UdaanAPI.googleLogin(idToken);
+      if (typeof window.showToast === 'function') {
+        window.showToast('Signed in with Google!');
+      }
+      // Redirect to account after a short delay
+      setTimeout(() => { window.location.href = '/account'; }, 800);
+    } catch (error) {
+      console.error('Google sign-in failed:', error);
+      if (typeof window.showToast === 'function') {
+        window.showToast(error.message || 'Google sign-in failed.');
+      }
+    }
+  };
+
+  /**
+   * Called by the GIS SDK once it has loaded (via the `onload` query param
+   * on the script tag).  Initialises the Google One-Tap / Sign-In button on
+   * pages that include the #googleSignInDiv container.
+   */
+  window.onGoogleLibraryLoad = function () {
+    const clientIdMeta = document.querySelector('meta[name="google-signin-client_id"]');
+    const clientId = (clientIdMeta && clientIdMeta.content) || 'YOUR_GOOGLE_CLIENT_ID';
+
+    if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+      console.warn(
+        'Google Sign-In client ID not configured. ' +
+        'Add <meta name="google-signin-client_id" content="..."> or set GOOGLE_CLIENT_ID.'
+      );
+    }
+
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: window.handleGoogleCredentialResponse,
+      auto_select: false,
+      context: 'signin',
+    });
+
+    const btnContainer = document.getElementById('googleSignInDiv');
+    if (btnContainer) {
+      google.accounts.id.renderButton(btnContainer, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        width: btnContainer.offsetWidth > 300 ? 300 : btnContainer.offsetWidth,
+      });
+    }
+
+    // Non-blocking One Tap prompt (appears top-right)
+    google.accounts.id.prompt();
+  };
+
+  // ── End Google Sign-In ──────────────────────────────────────────────────
 
   document.addEventListener('DOMContentLoaded', () => {
     wireAccountNav();
@@ -662,14 +951,25 @@
     isLoggedIn,
     registerUser,
     loginUser,
+    googleLogin,
     logoutUser,
+    requestPasswordReset,
+    confirmPasswordReset,
+    fetchBlogPosts,
+    fetchBlogPost,
     fetchCurrentUser,
+    fetchCurrentProfile,
+    updateCurrentUser,
     fetchOrders,
     fetchOrder,
     guestOrderLookup,
     fetchWorkshops,
     fetchWorkshop,
-    bookWorkshop,
+    initiateWorkshopPayment,
+    verifyWorkshopPayment,
+    initiateOrderPayment,
+    verifyOrderPayment,
+    fetchMyBookings,
     fetchWishlist,
     addToWishlist,
     removeFromWishlist,
@@ -689,6 +989,15 @@
     getCartItemsLegacy,
     mapCartItemToLegacy,
     getCartCount,
+    // Reviews API
+    renderStars,
+    fetchProductReviews,
+    fetchReviewSummary,
+    submitReview,
+    fetchProductQuestions,
+    submitProductQuestion,
+    answerProductQuestion,
+    deleteProductQuestion,
     // Badges
     updateBadges,
     wireAccountNav,

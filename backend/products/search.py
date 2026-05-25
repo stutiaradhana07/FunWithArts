@@ -15,14 +15,14 @@ def build_product_queryset(*, search='', category='', is_new=None):
 
     category = (category or '').strip()
     if category:
-        qs = qs.filter(category__iexact=category)
+        qs = qs.filter(category__name__iexact=category)
 
     search = (search or '').strip()
     if search:
         qs = qs.filter(
             Q(name__icontains=search)
             | Q(description__icontains=search)
-            | Q(category__icontains=search)
+            | Q(category__name__icontains=search)
         )
 
     if is_new is True:

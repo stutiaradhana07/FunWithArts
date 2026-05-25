@@ -32,18 +32,25 @@
 
         /* NAV BAR */
         .announcement-bar { background: var(--primary-color); color: #fff; text-align: center; padding: 10px 5%; font-family: var(--art-font); font-size: clamp(0.6rem, 1vw, 0.7rem); letter-spacing: 2px; text-transform: uppercase; }
-        nav { background: rgba(234, 230, 219, 0.85); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; }
-        .english-part { font-family: var(--header-font); font-weight: 700; font-size: 1.8rem; letter-spacing: -1px; }
-        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: 2.2rem; position: relative; top: 2px; }
-        .nav-actions { display: flex; align-items: center; gap: 20px; }
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold; }
+        .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color); }
+        .nav-actions { display: flex; align-items: center; gap: 15px; margin-left: 30px; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent-color); color: var(--accent-color); }
         .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: 0.3s; color: #111; text-decoration: none;}
-        .nav-icon:hover { background: rgba(0,0,0,0.05); }
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
         .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: #111; stroke-width: 1.5; }
         .badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; opacity: 0; transition: 0.3s; }
 
         /* BREADCRUMBS */
-        .breadcrumbs { padding: 30px 5% 0; font-family: var(--art-font); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; }
+        .breadcrumbs { padding: 118px 5% 0; font-family: var(--art-font); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; }
         .breadcrumbs a { color: #111; text-decoration: none; transition: 0.3s; }
         .breadcrumbs a:hover { color: var(--accent-color); }
 
@@ -133,13 +140,146 @@
             .pdp-gallery { position: relative; top: 0; width: 100%; }
             .pdp-title { font-size: 3rem; }
         }
+
+        /* ── Star Ratings (shared) ── */
+        .stars-row { margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .star-rating { display: inline-flex; gap: 1px; align-items: center; }
+        .star-rating--sm .star-icon { width: 13px; height: 13px; }
+        .star-rating--md .star-icon { width: 18px; height: 18px; }
+        .star-rating--lg .star-icon { width: 24px; height: 24px; }
+        .star-icon--full { fill: #E8A317; color: #E8A317; }
+        .star-icon--half { fill: none; color: #E8A317; }
+        .star-icon--empty { fill: none; color: #D4C5B2; stroke: #D4C5B2; stroke-width: 0.5px; }
+        .star-rating--empty { font-family: var(--body-font); font-size: 0.75rem; color: #999; font-style: italic; }
+        .review-count-text { font-family: var(--body-font); font-size: 0.8rem; color: #888; margin-left: 2px; }
+
+        /* ── PDP Rating Row ── */
+        .pdp-rating-row { display: flex; align-items: center; gap: 10px; margin-top: -15px; margin-bottom: 20px; }
+        .pdp-rating-row .review-count-link { font-family: var(--body-font); font-size: 0.9rem; color: var(--accent-color); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; transition: color 0.2s; }
+        .pdp-rating-row .review-count-link:hover { color: #111; }
+
+        /* ── Reviews Section ── */
+        .reviews-wrapper { max-width: 1500px; margin: 0 auto 80px; padding: 0 5%; }
+        .reviews-section-header { font-family: var(--header-font); font-size: 2.4rem; font-style: italic; color: #111; margin-bottom: 40px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.08); }
+        .reviews-layout { display: grid; grid-template-columns: 320px 1fr; gap: 60px; align-items: start; }
+
+        /* Summary Dashboard */
+        .review-summary { background: rgba(253,251,249,0.9); border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; padding: 35px 30px; backdrop-filter: blur(8px); }
+        .summary-big-rating { text-align: center; margin-bottom: 25px; }
+        .summary-big-number { font-family: var(--header-font); font-size: 4rem; font-style: italic; color: #111; line-height: 1; }
+        .summary-big-stars { margin: 8px 0; }
+        .summary-total { font-family: var(--body-font); font-size: 0.85rem; color: #888; }
+        .summary-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; }
+        .breakdown-row { display: flex; align-items: center; gap: 8px; font-family: var(--body-font); font-size: 0.8rem; color: #666; }
+        .breakdown-label { width: 30px; text-align: right; }
+        .breakdown-bar-track { flex: 1; height: 8px; background: #e8e4dc; border-radius: 10px; overflow: hidden; }
+        .breakdown-bar-fill { height: 100%; background: #E8A317; border-radius: 10px; transition: width 0.6s cubic-bezier(0.19,1,0.22,1); }
+        .breakdown-count { width: 24px; text-align: left; color: #aaa; font-size: 0.75rem; }
+        .write-review-btn { width: 100%; padding: 16px; border: 2px solid #111; background: transparent; border-radius: 50px; font-family: var(--art-font); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #111; cursor: pointer; transition: all 0.3s; }
+        .write-review-btn:hover { background: #111; color: #fff; }
+        .already-reviewed-msg { text-align: center; font-family: var(--body-font); font-size: 0.85rem; color: #888; font-style: italic; padding: 10px 0; }
+
+        /* Review Feed */
+        .review-feed { display: flex; flex-direction: column; gap: 24px; }
+        .review-empty-shell { background: #fff; border: 1px dashed rgba(0,0,0,0.12); border-radius: 16px; padding: 28px; text-align: center; }
+        .review-empty-title { font-family: var(--header-font); font-size: 1.5rem; font-style: italic; color: #111; margin-bottom: 8px; }
+        .review-empty-copy { font-family: var(--body-font); font-size: 0.95rem; color: #666; line-height: 1.6; }
+        .review-card-item { background: #fff; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 28px; transition: box-shadow 0.3s; }
+        .review-card-item:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
+        .review-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .review-card-header .star-rating { margin-right: 4px; }
+        .reviewer-name { font-family: var(--art-font); font-size: 0.85rem; font-weight: bold; color: #111; }
+        .verified-badge { display: inline-flex; align-items: center; gap: 3px; background: #e8f5e9; color: #2e7d32; font-size: 0.65rem; font-family: var(--body-font); font-weight: bold; padding: 3px 10px; border-radius: 20px; }
+        .review-date { font-family: var(--body-font); font-size: 0.75rem; color: #aaa; }
+        .review-title { font-family: var(--header-font); font-size: 1.05rem; font-style: italic; color: #111; margin-bottom: 8px; }
+        .review-comment { font-family: var(--body-font); font-size: 0.95rem; color: #555; line-height: 1.6; }
+        .load-more-row { text-align: center; padding: 20px 0; }
+        .load-more-btn { padding: 14px 45px; border: 1px solid #ccc; background: transparent; border-radius: 50px; font-family: var(--art-font); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #666; cursor: pointer; transition: all 0.3s; }
+        .load-more-btn:hover { border-color: #111; color: #111; }
+        .no-reviews-msg { text-align: center; padding: 60px 20px; font-family: var(--body-font); color: #999; font-size: 1rem; font-style: italic; }
+        .reviews-loading { text-align: center; padding: 30px; font-family: var(--body-font); color: #aaa; }
+
+        /* Questions */
+        .questions-wrapper { max-width: 1500px; margin: 0 auto 90px; padding: 0 5%; }
+        .questions-header { font-family: var(--header-font); font-size: 2.4rem; font-style: italic; color: #111; margin-bottom: 28px; }
+        .questions-layout { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 36px; align-items: start; }
+        .question-form-card, .question-list-card { background: rgba(253,251,249,0.92); border: 1px solid rgba(0,0,0,0.06); border-radius: 20px; padding: 28px; backdrop-filter: blur(8px); }
+        .question-form-card h3, .question-list-card h3 { font-family: var(--header-font); font-size: 1.5rem; font-style: italic; color: #111; margin-bottom: 10px; }
+        .question-intro { font-family: var(--body-font); font-size: 0.95rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+        .qa-field { margin-bottom: 14px; }
+        .qa-field label { display: block; font-family: var(--art-font); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 6px; font-weight: bold; }
+        .qa-field input, .qa-field textarea { width: 100%; padding: 14px 16px; border: 1px solid #ddd; border-radius: 12px; font-family: var(--body-font); font-size: 0.95rem; outline: none; transition: border-color 0.2s; resize: vertical; background: #fff; }
+        .qa-field input:focus, .qa-field textarea:focus { border-color: var(--accent-color); }
+        .qa-submit-btn, .qa-answer-btn, .qa-delete-btn { width: 100%; padding: 15px 18px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-size: 0.82rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
+        .qa-submit-btn:hover, .qa-answer-btn:hover { background: var(--accent-color); color: #111; }
+        .qa-delete-btn { background: transparent; color: #7f3029; border: 1px solid rgba(127, 48, 41, 0.28); }
+        .qa-delete-btn:hover { background: #7f3029; color: #fff; }
+        .qa-empty { font-family: var(--body-font); color: #888; font-size: 0.98rem; line-height: 1.6; }
+        .qa-thread { display: flex; flex-direction: column; gap: 18px; }
+        .qa-item { background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; }
+        .qa-meta { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .qa-name { font-family: var(--art-font); font-size: 0.82rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #111; }
+        .qa-date { font-family: var(--body-font); font-size: 0.8rem; color: #999; }
+        .qa-question, .qa-answer-text { font-family: var(--body-font); font-size: 0.96rem; color: #444; line-height: 1.7; }
+        .qa-answer-block { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.08); }
+        .qa-answer-label { font-family: var(--art-font); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-color); font-weight: bold; margin-bottom: 8px; }
+        .qa-answer-form { margin-top: 14px; }
+        .qa-manager-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+        .qa-status { margin-top: 10px; font-family: var(--body-font); font-size: 0.85rem; color: #888; }
+
+        /* ── Write Review Modal ── */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 4000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-dialog { background: #fff; border-radius: 24px; padding: 40px; max-width: 520px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.35s cubic-bezier(0.19,1,0.22,1); }
+        .modal-overlay.active .modal-dialog { transform: translateY(0); }
+        .modal-close-btn { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 2rem; color: #999; cursor: pointer; transition: color 0.2s; line-height: 1; }
+        .modal-close-btn:hover { color: #111; }
+        .modal-title { font-family: var(--header-font); font-size: 1.8rem; font-style: italic; color: #111; margin-bottom: 8px; }
+        .modal-subtitle { font-family: var(--body-font); font-size: 0.9rem; color: #888; margin-bottom: 24px; }
+        .modal-interactive-stars { display: flex; gap: 6px; justify-content: center; margin-bottom: 24px; }
+        .modal-interactive-stars .interactive-star { width: 40px; height: 40px; cursor: pointer; transition: transform 0.15s ease; }
+        .modal-interactive-stars .interactive-star:hover { transform: scale(1.2); }
+        .modal-interactive-stars .interactive-star.active { fill: #E8A317; color: #E8A317; }
+        .modal-field { margin-bottom: 18px; }
+        .modal-field label { display: block; font-family: var(--art-font); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 6px; font-weight: bold; }
+        .modal-field input, .modal-field textarea { width: 100%; padding: 14px 16px; border: 1px solid #ddd; border-radius: 12px; font-family: var(--body-font); font-size: 0.95rem; outline: none; transition: border-color 0.2s; resize: vertical; }
+        .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent-color); }
+        .modal-field textarea { min-height: 100px; }
+        .modal-submit-btn { width: 100%; padding: 16px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.3s; }
+        .modal-submit-btn:hover { background: var(--accent-color); color: #111; }
+        .modal-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal-error { color: #c62828; font-size: 0.85rem; font-family: var(--body-font); text-align: center; margin-top: 10px; }
+        .toast.toast--success { background: #2e7d32; }
+
+        @media (max-width: 900px) {
+            .reviews-layout { grid-template-columns: 1fr; gap: 40px; }
+            .review-summary { order: -1; }
+            .questions-layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .nav-links { display: none; }
+            .nav-actions { margin-left: 16px; gap: 10px; }
+            .nav-account-link { display: none; }
+            .breadcrumbs { padding-top: 104px; }
+            .modal-dialog { padding: 28px 20px; }
+            .modal-interactive-stars .interactive-star { width: 32px; height: 32px; }
+        }
     </style>
 </head>
 <body>
 
     <nav>
         <a href="/" class="logo-fusion"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-links desktop-links">
+            <a href="/">Home</a>
+            <a href="/collection" class="active">Collection</a>
+            <a href="/studio">Studio</a>
+            <a href="/blogs">Blogs</a>
+            <a href="/login?tab=register" data-account-link data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
+        </div>
         <div class="nav-actions">
+            <a href="/login" class="nav-account-link" data-account-link data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="/search" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
             <a href="/wishlist" class="nav-icon" aria-label="Open Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
             <a href="/cart" class="nav-icon" aria-label="Open Cart"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
         </div>
@@ -157,6 +297,77 @@
         </div>
     </div>
 
+    <!-- ═══ Reviews Section ═══ -->
+    <div class="reviews-wrapper" id="reviews-section">
+        <h2 class="reviews-section-header">Customer Reviews</h2>
+        <div class="reviews-layout">
+            <!-- Summary Dashboard -->
+            <div class="review-summary" id="review-summary">
+                <div class="reviews-loading" id="summary-loading">Loading reviews...</div>
+            </div>
+            <!-- Review Feed -->
+            <div class="review-feed" id="review-feed">
+                <div class="reviews-loading" id="feed-loading">Loading reviews...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Write a Review Modal ═══ -->
+    <div class="questions-wrapper" id="questions-section">
+        <h2 class="questions-header">Questions About This Piece</h2>
+        <div class="questions-layout">
+            <div class="question-form-card">
+                <h3>Ask a Question</h3>
+                <p class="question-intro">Have a doubt about size, finish, care, styling, or shipping? Ask here and the page manager can answer below.</p>
+                <div class="qa-field">
+                    <label for="qa-name-input">Your Name</label>
+                    <input type="text" id="qa-name-input" placeholder="Enter your name">
+                </div>
+                <div class="qa-field">
+                    <label for="qa-question-input">Question</label>
+                    <textarea id="qa-question-input" rows="4" placeholder="Ask anything about this product"></textarea>
+                </div>
+                <button class="qa-submit-btn" id="qa-submit-btn">Post Question</button>
+                <p class="qa-status" id="qa-status-msg">Questions stay visible on this product page.</p>
+            </div>
+            <div class="question-list-card">
+                <h3>Questions & Answers</h3>
+                <div id="qa-thread-list" class="qa-thread">
+                    <p class="qa-empty">No questions yet. Be the first to ask about this product.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="review-modal-overlay">
+        <div class="modal-dialog">
+            <button class="modal-close-btn" id="review-modal-close" aria-label="Close">&times;</button>
+            <h3 class="modal-title">Write a Review</h3>
+            <p class="modal-subtitle" id="modal-product-name">Share your thoughts about this piece</p>
+            <div class="modal-field">
+                <label for="review-name-input">Your Name</label>
+                <input type="text" id="review-name-input" placeholder="How should your review appear?">
+            </div>
+            <div class="modal-interactive-stars" id="modal-stars">
+                <svg class="interactive-star" data-star="1" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="interactive-star" data-star="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="interactive-star" data-star="3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="interactive-star" data-star="4" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="interactive-star" data-star="5" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="modal-field">
+                <label for="review-title-input">Title (optional)</label>
+                <input type="text" id="review-title-input" placeholder="Summarize your experience" maxlength="200">
+            </div>
+            <div class="modal-field">
+                <label for="review-comment-input">Your Review</label>
+                <textarea id="review-comment-input" placeholder="Tell others about this piece - the feel, the glaze, the packaging." rows="4"></textarea>
+            </div>
+            <button class="modal-submit-btn" id="review-submit-btn">Submit Review</button>
+            <div class="modal-error" id="review-modal-error" style="display:none;"></div>
+        </div>
+    </div>
+
     <div class="full-image-overlay" id="full-image-overlay">
         <button class="full-image-close-btn" id="full-image-close" aria-label="Close view">&times;</button>
         <button class="nav-arrow fs-arrow arrow-left" id="fs-arrow-left" aria-label="Previous Image">&larr;</button>
@@ -166,6 +377,7 @@
 
     <div class="footer-bottom"><p>&copy; 2026 FUN WITH ART Ceramics. built in DELHI, India.</p></div>
 
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
     <script>
         const lenis = new Lenis({ duration: 1.2, smooth: true });
@@ -173,9 +385,11 @@
 
         setTimeout(() => { document.body.classList.add('loaded'); }, 300);
 
-        function showToast(message) {
+        function showToast(message, type) {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message;
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (type === 'success' ? ' toast--success' : '');
+            toast.innerHTML = message;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
@@ -194,16 +408,18 @@
         updateBadges();
 
         const catalogFallback = [
-            { id: "p1", title: "The Guardians", price: 95.00, img: "wall-faces.jpg", desc: "A beautiful pair of locally sourced Delhi clay figures, hand-thrown to create protectors for your windowsill. Each guardian is sculpted slow with its own subtle texture and personality, kilned to perfection and waiting to hold intention in your home." },
-            { id: "p2", title: "Emerald Duo", price: 55.00, img: "wall-green-pots.jpg", desc: "Dip your space in serenity with these high-gloss emerald glazed pots. Hand-sculpted slow to create a stunning depth that catches the morning light beautifully." },
-            { id: "p3", title: "The Mini Army", price: 140.00, img: "wall-group.png", desc: "A tiny squad of absolute cuteness! This miniature army is hand-thrown on a custom-made tiny pottery wheel in Delhi." },
-            { id: "p4", title: "Terracotta Holder", price: 35.00, img: "wall-pen-holder.png", desc: "Keep your pens, incense, brushes, or even dried flowers perfectly organized with this simple, functional piece." },
-            { id: "p5", title: "Serenity Fountain", price: 150.00, img: "fountain.jpg", desc: "Bring the soothing sound of water indoors. This tabletop fountain is hand-sculpted in raw terracotta in our Delhi studio." },
-            { id: "p6", title: "Midnight Leaf Trio", price: 85.00, img: "tall-vases.jpg", desc: "Deep, moody, and elegant. These tall vases feature delicate hand-etched leaf patterns." },
-            { id: "p7", title: "The Collector's Grid", price: 120.00, img: "miniatures.jpg", desc: "A curated set of miniature forms designed to be displayed together as an aesthetic shelf exhibit." },
-            { id: "p8", title: "Tribal Bud Vases", price: 60.00, img: "geometric-trio.jpg", desc: "Geometric patterns meet organic curves. These striking bud vases are perfect for single stems or propagating cuttings." },
-            { id: "p9", title: "The Gossip Pair", price: 45.00, img: "character-pots.jpg", desc: "Two uniquely shaped pots that look like they're sharing a secret. Kiln-fired for longevity." },
-            { id: "p10", title: "Noir Desk Series", price: 55.00, img: "desk-set.jpg", desc: "Sleek, black, and incredibly chic. Hand-built from heavy Delhi clay and finished with a moody matte black glaze." }
+            { id: "kala-tikka-trio", slug: "kala-tikka-trio", title: "Kala Tikka Trio", price: 180.00, img: "Teen Shagun .jpg", desc: "Every aesthetic home needs a little black dot to keep the nazar away. Minimalist but totally desi." },
+            { id: "bhukkad-nandi", slug: "bhukkad-nandi", title: "Bhukkad Nandi", price: 500.00, img: "Bhala Nandi.png", desc: "Perfect for holding your keys, or just a massive pile of snacks." },
+            { id: "nautanki-twins", slug: "nautanki-twins", title: "Nautanki Twins", price: 120.00, img: "character-pots.jpg", desc: "One with an orange collar, one green, and absolutely zero chill. Pure drama for any plant shelf." },
+            { id: "terracotta-holder", slug: "terracotta-holder", title: "Terracotta Holder", price: 250.00, img: "wall-pen-holder.PNG", desc: "Keep your pens, incense, brushes, or even dried flowers perfectly organized." },
+            { id: "the-guardians", slug: "the-guardians", title: "The Guardians", price: 95.00, img: "wall-faces.jpg", desc: "A beautiful pair of locally sourced Delhi clay figures, hand-thrown to create protectors for your windowsill. Each guardian is sculpted slow with its own subtle texture and personality, kilned to perfection and waiting to hold intention in your home." },
+            { id: "emerald-duo", slug: "emerald-duo", title: "Emerald Duo", price: 55.00, img: "wall-green-pots.jpg", desc: "Dip your space in serenity with these high-gloss emerald glazed pots. Hand-sculpted slow to create a stunning depth that catches the morning light beautifully." },
+            { id: "the-mini-army", slug: "the-mini-army", title: "The Mini Army", price: 140.00, img: "wall-group.png", desc: "A tiny squad of absolute cuteness! This miniature army is hand-thrown on a custom-made tiny pottery wheel in Delhi." },
+            { id: "serenity-fountain", slug: "serenity-fountain", title: "Serenity Fountain", price: 150.00, img: "fountain.jpg", desc: "Bring the soothing sound of water indoors. This tabletop fountain is hand-sculpted in raw terracotta in our Delhi studio." },
+            { id: "midnight-leaf-trio", slug: "midnight-leaf-trio", title: "Midnight Leaf Trio", price: 85.00, img: "tall-vases.jpg", desc: "Deep, moody, and elegant. These tall vases feature delicate hand-etched leaf patterns." },
+            { id: "the-collectors-grid", slug: "the-collectors-grid", title: "The Collector's Grid", price: 120.00, img: "miniatures.jpg", desc: "A curated set of miniature forms designed to be displayed together as an aesthetic shelf exhibit." },
+            { id: "tribal-bud-vases", slug: "tribal-bud-vases", title: "Tribal Bud Vases", price: 60.00, img: "geometric-trio.jpg", desc: "Geometric patterns meet organic curves. These striking bud vases are perfect for single stems or propagating cuttings." },
+            { id: "noir-desk-series", slug: "noir-desk-series", title: "Noir Desk Series", price: 55.00, img: "desk-set.jpg", desc: "Sleek, black, and incredibly chic. Hand-built from heavy Delhi clay and finished with a moody matte black glaze." }
         ];
         let catalogDB = catalogFallback;
         let currentIndex = 0;
@@ -226,34 +442,63 @@
             if(currentIndex === -1) currentIndex = 0;
         }
 
+        function getRouteProductIdentifier() {
+            const path = window.location.pathname || '';
+            const match = path.match(/\/product\/([^/?#]+)/i);
+            if (match && match[1]) {
+                return decodeURIComponent(match[1]);
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            return params.get('product') || params.get('id') || '';
+        }
+
+        function resolveStoredProduct(storedProduct, routeId) {
+            if (!storedProduct && !routeId) {
+                return null;
+            }
+
+            return (
+                catalogDB.find(p =>
+                    String(p.id) === String(storedProduct?.id || routeId) ||
+                    String(p.slug || '') === String(storedProduct?.slug || routeId) ||
+                    window.UdaanAPI.normalize(p.title) === window.UdaanAPI.normalize(storedProduct?.title || routeId)
+                ) ||
+                (storedProduct ? {
+                    id: storedProduct.id || routeId,
+                    slug: storedProduct.slug || '',
+                    title: storedProduct.title,
+                    price: Number(storedProduct.price || 0),
+                    img: storedProduct.img,
+                    desc: storedProduct.desc || '',
+                } : null)
+            );
+        }
+
         async function loadProductData() {
             const storedProduct = JSON.parse(localStorage.getItem('udaan_active_product'));
-            if (!storedProduct) {
-                document.getElementById('error-box').style.display = 'block';
-                return;
-            }
+            const routeId = getRouteProductIdentifier();
 
             try {
                 const liveProducts = await window.UdaanAPI.fetchProducts();
                 if (Array.isArray(liveProducts) && liveProducts.length) {
-                    catalogDB = liveProducts.map(toProductShape);
+                    catalogDB = liveProducts.map(product => ({
+                        ...toProductShape(product),
+                        slug: product.slug || '',
+                    }));
                 }
             } catch (error) {
                 catalogDB = catalogFallback;
             }
 
-            const matchedProduct =
-                catalogDB.find(p => String(p.id) === String(storedProduct.id)) ||
-                catalogDB.find(p => window.UdaanAPI.normalize(p.title) === window.UdaanAPI.normalize(storedProduct.title)) ||
-                {
-                    id: storedProduct.id,
-                    title: storedProduct.title,
-                    price: Number(storedProduct.price || 0),
-                    img: storedProduct.img,
-                    desc: storedProduct.desc || '',
-                };
+            const matchedProduct = resolveStoredProduct(storedProduct, routeId);
+            if (!matchedProduct) {
+                document.getElementById('error-box').style.display = 'block';
+                return;
+            }
 
             setCurrentIndex(matchedProduct);
+            localStorage.setItem('udaan_active_product', JSON.stringify(matchedProduct));
             renderPage(matchedProduct);
         }
 
@@ -272,7 +517,8 @@
 
                 <div class="pdp-details">
                     <h1 class="pdp-title" id="pdp-title">${productData.title}</h1>
-                    <div class="pdp-price" id="pdp-price">₹${productData.price.toFixed(2)} <span class="price-badge"> Pan-India Shipping Incl. ✨</span></div>
+                    <div class="pdp-price" id="pdp-price">&#8377;${productData.price.toFixed(2)} <span class="price-badge">Pan-India Shipping Included</span></div>
+                    <div class="pdp-rating-row" id="pdp-rating-row"></div>
                     
                     <p class="pdp-desc" id="pdp-desc">${productData.desc}</p>
 
@@ -283,9 +529,9 @@
                                 <span class="qty-val" id="qty-val">1</span>
                                 <button class="qty-btn" id="qty-plus">+</button>
                             </div>
-                            <button class="add-to-bag-btn" id="add-to-bag-btn">Add to Bag 🛍️</button>
+                            <button class="add-to-bag-btn" id="add-to-bag-btn">Add to Bag</button>
                         </div>
-                        <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin:0;">🔒 built in Delhi, India • encrypted checkout</p>
+                        <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin:0;">Secure checkout. Built in Delhi, India.</p>
                     </div>
 
                     <div class="accordion">
@@ -311,6 +557,9 @@
             
             document.getElementById('pdp-content').innerHTML = pdpHTML;
             bindEvents(productData);
+            loadReviews(productData.id);
+            renderQuestions(productData.id);
+            setupQuestionForm(productData.id);
         }
 
         function navigateProduct(direction) {
@@ -319,6 +568,10 @@
             
             const nextProduct = catalogDB[currentIndex];
             localStorage.setItem('udaan_active_product', JSON.stringify(nextProduct));
+            if (nextProduct && (nextProduct.id || nextProduct.slug)) {
+                const routeTarget = '/product/' + encodeURIComponent(nextProduct.slug || nextProduct.id);
+                window.history.replaceState({}, '', routeTarget);
+            }
             
             document.getElementById('full-image-viewer').src = nextProduct.img;
             renderPage(nextProduct);
@@ -340,12 +593,12 @@
                 try {
                     await window.UdaanAPI.addToCart(productData.id, currentQty);
                     updateBadges();
-                    this.innerText = 'Added! ✨';
-                    showToast('🛍️ Added to your bag!');
+                    this.innerText = 'Added';
+                    showToast('Added to your bag.');
                 } catch (e) {
                     showToast(e.message || 'Could not add to bag.');
                 }
-                setTimeout(() => { this.innerText = 'Add to Bag 🛍️'; }, 2000);
+                setTimeout(() => { this.innerText = 'Add to Bag'; }, 2000);
             });
 
             document.querySelectorAll('.accordion-header').forEach(button => {
@@ -368,7 +621,7 @@
             pinBtn.addEventListener('click', async () => {
                 const pin = pinInput.value.trim();
                 if(pin.length !== 6 || isNaN(pin)) {
-                    pinMsg.innerHTML = "❌ Please enter a valid 6-digit Indian pincode.";
+                    pinMsg.innerHTML = "Please enter a valid 6-digit Indian pincode.";
                     return;
                 }
 
@@ -379,12 +632,12 @@
                     const result = await window.UdaanAPI.checkDelivery(pin);
                     if (result.is_serviceable) {
                         const zoneLabel = result.zone ? ` (${result.zone})` : '';
-                        pinMsg.innerHTML = `✅ <strong>Shipping available${zoneLabel}.</strong> Est: ${result.estimated_delivery}.`;
+                        pinMsg.innerHTML = `<strong>Shipping available${zoneLabel}.</strong> Estimated delivery: ${result.estimated_delivery}.`;
                     } else {
-                        pinMsg.innerHTML = `⚠️ ${result.message || 'Delivery is not available for this pincode.'}`;
+                        pinMsg.innerHTML = result.message || 'Delivery is not available for this pincode.';
                     }
                 } catch (error) {
-                    pinMsg.innerHTML = `❌ ${error.message}`;
+                    pinMsg.innerHTML = error.message;
                 } finally {
                     pinBtn.disabled = false;
                 }
@@ -402,6 +655,681 @@
 
         // Initialize Page
         loadProductData();
+
+        // ═══════════════════════════════════════════
+        // REVIEWS SYSTEM
+        // ═══════════════════════════════════════════
+
+        let reviewState = {
+            productId: null,
+            summary: null,
+            currentPage: 1,
+            totalPages: 1,
+            selectedRating: 0,
+            hoverRating: 0,
+        };
+
+        const REVIEW_STORAGE_KEY = 'udaan_product_reviews_v1';
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        function getEmptyReviewSummary() {
+            return {
+                avg_rating: null,
+                review_count: 0,
+                breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            };
+        }
+
+        function readStoredMap(key) {
+            try {
+                var raw = JSON.parse(localStorage.getItem(key) || '{}');
+                return raw && typeof raw === 'object' ? raw : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function writeStoredMap(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function getLocalReviews(productId) {
+            var map = readStoredMap(REVIEW_STORAGE_KEY);
+            var items = map[String(productId)] || [];
+            return Array.isArray(items) ? items : [];
+        }
+
+        function saveLocalReview(productId, review) {
+            var map = readStoredMap(REVIEW_STORAGE_KEY);
+            var key = String(productId);
+            var items = Array.isArray(map[key]) ? map[key] : [];
+            items.unshift(review);
+            map[key] = items;
+            writeStoredMap(REVIEW_STORAGE_KEY, map);
+        }
+
+        function buildSummaryFromReviews(reviews) {
+            var summary = getEmptyReviewSummary();
+            if (!reviews.length) return summary;
+
+            var total = 0;
+            var sum = 0;
+            for (var i = 0; i < reviews.length; i++) {
+                var rating = Number(reviews[i].rating) || 0;
+                if (rating < 1 || rating > 5) continue;
+                total += 1;
+                sum += rating;
+                summary.breakdown[rating] = (summary.breakdown[rating] || 0) + 1;
+            }
+
+            summary.review_count = total;
+            summary.avg_rating = total ? (sum / total) : null;
+            return summary;
+        }
+
+        function mergeReviews(serverReviews, localReviews) {
+            var merged = (Array.isArray(localReviews) ? localReviews.slice() : []).concat(Array.isArray(serverReviews) ? serverReviews : []);
+            merged.sort(function (a, b) {
+                return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+            });
+            return merged;
+        }
+
+        function isManagerUser() {
+            var auth = window.UdaanAPI.getAuth();
+            var user = auth && auth.user ? auth.user : null;
+            if (!user) return false;
+            return Boolean(
+                user.is_staff ||
+                user.is_superuser ||
+                user.is_admin ||
+                user.role === 'admin' ||
+                user.role === 'manager'
+            );
+        }
+
+        function getDisplayName(fallback) {
+            var auth = window.UdaanAPI.getAuth();
+            if (auth && auth.user) {
+                return auth.user.username || auth.user.first_name || fallback || 'Anonymous';
+            }
+            return fallback || 'Anonymous';
+        }
+
+        async function loadReviews(productId) {
+            reviewState.productId = productId;
+            reviewState.currentPage = 1;
+            var localReviews = getLocalReviews(productId);
+            var serverSummary = null;
+            var serverFeed = [];
+
+            try {
+                const summary = await window.UdaanAPI.fetchReviewSummary(productId);
+                serverSummary = summary;
+            } catch (e) {
+                serverSummary = getEmptyReviewSummary();
+            }
+
+            try {
+                const data = await window.UdaanAPI.fetchProductReviews(productId, 1, 5);
+                reviewState.currentPage = data.page;
+                reviewState.totalPages = data.total_pages;
+                serverFeed = Array.isArray(data.results) ? data.results : [];
+            } catch (e) {
+                reviewState.currentPage = 1;
+                reviewState.totalPages = 1;
+                serverFeed = [];
+            }
+
+            var allReviews = mergeReviews(serverFeed, localReviews);
+            reviewState.summary = buildSummaryFromReviews(allReviews);
+            renderSummary(reviewState.summary, productId);
+            renderPdpRatingRow(reviewState.summary);
+            renderFeedPage({
+                results: allReviews.slice(0, Math.max(allReviews.length, 5)),
+                page: 1,
+                total: allReviews.length,
+                total_pages: 1
+            }, productId);
+
+            checkAndUpdateAlreadyReviewed();
+        }
+
+        function renderPdpRatingRow(summary) {
+            const row = document.getElementById('pdp-rating-row');
+            if (!row) return;
+
+            const avg = summary ? summary.avg_rating : null;
+            const count = summary ? summary.review_count : 0;
+
+            if (avg == null) {
+                row.innerHTML =
+                    window.UdaanAPI.renderStars(0, { size: 'md' }) +
+                    ' <span class="review-count-link" id="scroll-to-reviews">(0 reviews)</span>';
+
+                const emptyLink = document.getElementById('scroll-to-reviews');
+                if (emptyLink) {
+                    emptyLink.addEventListener('click', function () {
+                        var section = document.getElementById('reviews-section');
+                        if (section) {
+                            try { lenis.scrollTo(section); } catch (e) { section.scrollIntoView({ behavior: 'smooth' }); }
+                        }
+                    });
+                }
+                return;
+            }
+
+            row.innerHTML =
+                window.UdaanAPI.renderStars(avg, { size: 'md' }) +
+                ' <span class="review-count-link" id="scroll-to-reviews">(' + count + ' review' + (count !== 1 ? 's' : '') + ')</span>';
+
+            const link = document.getElementById('scroll-to-reviews');
+            if (link) {
+                link.addEventListener('click', function () {
+                    var section = document.getElementById('reviews-section');
+                    if (section) {
+                        try { lenis.scrollTo(section); } catch (e) { section.scrollIntoView({ behavior: 'smooth' }); }
+                    }
+                });
+            }
+        }
+
+        function renderSummary(summary, productId) {
+            var container = document.getElementById('review-summary');
+            if (!container) return;
+
+            var avg = summary.avg_rating;
+            var total = summary.review_count;
+            var breakdown = summary.breakdown || {};
+
+            var breakdownHTML = '';
+            for (var star = 5; star >= 1; star--) {
+                var cnt = breakdown[star] || 0;
+                var pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                breakdownHTML +=
+                    '<div class="breakdown-row">' +
+                    '<span class="breakdown-label">' + star + '★</span>' +
+                    '<div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:' + pct + '%"></div></div>' +
+                    '<span class="breakdown-count">' + cnt + '</span>' +
+                    '</div>';
+            }
+
+            var auth = window.UdaanAPI.getAuth();
+            var actionHTML = '';
+            if (auth && auth.token) {
+                actionHTML = '<button class="write-review-btn" id="open-review-modal">Write a Review</button>';
+            } else {
+                actionHTML = '<button class="write-review-btn" id="open-review-modal-guest">Write a Review</button>';
+            }
+
+            container.innerHTML =
+                '<div class="summary-big-rating">' +
+                '<div class="summary-big-number">' + (avg != null ? avg.toFixed(1) : '—') + '</div>' +
+                '<div class="summary-big-stars">' + window.UdaanAPI.renderStars(avg, { size: 'lg' }) + '</div>' +
+                '<div class="summary-total">' + total + ' review' + (total !== 1 ? 's' : '') + '</div>' +
+                '</div>' +
+                '<div class="summary-breakdown">' + breakdownHTML + '</div>' +
+                actionHTML;
+
+            var writeBtn = document.getElementById('open-review-modal');
+            if (writeBtn) {
+                writeBtn.addEventListener('click', function () { openReviewModal(productId); });
+            }
+            var guestBtn = document.getElementById('open-review-modal-guest');
+            if (guestBtn) {
+                guestBtn.addEventListener('click', function () {
+                    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                });
+            }
+        }
+
+        function checkAndUpdateAlreadyReviewed() {
+            var auth = window.UdaanAPI.getAuth();
+            if (!auth || !auth.user) return;
+            var feedCards = document.querySelectorAll('#review-feed .reviewer-name');
+            for (var i = 0; i < feedCards.length; i++) {
+                if (feedCards[i].innerText === auth.user.username) {
+                    var btn = document.getElementById('open-review-modal');
+                    if (btn) {
+                        btn.outerHTML = '<p class="already-reviewed-msg">✓ You\'ve reviewed this piece</p>';
+                    }
+                    return;
+                }
+            }
+        }
+
+        renderSummary = function (summary, productId) {
+            var container = document.getElementById('review-summary');
+            if (!container) return;
+
+            var avg = summary.avg_rating;
+            var total = summary.review_count;
+            var breakdown = summary.breakdown || {};
+
+            var breakdownHTML = '';
+            for (var star = 5; star >= 1; star--) {
+                var cnt = breakdown[star] || 0;
+                var pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                breakdownHTML +=
+                    '<div class="breakdown-row">' +
+                    '<span class="breakdown-label">' + star + ' star</span>' +
+                    '<div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:' + pct + '%"></div></div>' +
+                    '<span class="breakdown-count">' + cnt + '</span>' +
+                    '</div>';
+            }
+
+            var actionHTML = '<button class="write-review-btn" id="open-review-modal">Write a Review</button>';
+
+            container.innerHTML =
+                '<div class="summary-big-rating">' +
+                '<div class="summary-big-number">' + (avg != null ? avg.toFixed(1) : '0.0') + '</div>' +
+                '<div class="summary-big-stars">' + window.UdaanAPI.renderStars(avg != null ? avg : 0, { size: 'lg' }) + '</div>' +
+                '<div class="summary-total">' + total + ' review' + (total !== 1 ? 's' : '') + '</div>' +
+                '</div>' +
+                '<div class="summary-breakdown">' + breakdownHTML + '</div>' +
+                actionHTML;
+
+            var writeBtn = document.getElementById('open-review-modal');
+            if (writeBtn) {
+                writeBtn.addEventListener('click', function () { openReviewModal(productId); });
+            }
+        };
+
+        checkAndUpdateAlreadyReviewed = function () {
+            return;
+        };
+
+        async function renderQuestions(productId) {
+            var list = document.getElementById('qa-thread-list');
+            if (!list) return;
+
+            if (window.UdaanAPI.isLoggedIn()) {
+                try {
+                    await window.UdaanAPI.fetchCurrentUser();
+                } catch (e) {
+                    // Keep going with cached auth if the refresh fails.
+                }
+            }
+
+            var items = [];
+            try {
+                items = await window.UdaanAPI.fetchProductQuestions(productId);
+            } catch (e) {
+                list.innerHTML = '<p class="qa-empty">Questions are unavailable right now. Please try again shortly.</p>';
+                return;
+            }
+
+            if (!items.length) {
+                list.innerHTML = '<p class="qa-empty">No questions yet. Be the first to ask about this product.</p>';
+                return;
+            }
+
+            var managerMode = isManagerUser();
+            var html = '';
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var answerHTML = '';
+                var moderationHTML = '';
+                if (item.answer_text) {
+                    answerHTML =
+                        '<div class="qa-answer-block">' +
+                        '<div class="qa-answer-label">Manager Reply</div>' +
+                        '<div class="qa-answer-text">' + escapeHTML(item.answer_text) + '</div>' +
+                        '</div>';
+                }
+
+                if (managerMode) {
+                    moderationHTML =
+                        '<div class="qa-answer-form">' +
+                        (!item.answer_text ? (
+                            '<div class="qa-field">' +
+                            '<label for="qa-answer-' + item.id + '">Post Answer</label>' +
+                            '<textarea id="qa-answer-' + item.id + '" rows="3" placeholder="Reply to this question"></textarea>' +
+                            '</div>'
+                        ) : '') +
+                        '<div class="qa-manager-actions">' +
+                        (!item.answer_text ? '<button class="qa-answer-btn" data-answer-id="' + item.id + '">Post Answer</button>' : '') +
+                        '<button class="qa-delete-btn" data-delete-id="' + item.id + '">Delete Question</button>' +
+                        '</div>' +
+                        '</div>';
+                }
+
+                html +=
+                    '<div class="qa-item">' +
+                    '<div class="qa-meta">' +
+                    '<span class="qa-name">' + escapeHTML(item.asker_name) + '</span>' +
+                    '<span class="qa-date">' + new Date(item.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) + '</span>' +
+                    '</div>' +
+                    '<div class="qa-question">' + escapeHTML(item.question) + '</div>' +
+                    answerHTML +
+                    moderationHTML +
+                    '</div>';
+            }
+
+            list.innerHTML = html;
+
+            if (managerMode) {
+                list.querySelectorAll('[data-answer-id]').forEach(function (btn) {
+                    btn.addEventListener('click', async function () {
+                        var id = this.getAttribute('data-answer-id');
+                        var input = document.getElementById('qa-answer-' + id);
+                        var value = input ? input.value.trim() : '';
+                        if (!value) {
+                            showToast('Please write an answer first.');
+                            return;
+                        }
+
+                        try {
+                            await window.UdaanAPI.answerProductQuestion(productId, id, { answerText: value });
+                            await renderQuestions(productId);
+                            showToast('Answer posted.');
+                        } catch (error) {
+                            showToast(error.message || 'Could not post answer.');
+                        }
+                    });
+                });
+
+                list.querySelectorAll('[data-delete-id]').forEach(function (btn) {
+                    btn.addEventListener('click', async function () {
+                        var id = this.getAttribute('data-delete-id');
+                        if (!window.confirm('Delete this question from the product page?')) {
+                            return;
+                        }
+
+                        try {
+                            await window.UdaanAPI.deleteProductQuestion(productId, id);
+                            await renderQuestions(productId);
+                            showToast('Question removed.');
+                        } catch (error) {
+                            showToast(error.message || 'Could not delete question.');
+                        }
+                    });
+                });
+            }
+        }
+
+        function setupQuestionForm(productId) {
+            var submitBtn = document.getElementById('qa-submit-btn');
+            if (!submitBtn) return;
+
+            var auth = window.UdaanAPI.getAuth();
+            if (auth && auth.user) {
+                document.getElementById('qa-name-input').value = getDisplayName('');
+            }
+
+            submitBtn.onclick = async function () {
+                var name = (document.getElementById('qa-name-input').value || '').trim() || getDisplayName('Anonymous');
+                var question = (document.getElementById('qa-question-input').value || '').trim();
+                var status = document.getElementById('qa-status-msg');
+
+                if (!question) {
+                    status.innerText = 'Please write your question first.';
+                    return;
+                }
+
+                try {
+                    await window.UdaanAPI.submitProductQuestion(productId, {
+                        askerName: name,
+                        question: question,
+                    });
+                    document.getElementById('qa-question-input').value = '';
+                    status.innerText = 'Question posted. The manager can answer it below.';
+                    await renderQuestions(productId);
+                    showToast('Question posted.');
+                } catch (error) {
+                    status.innerText = error.message || 'Could not post your question right now.';
+                }
+            };
+        }
+
+        function renderFeedPage(data, productId) {
+            var container = document.getElementById('review-feed');
+            if (!container) return;
+
+            var reviews = data.results || [];
+            var page = data.page;
+            var total = data.total;
+            var totalPages = data.total_pages;
+
+            if (reviews.length === 0) {
+                container.innerHTML =
+                    '<div class="review-empty-shell">' +
+                    '<div class="review-empty-title">No reviews yet</div>' +
+                    '<p class="review-empty-copy">This piece has not been reviewed yet. Once someone who ordered it leaves feedback, it will appear here.</p>' +
+                    '</div>';
+                return;
+            }
+
+            var html = '';
+            for (var r = 0; r < reviews.length; r++) {
+                var review = reviews[r];
+                var date = new Date(review.created_at);
+                var dateStr = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                html +=
+                    '<div class="review-card-item">' +
+                    '<div class="review-card-header">' +
+                    window.UdaanAPI.renderStars(review.rating, { size: 'sm' }) +
+                    '<span class="reviewer-name">' + escapeHTML(review.user_name) + '</span>' +
+                    (review.is_verified_buyer ? '<span class="verified-badge">Verified Buyer</span>' : '') +
+                    '</div>' +
+                    '<div class="review-date">' + dateStr + '</div>' +
+                    (review.title ? '<div class="review-title">' + escapeHTML(review.title) + '</div>' : '') +
+                    (review.comment ? '<div class="review-comment">' + escapeHTML(review.comment) + '</div>' : '') +
+                    '</div>';
+            }
+
+            if (page < totalPages) {
+                html += '<div class="load-more-row"><button class="load-more-btn" id="load-more-reviews">Load More Reviews</button></div>';
+            }
+
+            container.innerHTML = html;
+
+            var loadMoreBtn = document.getElementById('load-more-reviews');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', handleLoadMore);
+            }
+        }
+
+        async function handleLoadMore() {
+            var btn = document.getElementById('load-more-reviews');
+            if (!btn) return;
+            btn.disabled = true;
+            btn.innerText = 'Loading...';
+
+            try {
+                var nextPage = reviewState.currentPage + 1;
+                var data = await window.UdaanAPI.fetchProductReviews(reviewState.productId, nextPage, 5);
+                reviewState.currentPage = data.page;
+                reviewState.totalPages = data.total_pages;
+
+                var loadMoreRow = document.querySelector('#review-feed .load-more-row');
+                if (loadMoreRow) loadMoreRow.remove();
+
+                var appendHTML = '';
+                var reviews = data.results || [];
+                for (var r = 0; r < reviews.length; r++) {
+                    var review = reviews[r];
+                    var date = new Date(review.created_at);
+                    var dateStr = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                    appendHTML +=
+                        '<div class="review-card-item">' +
+                        '<div class="review-card-header">' +
+                        window.UdaanAPI.renderStars(review.rating, { size: 'sm' }) +
+                        '<span class="reviewer-name">' + escapeHTML(review.user_name) + '</span>' +
+                        (review.is_verified_buyer ? '<span class="verified-badge">Verified Buyer</span>' : '') +
+                        '</div>' +
+                        '<div class="review-date">' + dateStr + '</div>' +
+                        (review.title ? '<div class="review-title">' + escapeHTML(review.title) + '</div>' : '') +
+                        (review.comment ? '<div class="review-comment">' + escapeHTML(review.comment) + '</div>' : '') +
+                        '</div>';
+                }
+
+                if (reviewState.currentPage < reviewState.totalPages) {
+                    appendHTML += '<div class="load-more-row"><button class="load-more-btn" id="load-more-reviews">Load More Reviews</button></div>';
+                }
+
+                var feed = document.getElementById('review-feed');
+                feed.insertAdjacentHTML('beforeend', appendHTML);
+
+                var newBtn = document.getElementById('load-more-reviews');
+                if (newBtn) newBtn.addEventListener('click', handleLoadMore);
+
+                btn.disabled = false;
+                btn.innerText = 'Load More Reviews';
+            } catch (e) {
+                showToast('Could not load more reviews.');
+                btn.disabled = false;
+                btn.innerText = 'Load More Reviews';
+            }
+        }
+
+        // ═══ Write Review Modal ═══
+
+        function openReviewModal(productId) {
+            var productTitle = document.getElementById('pdp-title');
+            document.getElementById('modal-product-name').innerText = 'Share your thoughts about ' + (productTitle ? productTitle.innerText : 'this product');
+
+            reviewState.selectedRating = 0;
+            reviewState.hoverRating = 0;
+            document.getElementById('review-name-input').value = getDisplayName('');
+            document.getElementById('review-title-input').value = '';
+            document.getElementById('review-comment-input').value = '';
+            document.getElementById('review-modal-error').style.display = 'none';
+            updateModalStars(0);
+
+            document.getElementById('review-modal-overlay').classList.add('active');
+            try { lenis.stop(); } catch (e) {}
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal-overlay').classList.remove('active');
+            try { lenis.start(); } catch (e) {}
+        }
+
+        function checkExistingReview() {
+            return false;
+        }
+
+        function updateModalStars(rating) {
+            var stars = document.querySelectorAll('#modal-stars .interactive-star');
+            for (var i = 0; i < stars.length; i++) {
+                var starNum = i + 1;
+                if (starNum <= rating) {
+                    stars[i].classList.add('active');
+                } else {
+                    stars[i].classList.remove('active');
+                }
+            }
+        }
+
+        function setupModalHandlers() {
+            var modalStars = document.getElementById('modal-stars');
+            if (!modalStars) return;
+
+            var stars = modalStars.querySelectorAll('.interactive-star');
+            for (var i = 0; i < stars.length; i++) {
+                (function (star) {
+                    star.addEventListener('mouseenter', function () {
+                        reviewState.hoverRating = parseInt(star.dataset.star);
+                        updateModalStars(reviewState.hoverRating);
+                    });
+                    star.addEventListener('mouseleave', function () {
+                        reviewState.hoverRating = 0;
+                        updateModalStars(reviewState.selectedRating);
+                    });
+                    star.addEventListener('click', function () {
+                        reviewState.selectedRating = parseInt(star.dataset.star);
+                        updateModalStars(reviewState.selectedRating);
+                    });
+                })(stars[i]);
+            }
+
+            document.getElementById('review-modal-close').addEventListener('click', closeReviewModal);
+            document.getElementById('review-modal-overlay').addEventListener('click', function (e) {
+                if (e.target === document.getElementById('review-modal-overlay')) {
+                    closeReviewModal();
+                }
+            });
+
+            document.getElementById('review-submit-btn').addEventListener('click', submitReviewHandler);
+        }
+
+        setupModalHandlers();
+
+        async function submitReviewHandler() {
+            var errorDiv = document.getElementById('review-modal-error');
+            errorDiv.style.display = 'none';
+
+            if (reviewState.selectedRating === 0) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerText = 'Please select a star rating.';
+                return;
+            }
+
+            var title = document.getElementById('review-title-input').value.trim();
+            var comment = document.getElementById('review-comment-input').value.trim();
+            var name = document.getElementById('review-name-input').value.trim() || getDisplayName('Anonymous');
+            var submitBtn = document.getElementById('review-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Submitting...';
+
+            try {
+                var auth = window.UdaanAPI.getAuth();
+                if (auth && auth.token) {
+                    try {
+                        await window.UdaanAPI.submitReview(reviewState.productId, {
+                            rating: reviewState.selectedRating,
+                            title: title,
+                            comment: comment,
+                        });
+                    } catch (apiError) {
+                        saveLocalReview(reviewState.productId, {
+                            rating: reviewState.selectedRating,
+                            title: title,
+                            comment: comment,
+                            user_name: name,
+                            created_at: new Date().toISOString(),
+                            is_verified_buyer: false,
+                        });
+                    }
+                } else {
+                    saveLocalReview(reviewState.productId, {
+                        rating: reviewState.selectedRating,
+                        title: title,
+                        comment: comment,
+                        user_name: name,
+                        created_at: new Date().toISOString(),
+                        is_verified_buyer: false,
+                    });
+                }
+
+                closeReviewModal();
+                showToast('Your review has been posted.', 'success');
+
+                await loadReviews(reviewState.productId);
+
+                var section = document.getElementById('reviews-section');
+                if (section) {
+                    try { lenis.scrollTo(section); } catch (e) { section.scrollIntoView({ behavior: 'smooth' }); }
+                }
+            } catch (e) {
+                errorDiv.style.display = 'block';
+                var msg = e.message || 'Something went wrong. Please try again.';
+                if (msg.indexOf('already reviewed') !== -1 || msg.indexOf('unique') !== -1) {
+                    errorDiv.innerText = 'You\'ve already reviewed this product.';
+                } else {
+                    errorDiv.innerText = msg;
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Review';
+            }
+        }
 
     </script>
 </body>

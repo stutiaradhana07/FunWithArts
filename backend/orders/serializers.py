@@ -1,9 +1,15 @@
 from decimal import Decimal
 from django.db import transaction
 from rest_framework import serializers
+from django.core.validators import RegexValidator
 from products.models import Product
 from .delivery import lookup_pincode
 from .models import Order, OrderItem
+
+PHONE_VALIDATOR = RegexValidator(
+    regex=r'^\d{10}$',
+    message='Enter a valid 10-digit phone number.',
+)
 
 
 class OrderItemCreateSerializer(serializers.Serializer):
@@ -58,7 +64,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.Serializer):
     contact_email = serializers.EmailField()
-    contact_phone = serializers.CharField(max_length=20)
+    contact_phone = serializers.CharField(max_length=10, validators=[PHONE_VALIDATOR])
     shipping_first_name = serializers.CharField(max_length=120)
     shipping_last_name = serializers.CharField(max_length=120)
     shipping_address_line_1 = serializers.CharField(max_length=255)
@@ -82,33 +88,38 @@ class OrderCreateSerializer(serializers.Serializer):
         user = validated_data.pop('user', None)
 
         product_ids = [item['product_id'] for item in item_payloads]
-        products = Product.objects.filter(id__in=product_ids, is_available=True)
-        product_map = {product.id: product for product in products}
-
-        subtotal = Decimal('0.00')
-        order_items = []
-
-        for item in item_payloads:
-            product = product_map.get(item['product_id'])
-            if product is None:
-                raise serializers.ValidationError(
-                    {'items': [f"Product {item['product_id']} is invalid or unavailable."]}
-                )
-
-            qty = item['quantity']
-            if product.stock < qty:
-                raise serializers.ValidationError(
-                    {'items': [f"Only {product.stock} units available for '{product.name}'."]}
-                )
-
-            line_total = product.price * qty
-            subtotal += line_total
-            order_items.append((product, qty, line_total))
-
-        shipping_fee = Decimal('0.00') if subtotal >= Decimal('10000.00') else Decimal('500.00')
-        total_amount = subtotal + shipping_fee
 
         with transaction.atomic():
+            products = list(
+                Product.objects.select_for_update()
+                .filter(id__in=product_ids, is_available=True)
+                .order_by('id')
+            )
+            product_map = {product.id: product for product in products}
+
+            subtotal = Decimal('0.00')
+            order_items = []
+
+            for item in item_payloads:
+                product = product_map.get(item['product_id'])
+                if product is None:
+                    raise serializers.ValidationError(
+                        {'items': [f"Product {item['product_id']} is invalid or unavailable."]}
+                    )
+
+                qty = item['quantity']
+                if product.stock < qty:
+                    raise serializers.ValidationError(
+                        {'items': [f"Only {product.stock} units available for '{product.name}'."]}
+                    )
+
+                line_total = product.price * qty
+                subtotal += line_total
+                order_items.append((product, qty, line_total))
+
+            shipping_fee = Decimal('0.00') if subtotal >= Decimal('10000.00') else Decimal('500.00')
+            total_amount = subtotal + shipping_fee
+
             # Set initial order status based on payment method
             payment_method = validated_data.get('payment_method')
             if payment_method == 'cod':

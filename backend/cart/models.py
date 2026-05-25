@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.db import models, transaction
 from django.contrib.auth.models import User
+from django.utils import timezone
 from products.models import Product
 
 
@@ -22,6 +25,12 @@ class Cart(models.Model):
         db_index=True,
         help_text='Anonymous session identifier for guest carts.',
     )
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='When this guest cart should be cleaned up. NULL for user carts.',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -42,21 +51,38 @@ class Cart(models.Model):
             return f'Cart #{self.id} — {self.user.username}'
         return f'Guest Cart #{self.id} — {self.session_id}'
 
+    # Guest carts expire 30 days after last activity
+    GUEST_CART_TTL_DAYS = 30
+
     @classmethod
     def get_or_create_for_request(cls, user, session_id):
         """
         Return the cart for an authenticated user (by user) or for a guest
         (by session_id).  Creates one if it doesn't exist.
+        Guest carts get an expiry timestamp that is refreshed on each access.
         """
         if user and user.is_authenticated:
-            cart, _ = cls.objects.get_or_create(user=user, defaults={'session_id': None})
+            cart, _ = cls.objects.get_or_create(
+                user=user,
+                defaults={'session_id': None, 'expires_at': None},
+            )
             return cart
 
         if session_id:
-            cart, _ = cls.objects.get_or_create(
+            now = timezone.now()
+            defaults = {
+                'user': None,
+                'expires_at': now + timedelta(days=cls.GUEST_CART_TTL_DAYS),
+            }
+            cart, created = cls.objects.get_or_create(
                 session_id=session_id,
-                defaults={'user': None},
+                defaults=defaults,
             )
+            # Refresh expiry on each access so active guest carts don't expire
+            if not created and cart.expires_at is not None:
+                new_expiry = now + timedelta(days=cls.GUEST_CART_TTL_DAYS)
+                if new_expiry > cart.expires_at:
+                    cls.objects.filter(pk=cart.pk).update(expires_at=new_expiry)
             return cart
 
         return None

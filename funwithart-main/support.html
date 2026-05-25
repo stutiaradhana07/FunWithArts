@@ -6,7 +6,10 @@
     <title>Support & FAQ | Fun With Art</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         a, button, input, select, textarea, summary { cursor: pointer; }
@@ -29,24 +32,49 @@
         .shape-3 { top: 80%; left: 20%; width: 85px; animation: floatA 9s ease-in-out infinite; }
 
         /* NAV BAR */
-        nav { background: rgba(253, 251, 249, 0.85); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        nav.hide { transform: translateY(-100%); }
         .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s; }
         .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
         .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
         .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
         .nav-links { display: flex; align-items: center; }
-        .desktop-links a { text-decoration: none; color: #000; font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
-        .desktop-links a:hover { color: var(--accent-color); }
+        .desktop-links a { text-decoration: none; color: var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
+        .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color); }
         .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
         .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); transition: 0.3s;}
         .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
         .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-        .badge-count { position: absolute; top: 0; right: 0; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; }
+        .badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; opacity: 0; transition: 0.3s; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent-color); color: var(--accent-color); }
 
         /* HEADER */
         .page-header { padding: 150px 5% 40px; text-align: center; position: relative; z-index: 5; }
         .page-header h1 { font-family: var(--header-font); font-size: clamp(3rem, 6vw, 4.5rem); font-style: italic; margin-bottom: 20px; color: #111; }
         .page-header p { font-family: var(--body-font); font-size: 1.1rem; color: #555; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        .back-link-wrap { max-width: 1400px; margin: 120px auto 0; padding: 0 5%; position: relative; z-index: 5; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.88);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+            color: #111;
+            text-decoration: none;
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover { border-color: var(--accent-color); color: var(--accent-color); transform: translateY(-2px); }
+        .back-link-arrow { font-size: 1rem; line-height: 1; }
 
         /* TRACKING PORTAL */
         .tracking-portal { max-width: 700px; margin: 0 auto 60px; padding: 30px; background: #fff; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.04); position: relative; z-index: 5; border: 1px solid rgba(0,0,0,0.03); text-align: center;}
@@ -152,20 +180,29 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
     </div>
 
-    <nav>
-        <a href="index.html" class="logo-fusion">
-            <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
-        </a>
+    <nav id="main-nav">
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
         <div class="nav-links desktop-links">
-            <a href="index.html">Home</a>
-            <a href="collection.html">Collection</a>
-            <a href="studio.html">Studio</a>
+            <a href="/" class="nav-route" data-target="/">Home</a>
+            <a href="/collection" class="nav-route" data-target="/collection">Collection</a>
+            <a href="javascript:void(0)" class="nav-route" data-target="/studio">Studio</a>
+            <a href="/blogs" class="nav-route" data-target="/blogs">Blogs</a>
+            <a href="javascript:void(0)" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
         </div>
         <div class="nav-actions">
-            <a href="wishlist.html" class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
-            <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+            <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon nav-route" data-target="cart.html"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
         </div>
     </nav>
+
+    <div class="back-link-wrap">
+        <a href="/account" class="back-link">
+            <span class="back-link-arrow">&#8592;</span>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
 
     <header class="page-header">
         <h1>How can we help?</h1>
@@ -232,9 +269,9 @@
                 <h2>Get in Touch</h2>
                 
                 <div class="map-wrapper">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.882956972049!2d77.2435534!3d28.5126861!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce17112028fd1%3A0x6b13e53faecf91db!2sBatra%20Hospital%20%26%20Medical%20Research%20Centre!5e0!3m2!1sen!2sin!4v1715890000000!5m2!1sen!2sin" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.513233857321!2d77.2435773!3d28.5242784!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce1446059635f%3A0xc068832a4e98f79!2sBatra%20Hospital%20%26%20Medical%20Research%20Centre!5e0!3m2!1sen!2sin!4v1715670000000!5m2!1sen!2sin" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-
+                
                 <div class="contact-details">
                     <p><strong>Visit</strong> <span>B-700 First Floor, near Batra Hospital,<br>New Delhi 110080</span></p>
                     <p><strong>Call</strong> <span>+91 72178 06095</span></p>
@@ -325,7 +362,23 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
-        // Modal Logic
+
+        /* ── LENIS SMOOTH SCROLL ── */
+        try {
+            const lenis = new Lenis({ duration: 1.8, smooth: true });
+            let scrollY = 0; let lastScrollY = window.scrollY;
+            const mainNav = document.getElementById('main-nav');
+
+            lenis.on('scroll', (e) => {
+                scrollY = e.scroll;
+                if (scrollY > lastScrollY && scrollY > 150) { mainNav.classList.add('hide'); }
+                else { mainNav.classList.remove('hide'); }
+                lastScrollY = scrollY;
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+        } catch(e) { console.log("Smooth scroll disabled for safety."); }
+
+        // --- MODAL LOGIC (Existing) ---
         const modal = document.getElementById('policy-modal');
         function openModal(title, desc) {
             document.getElementById('modal-title').innerText = title;
@@ -336,21 +389,50 @@
             if (force || e.target === modal) { modal.classList.remove('active'); }
         }
 
-        // Toast Logic
+        // --- TOAST LOGIC (Unified) ---
         window.showToast = function(message) { 
             const container = document.getElementById('toast-container'); 
-            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message; 
-            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); 
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000); 
+            const toast = document.createElement('div'); 
+            toast.className = 'toast'; 
+            toast.innerHTML = message; 
+            container.appendChild(toast); 
+            setTimeout(() => toast.classList.add('show'), 10); 
+            setTimeout(() => { 
+                toast.classList.remove('show'); 
+                setTimeout(() => toast.remove(), 400); 
+            }, 3000); 
         }
 
-        // Update Cart & Wishlist badges
-        let cartData = JSON.parse(localStorage.getItem('udaan_cart_v2')) || [];
-        let wishlistData = JSON.parse(localStorage.getItem('udaan_wishlist_v2')) || [];
-        const cartCount = document.getElementById('cart-count'); 
-        const wishCount = document.getElementById('wishlist-count');
-        if(cartCount) { cartCount.innerText = cartData.reduce((sum, item) => sum + item.qty, 0); cartCount.style.opacity = cartData.length > 0 ? '1' : '0';}
-        if(wishCount) { wishCount.innerText = wishlistData.length; wishCount.style.opacity = wishlistData.length > 0 ? '1' : '0';}
+        // --- THE "UDAAN" CONNECTION ---
+        async function initSupport() {
+            // Check if shared.js loaded correctly
+            if (window.UdaanAPI) {
+                // This replaces your manual localStorage badge logic
+                // It automatically updates the cart/wishlist numbers in the nav
+                window.UdaanAPI.updateBadges();
+            }
+        }
+
+        // --- FORM SUBMISSION ---
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('.submit-btn');
+            const originalText = btn.innerText;
+
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            // Simulate the artisanal "sending" delay
+            setTimeout(() => {
+                showToast('✨ Message received! We’ll get back to you within 24 hours.');
+                e.target.reset();
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }, 1200);
+        });
+
+        // Start the page logic
+        initSupport();
     </script>
 </body>
 </html>

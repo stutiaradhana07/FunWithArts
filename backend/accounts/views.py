@@ -1,29 +1,43 @@
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import permission_classes
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.template.loader import render_to_string
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from notifications.emails import send_email_async
 
 from .serializers import (
+    CurrentUserSerializer,
     GoogleLoginSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
     RegisterSerializer,
 )
+from .throttles import LoginRateThrottle, PasswordResetRateThrottle, RegisterRateThrottle
+
+
+def _user_payload(user):
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+    }
 
 
 @api_view(['POST'])
+@throttle_classes([RegisterRateThrottle])
 def register_user(request):
     serializer = RegisterSerializer(data=request.data)
 
@@ -35,11 +49,7 @@ def register_user(request):
             {
                 'message': 'User created successfully',
                 'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                },
+                'user': _user_payload(user),
             },
             status=status.HTTP_201_CREATED,
         )
@@ -48,14 +58,21 @@ def register_user(request):
 
 
 @api_view(['POST'])
+@throttle_classes([LoginRateThrottle])
 def login_user(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    username = serializer.validated_data['username']
+    username_or_email = serializer.validated_data['username']
     password = serializer.validated_data['password']
 
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=username_or_email, password=password)
+    if not user:
+        try:
+            user_obj = User.objects.get(email__iexact=username_or_email)
+            user = authenticate(username=user_obj.username, password=password)
+        except User.DoesNotExist:
+            user = None
 
     if user:
         token, _ = Token.objects.get_or_create(user=user)
@@ -64,24 +81,16 @@ def login_user(request):
             {
                 'message': 'Login successful',
                 'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                },
+                'user': _user_payload(user),
             }
         )
 
-    return Response(
-        {'error': 'Invalid credentials'},
-        status=status.HTTP_400_BAD_REQUEST,
-    )
+    return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
-    """Delete the user's auth token, effectively logging them out."""
     try:
         request.user.auth_token.delete()
     except Token.DoesNotExist:
@@ -89,36 +98,25 @@ def logout_user(request):
     return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def current_user(request):
     user = request.user
-    return Response(
-        {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-        }
-    )
+    if request.method == 'GET':
+        return Response(CurrentUserSerializer(user).data)
 
+    serializer = CurrentUserSerializer(user, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
 
-# ──────────────────────────────────────────────────────────────────────
-# Password Reset Flow
-# ──────────────────────────────────────────────────────────────────────
 
 _token_generator = PasswordResetTokenGenerator()
 
 
 @api_view(['POST'])
+@throttle_classes([PasswordResetRateThrottle])
 def password_reset(request):
-    """
-    POST /api/auth/password_reset/
-    Accepts { "email": "user@example.com" }
-
-    Always returns a generic success message to prevent email enumeration.
-    If the user exists, generates a one-time token and emails a reset link
-    pointing to the React frontend.
-    """
     serializer = PasswordResetSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
@@ -126,31 +124,25 @@ def password_reset(request):
 
     try:
         user = User.objects.get(email__iexact=email)
-    except User.DoesNotExist:
-        pass  # Don't leak whether the account exists
+    except (User.DoesNotExist, User.MultipleObjectsReturned):
+        pass
     else:
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = _token_generator.make_token(user)
 
-        reset_url = (
-            f'{settings.FRONTEND_URL}/reset-password/'
-            f'?uid={uidb64}&token={token}'
-        )
-
+        reset_url = f'{settings.FRONTEND_URL}/reset-password/?uid={uidb64}&token={token}'
         context = {
             'user': user,
             'reset_url': reset_url,
-            'studio_name': 'Udaan Studio',
+            'studio_name': 'Fun with Art',
             'support_email': settings.DEFAULT_FROM_EMAIL,
         }
 
-        subject = 'Reset your Udaan Studio password'
+        subject = 'Reset your Fun with Art password'
         body_plain = render_to_string('notifications/password_reset.txt', context)
         body_html = render_to_string('notifications/password_reset.html', context)
-
         send_email_async(subject, body_plain, body_html, [user.email])
 
-    # Always return the same message regardless of whether the user exists
     return Response(
         {
             'message': (
@@ -163,34 +155,14 @@ def password_reset(request):
 
 @api_view(['POST'])
 def password_reset_confirm(request):
-    """
-    POST /api/auth/password_reset_confirm/
-    Accepts { "uidb64": "...", "token": "...", "new_password": "..." }
-
-    Validates the uid+token pair, then sets the new password.
-    The token is consumed (one-time use — Django's default behaviour).
-    """
     serializer = PasswordResetConfirmSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
-
     return Response({'message': 'Password has been reset successfully.'})
 
 
-# ──────────────────────────────────────────────────────────────────────
-# Google OAuth2 Login
-# ──────────────────────────────────────────────────────────────────────
-
 @api_view(['POST'])
 def google_login(request):
-    """
-    POST /api/auth/google/
-    Accepts { "id_token": "..." } from the frontend Google Sign-In SDK.
-
-    Verifies the id_token with Google, gets/creates the user, and returns
-    a DRF Token so the frontend can use Token Authentication for subsequent
-    API calls.
-    """
     serializer = GoogleLoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
@@ -204,13 +176,7 @@ def google_login(request):
         {
             'message': 'Google login successful',
             'token': token.key,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
+            'user': _user_payload(user),
         },
         status=status.HTTP_200_OK,
     )

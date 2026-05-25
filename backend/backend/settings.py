@@ -14,8 +14,9 @@ import os
 
 load_dotenv()
 
-import os
+import os as _os_reimport  # noqa: F811 — keep the explicit os import for clarity
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'backend.cors.SimpleCORSMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -90,10 +92,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 
@@ -133,6 +136,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -156,6 +160,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'COERCE_DECIMAL_TO_STRING': False,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',
+        'login': '5/minute',
+        'register': '5/minute',
+        'password_reset': '3/minute',
+        'review_post': '5/day',
+    },
 }
 
 # Razorpay Payment Gateway Configuration
@@ -176,7 +190,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Udaan Studio <hello@udaanstudio.com>')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Fun with Art <hello@funwithart.com>')
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '10'))
 
 # ── Frontend URL (used for password reset links & other emails) ────────────────
@@ -184,3 +198,29 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # ── Google OAuth2 ─────────────────────────────────────────────────────────────
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+
+# ── Cloudinary Media Storage ────────────────────────────────────────────────
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', '')
+if CLOUDINARY_URL:
+    INSTALLED_APPS.append('cloudinary')
+    INSTALLED_APPS.append('cloudinary_storage')
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# ── Production safety checks ──────────────────────────────────────────────────
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+if not DEBUG and not EMAIL_HOST:
+    import warnings
+    warnings.warn(
+        'EMAIL_HOST is not set — SMTP email delivery will fail in production. '
+        'Set EMAIL_HOST (and EMAIL_HOST_USER / EMAIL_HOST_PASSWORD) in your .env, '
+        'or override EMAIL_BACKEND to use a non-SMTP backend.',
+        RuntimeWarning,
+    )

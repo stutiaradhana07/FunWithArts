@@ -1,34 +1,42 @@
 from decimal import Decimal
+
 from django.test import TestCase
-from .models import Product
+
+from .models import Category, Product
 
 
 class SearchAPITests(TestCase):
     @classmethod
     def setUpTestData(cls):
+        tableware = Category.objects.create(name='Tableware', slug='tableware')
+        vase = Category.objects.create(name='Vase', slug='vase')
+
         Product.objects.create(
             name='Artisan Bowl',
+            slug='artisan-bowl',
             description='Textured serving bowl',
             price=Decimal('3200.00'),
             stock=10,
-            category='Tableware',
+            category=tableware,
             is_available=True,
         )
         Product.objects.create(
             name='Earth Vessel',
+            slug='earth-vessel',
             description='Statement vase',
             price=Decimal('8900.00'),
             stock=5,
-            category='Vase',
+            category=vase,
             is_available=True,
             is_new=True,
         )
         Product.objects.create(
             name='Hidden Item',
+            slug='hidden-item',
             description='Unavailable bowl',
             price=Decimal('100.00'),
             stock=1,
-            category='Tableware',
+            category=tableware,
             is_available=False,
         )
 

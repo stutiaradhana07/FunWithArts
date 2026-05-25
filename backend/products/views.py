@@ -1,22 +1,25 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404
-from .models import Product
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from accounts.throttles import ReviewRateThrottle
+from .models import Category, Product, ProductQuestion
 from .search import DEFAULT_LIMIT, MIN_QUERY_LENGTH, build_product_queryset, parse_limit
-from .serializers import ProductSerializer, ReviewSerializer
+from .serializers import (
+    ProductQuestionAnswerSerializer,
+    ProductQuestionSerializer,
+    ProductSerializer,
+    ReviewSerializer,
+)
 
 
 @api_view(['GET'])
 def product_list(request):
-    """
-    GET /api/products/
-    Optional query params:
-      ?category=Decor   — filter by category (case-insensitive)
-      ?search=bowl      — search name + description
-      ?is_new=true      — filter to new arrivals only
-    """
     category = request.query_params.get('category', '').strip()
     search = request.query_params.get('search', '').strip()
     is_new_param = request.query_params.get('is_new', '').strip().lower()
@@ -29,10 +32,6 @@ def product_list(request):
 
 @api_view(['GET'])
 def product_search(request):
-    """
-    GET /api/search/?q=bowl
-    Optional: category, is_new, limit
-    """
     query = (
         request.query_params.get('q', '').strip()
         or request.query_params.get('search', '').strip()
@@ -80,51 +79,27 @@ def product_detail(request, pk):
 
 
 @api_view(['GET', 'POST'])
+@throttle_classes([ReviewRateThrottle])
 def product_reviews(request, pk):
-    """
-    GET  /api/products/<id>/reviews/?page=1&page_size=5 — paginated reviews.
-    POST /api/products/<id>/reviews/ — create a review (auth required).
-    Body: { "rating": 4, "title": "Loved it!", "comment": "Great product!" }
-    """
     product = get_object_or_404(Product, pk=pk, is_available=True)
 
     if request.method == 'GET':
         reviews = product.reviews.select_related('user').all()
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        paginator.page_size_query_param = 'page_size'
+        paginator.max_page_size = 20
 
-        # Pagination
-        try:
-            page = int(request.query_params.get('page', 1))
-            page_size = int(request.query_params.get('page_size', 5))
-        except (ValueError, TypeError):
-            page = 1
-            page_size = 5
+        page = paginator.paginate_queryset(reviews, request)
+        serializer = ReviewSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
-        page = max(page, 1)
-        page_size = min(max(page_size, 1), 20)  # clamp 1–20
-
-        total = reviews.count()
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        page = min(page, total_pages)
-
-        start = (page - 1) * page_size
-        page_reviews = reviews[start:start + page_size]
-
-        return Response({
-            'results': ReviewSerializer(page_reviews, many=True).data,
-            'page': page,
-            'page_size': page_size,
-            'total': total,
-            'total_pages': total_pages,
-        })
-
-    # POST — requires authentication
     if not request.user.is_authenticated:
         return Response(
             {'error': 'Authentication required to leave a review.'},
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    # Check for duplicate review
     if product.reviews.filter(user=request.user).exists():
         return Response(
             {'error': 'You have already reviewed this product.'},
@@ -139,40 +114,79 @@ def product_reviews(request, pk):
 
 @api_view(['GET'])
 def product_review_summary(request, pk):
-    """
-    GET /api/products/<id>/reviews/summary/
-    Returns: { avg_rating, review_count, breakdown: {1: 0, 2: 3, 3: 5, 4: 12, 5: 8} }
-    """
     product = get_object_or_404(Product, pk=pk, is_available=True)
     reviews = product.reviews.all()
     total = reviews.count()
 
-    # Rating distribution
     breakdown = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
     for review in reviews.values('rating').annotate(count=Count('rating')):
         breakdown[review['rating']] = review['count']
 
-    # Average
     avg_result = reviews.aggregate(avg=Avg('rating'))
     avg_rating = round(avg_result['avg'], 1) if avg_result['avg'] is not None else None
 
-    return Response({
-        'avg_rating': avg_rating,
-        'review_count': total,
-        'breakdown': breakdown,
-    })
+    return Response(
+        {
+            'avg_rating': avg_rating,
+            'review_count': total,
+            'breakdown': breakdown,
+        }
+    )
+
+
+@api_view(['GET', 'POST'])
+def product_questions(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_available=True)
+
+    if request.method == 'GET':
+        questions = product.questions.select_related('user', 'answered_by').all()
+        serializer = ProductQuestionSerializer(questions, many=True)
+        return Response(serializer.data)
+
+    serializer = ProductQuestionSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = request.user if request.user.is_authenticated else None
+    serializer.save(
+        product=product,
+        user=user,
+        asker_name=serializer.validated_data['asker_name'].strip(),
+        question=serializer.validated_data['question'].strip(),
+    )
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def product_question_answer(request, pk, question_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return Response(
+            {'error': 'Only staff can moderate product questions.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    question = get_object_or_404(
+        ProductQuestion.objects.select_related('product'),
+        pk=question_id,
+        product_id=pk,
+    )
+
+    if request.method == 'DELETE':
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = ProductQuestionAnswerSerializer(question, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save(answered_by=request.user, answered_at=timezone.now())
+
+    return Response(ProductQuestionSerializer(question).data)
 
 
 @api_view(['GET'])
 def category_list(request):
-    """
-    GET /api/products/categories/
-    Returns a list of distinct category strings for all available products.
-    """
     categories = (
-        Product.objects.filter(is_available=True)
-        .values_list('category', flat=True)
+        Category.objects.filter(products__is_available=True)
         .distinct()
-        .order_by('category')
+        .order_by('name')
+        .values_list('name', flat=True)
     )
     return Response(list(categories))

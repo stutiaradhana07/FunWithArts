@@ -7,23 +7,24 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
 
     <style>
         * { cursor: auto !important; margin: 0; padding: 0; box-sizing: border-box; }
         a, button, .qty-btn { cursor: pointer !important; }
         :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
-        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); opacity: 1; transition: opacity 0.5s ease; }
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); }
         
         /* NAV & WIPES */
-        .page-wipe { position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%; background: var(--accent-color); z-index: 99999; transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1); }
-        .page-wipe.active { transform: translateY(-100%); }
         nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: var(--primary-color); }
-        .english-part { font-family: var(--header-font); font-weight: 700; font-size: 2rem; letter-spacing: -2px; }
-        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: 2.5rem; position: relative; top: 3px; }
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
-        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); text-decoration: none;}
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px; }
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); text-decoration: none; transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
         .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
         .badge-count { position: absolute; top: 0; right: 0; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; }
 
@@ -65,12 +66,20 @@
         .empty-cart h2 { font-family: var(--header-font); font-size: 2rem; font-style: italic; margin-bottom: 20px;}
         .shop-link { display: inline-block; padding: 12px 30px; border: 1px solid #111; color: #111; text-decoration: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; transition: 0.3s;}
         .shop-link:hover { background: #111; color: #fff; }
+
+        /* Hidden by default until renderCart() reveals the appropriate state */
+        #summary-section { display: none; }
+        #cart-loading { text-align: center; padding: 60px 0; font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; font-size: 0.85rem; color: #888; }
+        .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); margin: 0 4px; animation: dotPulse 1.4s infinite ease-in-out; }
+        .loading-dot:nth-child(1) { animation-delay: 0s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dotPulse { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
-    <div class="page-wipe" id="page-wipe"><span class="page-wipe-logo">Fun With Art</span></div>
     <nav>
-        <a href="index.html" class="logo-fusion nav-route" data-target="index.html"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
         <div class="nav-actions">
             <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
             <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
@@ -84,6 +93,7 @@
 
     <div class="cart-container">
         <div class="cart-items-section">
+            <div id="cart-loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Loading your bag</div>
             <div id="cart-items-container"></div>
             <div class="empty-cart" id="empty-state">
                 <h2>Your bag is currently empty.</h2>
@@ -133,6 +143,9 @@
             var emptyState = document.getElementById('empty-state');
             var summarySec = document.getElementById('summary-section');
             container.innerHTML = '';
+
+            var loadingEl = document.getElementById('cart-loading');
+            if (loadingEl) loadingEl.style.display = 'none';
 
             if (cartItems.length === 0) {
                 emptyState.style.display = 'block';
@@ -215,15 +228,6 @@
                 }
             }
         };
-
-        document.querySelectorAll('.nav-route').forEach(function (link) {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                var target = this.getAttribute('data-target');
-                document.getElementById('page-wipe').classList.add('active');
-                setTimeout(function () { window.location.href = target; }, 620);
-            });
-        });
 
         (async function init() {
             await buildProductImageMap();

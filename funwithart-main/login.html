@@ -7,6 +7,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
 
     <style>
@@ -59,6 +60,14 @@
         .toggle-btn { flex: 1; padding: 12px; background: none; border: none; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; color: #888; transition: 0.3s; position: relative; z-index: 2; }
         .toggle-btn.active { color: #111; }
         .toggle-slider { position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px); background: #fff; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); z-index: 1; }
+
+        /* GOOGLE SIGN-IN */
+        .auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #e5e0dc; }
+        .auth-divider span { font-family: var(--body-font); font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        .google-btn-container { text-align: center; }
+        .google-btn-container #googleSignInDiv { display: flex; justify-content: center; min-height: 48px; }
+        .google-hint { font-family: var(--body-font); font-size: 0.75rem; color: #aaa; margin-top: 10px; }
 
         /* FORMS */
         .form-section { display: none; text-align: left; animation: fadeIn 0.5s ease forwards; }
@@ -127,7 +136,7 @@
             <a href="/">Home</a>
             <a href="/collection">Collection</a>
             <a href="/studio">Studio</a>
-            <a href="login.html" class="active-account">Account</a>
+            <a href="account.html" class="active-account">Account</a>
         </div>
         <div class="nav-actions">
             <a href="search.html" class="nav-icon" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
@@ -147,7 +156,7 @@
                 <p class="user-greeting" id="user-greeting">Hello</p>
                 <p class="user-meta" id="user-meta"></p>
                 <div class="auth-actions-row">
-                    <a href="orders.html" class="submit-btn" style="display:inline-block;text-align:center;text-decoration:none;line-height:1.2;">My Orders</a>
+                    <a href="account.html" class="submit-btn" style="display:inline-block;text-align:center;text-decoration:none;line-height:1.2;">My Account</a>
                     <a href="/collection" class="secondary-btn">Continue Shopping</a>
                 </div>
                 <button type="button" class="logout-btn" id="logout-btn">Sign out</button>
@@ -191,6 +200,13 @@
                 
                 <button type="submit" class="submit-btn" id="register-submit">Create Account</button>
             </form>
+
+            <div class="auth-divider"><span>or</span></div>
+            <div class="google-btn-container">
+                <div id="googleSignInDiv"></div>
+                <p class="google-hint">Use your Google account for one‑tap sign‑in</p>
+            </div>
+
             </div>
 
         </div>
@@ -359,6 +375,62 @@
                 btn.innerText = 'Create Account';
             }
         });
+
+        // ── Google Sign-In (page-specific credential handler override) ──
+        // The GIS SDK initialisation (onGoogleLibraryLoad) lives in shared.js
+        // and runs early.  After overriding the credential handler, we must
+        // re-initialise so the GIS SDK picks up the new callback reference.
+        window.handleGoogleCredentialResponse = async function (response) {
+            const idToken = response.credential;
+            if (!idToken) {
+                showAuthError('Google sign-in did not return a credential.');
+                return;
+            }
+
+            const loginBtn = document.getElementById('login-submit');
+            const registerBtn = document.getElementById('register-submit');
+            if (loginBtn) { loginBtn.disabled = true; loginBtn.innerText = 'Signing in...'; }
+            if (registerBtn) { registerBtn.disabled = true; registerBtn.innerText = 'Signing in...'; }
+            showAuthError('');
+
+            try {
+                await window.UdaanAPI.googleLogin(idToken);
+                showToast('Signed in with Google!');
+                setTimeout(redirectAfterAuth, 800);
+            } catch (error) {
+                showAuthError(error.message || 'Google sign-in failed.');
+                if (loginBtn) { loginBtn.disabled = false; loginBtn.innerText = 'Sign In'; }
+                if (registerBtn) { registerBtn.disabled = false; registerBtn.innerText = 'Create Account'; }
+            }
+        };
+
+        // Re-initialise GIS with the overridden callback and render the button.
+        // This is needed because onGoogleLibraryLoad (shared.js) may have run
+        // before this page's DOM existed.
+        if (window.google?.accounts?.id) {
+            const clientIdMeta = document.querySelector('meta[name="google-signin-client_id"]');
+            const clientId = (clientIdMeta && clientIdMeta.content) || 'YOUR_GOOGLE_CLIENT_ID';
+            if (clientId && clientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: window.handleGoogleCredentialResponse,
+                    auto_select: false,
+                    context: 'signin',
+                });
+                const btnContainer = document.getElementById('googleSignInDiv');
+                if (btnContainer) {
+                    google.accounts.id.renderButton(btnContainer, {
+                        theme: 'outline',
+                        size: 'large',
+                        text: 'continue_with',
+                        shape: 'rectangular',
+                        width: btnContainer.offsetWidth > 300 ? 300 : btnContainer.offsetWidth,
+                    });
+                }
+                google.accounts.id.prompt();
+            }
+        }
+        // ── End Google Sign-In override ──
 
         window.UdaanAPI?.updateBadges();
     </script>

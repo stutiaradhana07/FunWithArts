@@ -40,6 +40,15 @@
         .order-number { background: #fafafa; padding: 20px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 40px; }
         .order-number span { display: block; font-family: var(--art-font); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 5px; font-weight: bold;}
         .order-number strong { font-family: var(--body-font); font-size: 1.5rem; color: var(--accent-color); }
+        .confirmation-meta { display: grid; gap: 12px; text-align: left; background: #fafafa; border: 1px solid #eee; border-radius: 20px; padding: 24px; margin-bottom: 30px; }
+        .meta-row { display: flex; justify-content: space-between; gap: 16px; font-size: 1rem; color: #444; }
+        .meta-row span:first-child { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 1px; font-size: 0.78rem; color: #888; font-weight: bold; }
+        .order-items-preview { text-align: left; margin-bottom: 36px; }
+        .order-items-preview h3 { font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; color: #111; }
+        .order-items-list { display: grid; gap: 12px; }
+        .order-item { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 12px; border-bottom: 1px solid #f0ece8; font-size: 0.98rem; color: #444; }
+        .order-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .order-item-title { color: #111; font-weight: 700; }
 
         .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .primary-btn { padding: 18px 40px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; font-size: 0.95rem; text-decoration: none; }
@@ -69,11 +78,35 @@
         <div class="success-card">
             <div class="success-icon">✨</div>
             <h1>Your art is on the way!</h1>
-            <p>Thank you for supporting slow living and handmade ceramics. We are getting our hands dirty packing your order right now. A confirmation email has been sent to your inbox.</p>
+            <p id="confirmation-message">Thank you for supporting slow living and handmade ceramics. We are getting our hands dirty packing your order right now. A confirmation email has been sent to your inbox.</p>
             
             <div class="order-number">
                 <span>Order Reference</span>
-                <strong id="random-order">#FWA-00000</strong>
+                <strong id="order-reference">#FWA-00000</strong>
+            </div>
+
+            <div class="confirmation-meta">
+                <div class="meta-row">
+                    <span>Email</span>
+                    <strong id="confirmation-email">Not available</strong>
+                </div>
+                <div class="meta-row">
+                    <span>Payment</span>
+                    <strong id="confirmation-payment">Cash on Delivery</strong>
+                </div>
+                <div class="meta-row">
+                    <span>Items</span>
+                    <strong id="confirmation-items">0 pieces</strong>
+                </div>
+                <div class="meta-row">
+                    <span>Total</span>
+                    <strong id="confirmation-total">₹0</strong>
+                </div>
+            </div>
+
+            <div class="order-items-preview">
+                <h3>Order Snapshot</h3>
+                <div class="order-items-list" id="order-items-list"></div>
             </div>
 
             <div class="btn-group">
@@ -119,8 +152,64 @@
     </footer>
 
     <script>
-        // Generate a random order number for realism!
-        document.getElementById('random-order').innerText = '#FWA-' + Math.floor(10000 + Math.random() * 90000);
+        const ORDER_CONFIRMATION_KEY = 'udaan_last_order_confirmation';
+
+        function formatCurrency(value) {
+            return '₹' + Number(value || 0).toLocaleString('en-IN');
+        }
+
+        function toPaymentLabel(value) {
+            if (value === 'upi') return 'UPI / Wallet';
+            if (value === 'card') return 'Card Payment';
+            return 'Cash on Delivery';
+        }
+
+        function renderFallbackState() {
+            document.getElementById('confirmation-message').innerText = "We couldn't find your latest order details yet, but your checkout flow is ready to send new orders here.";
+            document.getElementById('order-items-list').innerHTML = '<div class="order-item"><span class="order-item-title">No recent order found</span><span>Place an order to see confirmation details here.</span></div>';
+        }
+
+        function renderOrderItems(items) {
+            var list = document.getElementById('order-items-list');
+            if (!Array.isArray(items) || !items.length) {
+                list.innerHTML = '<div class="order-item"><span class="order-item-title">Order placed successfully</span><span>Item details were not saved.</span></div>';
+                return;
+            }
+
+            list.innerHTML = items.map(function (item) {
+                var qty = Number(item.qty) || 1;
+                var lineTotal = (Number(item.basePrice) || 0) * qty;
+                return '<div class="order-item">' +
+                    '<span class="order-item-title">' + item.title + ' × ' + qty + '</span>' +
+                    '<span>' + formatCurrency(lineTotal) + '</span>' +
+                '</div>';
+            }).join('');
+        }
+
+        (function initConfirmationPage() {
+            var raw = localStorage.getItem(ORDER_CONFIRMATION_KEY);
+            if (!raw) {
+                renderFallbackState();
+                return;
+            }
+
+            try {
+                var confirmation = JSON.parse(raw);
+                document.getElementById('order-reference').innerText = '#' + String(confirmation.orderNumber || confirmation.id || 'FWA-00000').replace(/^#/, '');
+                document.getElementById('confirmation-email').innerText = confirmation.email || 'Not available';
+                document.getElementById('confirmation-payment').innerText = toPaymentLabel(confirmation.paymentMethod);
+                document.getElementById('confirmation-items').innerText = (confirmation.itemCount || 0) + ((confirmation.itemCount || 0) === 1 ? ' piece' : ' pieces');
+                document.getElementById('confirmation-total').innerText = formatCurrency(confirmation.total || 0);
+
+                if (confirmation.customerName) {
+                    document.getElementById('confirmation-message').innerText = 'Thank you, ' + confirmation.customerName + '. Your order has been received and a confirmation has been sent to ' + (confirmation.email || 'your inbox') + '.';
+                }
+
+                renderOrderItems(confirmation.items);
+            } catch (error) {
+                renderFallbackState();
+            }
+        })();
     </script>
 </body>
 </html>

@@ -13,7 +13,12 @@ Copy `.env.example` to `.env` and adjust values as needed.
 python manage.py makemigrations
 python manage.py migrate
 python manage.py seed_store_data
+python manage.py seed_shipping_zones
 ```
+
+**Important**: `seed_shipping_zones` populates the ShippingZone table with valid delivery pincodes.
+Without this data, all order delivery checks will fail with "Pincode not serviceable".
+Run this after initial migrate to enable pincode-based delivery validation.
 
 ## 4) Run checks and tests
 ```bash

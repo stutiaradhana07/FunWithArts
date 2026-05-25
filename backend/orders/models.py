@@ -1,6 +1,12 @@
 from django.db import models, transaction
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from products.models import Product
+
+PHONE_VALIDATOR = RegexValidator(
+    regex=r'^\d{10}$',
+    message='Enter a valid 10-digit phone number.',
+)
 
 
 class Order(models.Model):
@@ -24,8 +30,8 @@ class Order(models.Model):
         blank=True,
         related_name='orders',
     )
-    contact_email = models.EmailField()
-    contact_phone = models.CharField(max_length=20)
+    contact_email = models.EmailField(db_index=True)
+    contact_phone = models.CharField(max_length=10, validators=[PHONE_VALIDATOR])
     shipping_first_name = models.CharField(max_length=120)
     shipping_last_name = models.CharField(max_length=120)
     shipping_address_line_1 = models.CharField(max_length=255)

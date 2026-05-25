@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap';
 
-// ── Whitelist of app-internal path prefixes that should use client-side routing ──
+// ── Whitelist of app-internal path prefixes ──
 const APP_ROUTES = [
   '/account',
   '/orders',
@@ -23,13 +23,14 @@ const APP_ROUTES = [
   '/legal',
   '/support',
   '/success',
+  '/settings',
+  '/addresses',
+  '/order-history',
 ];
 
 function isInternalAppLink(href) {
   if (!href) return false;
-  // Match root path exactly
   if (href === '/') return true;
-  // Match any whitelisted prefix
   return APP_ROUTES.some((route) => href.startsWith(route));
 }
 
@@ -45,27 +46,67 @@ function shouldInterceptClick(target, href) {
     href.startsWith('#')
   )
     return false;
-  // Skip if target is _blank
   if (target && target !== '_self') return false;
-  // Skip if the anchor has a download attribute
-  const el = target;
-  // Only intercept internal app links
   return isInternalAppLink(href);
 }
 
 function clearManagedNodes() {
   document.querySelectorAll(
     'style[data-legacy-style], link[data-legacy-link], script[data-legacy-script]'
-  ).forEach((node) => {
-    node.remove();
-  });
+  ).forEach((node) => node.remove());
   document.body.classList.remove('legacy-route-active');
+}
+
+function makeProductRouteSegment(productCard) {
+  if (!productCard) return '';
+
+  const slug = productCard.getAttribute('data-product-slug');
+  if (slug) return slug;
+
+  const liveId = productCard.getAttribute('data-product-id');
+  if (liveId) return liveId;
+
+  const title =
+    productCard.querySelector('.product-title')?.textContent ||
+    productCard.querySelector('h3')?.textContent ||
+    '';
+
+  if (title) {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  return productCard.getAttribute('data-id') || '';
+}
+
+function buildActiveProduct(productCard) {
+  if (!productCard) return null;
+
+  const title =
+    productCard.querySelector('.product-title')?.textContent ||
+    productCard.querySelector('h3')?.textContent ||
+    '';
+
+  const priceRaw =
+    productCard.getAttribute('data-base-price') ||
+    productCard.querySelector('.price')?.textContent?.replace(/[^\d.]/g, '') ||
+    '0';
+
+  return {
+    id: productCard.getAttribute('data-product-id') || productCard.getAttribute('data-id') || '',
+    slug: productCard.getAttribute('data-product-slug') || '',
+    title,
+    price: Number(priceRaw) || 0,
+    desc: productCard.getAttribute('data-desc') || '',
+    img: productCard.querySelector('.product-image, img')?.getAttribute('src') || '',
+  };
 }
 
 function ensureLegacyFonts() {
   const existing = document.querySelector('link[data-legacy-fonts]');
   if (existing) return;
-
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = FONT_HREF;
@@ -77,7 +118,6 @@ function injectLegacyLinks(doc, source) {
   doc.head.querySelectorAll('link[rel="stylesheet"]').forEach((linkTag) => {
     const href = linkTag.getAttribute('href');
     if (!href || href.includes('fonts.googleapis.com')) return;
-
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = href;
@@ -96,28 +136,80 @@ export default function LegacyPage({ source, title }) {
   const navigate = useNavigate();
   const clickHandlerRef = useRef(null);
 
-  // ── Click interceptor: route internal links through React Router ──
+  // ── Enhanced click interceptor (capture phase) ──
   useEffect(() => {
     const container = ref.current;
     if (!container) return;
 
     function handleClick(e) {
-      // Walk up from the clicked element to find the nearest <a>
+      let path = null;
+
+      // 1. Check for <a> tag
       let anchor = e.target;
       while (anchor && anchor !== container && anchor.tagName !== 'A') {
         anchor = anchor.parentElement;
       }
-      if (!anchor || anchor.tagName !== 'A') return;
 
-      const rawHref = anchor.getAttribute('href');
-      const linkTarget = anchor.getAttribute('target');
+      if (anchor && anchor.tagName === 'A') {
+  const rawHref = anchor.getAttribute('href');
+  const linkTarget = anchor.getAttribute('target');
 
-      if (!shouldInterceptClick(linkTarget, rawHref)) return;
+  if (rawHref) {
+    // Resolve relative paths (e.g., "wishlist.html" → "/wishlist") BEFORE checking
+    const resolved = new URL(rawHref, window.location.origin);
+    const fullPath = resolved.pathname + resolved.search + resolved.hash;
 
-      e.preventDefault();
-      // Resolve relative paths against the current origin
-      const resolved = new URL(rawHref, window.location.origin);
-      navigate(resolved.pathname + resolved.search + resolved.hash);
+    if (shouldInterceptClick(linkTarget, fullPath)) {
+      path = fullPath;
+    }
+  }
+}
+
+      // 2. Check for .view-link (product cards)
+      if (!path) {
+        const viewLink = e.target.closest('.view-link');
+        if (viewLink) {
+          const productCard = viewLink.closest('.product-card');
+          const productId = makeProductRouteSegment(productCard);
+
+          if (productId) {
+            const product = buildActiveProduct(productCard);
+            if (product) {
+              localStorage.setItem('udaan_active_product', JSON.stringify(product));
+            }
+            path = `/product/${productId}`;
+          }
+        }
+      }
+
+      // 3. Check for data-target attribute (custom triggers)
+      if (!path) {
+        const dataTarget = e.target.closest('[data-target]');
+        if (dataTarget) {
+          const target = dataTarget.getAttribute('data-target');
+          if (target && !target.startsWith('http')) {
+            path = target;
+          }
+        }
+      }
+
+      if (path) {
+        // Normalize path
+        path = path.replace(/\.html$/, '');
+        path = path.replace(/\/index\.html?$/, '/');
+        path = path.replace(/\/legacy-index\.html?$/, '/');
+        if (path === '/index' || path === '/legacy-index') path = '/';
+        if (!path.startsWith('/')) path = '/' + path;
+
+        // Kill all legacy transition/wipe handlers
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        // True SPA navigation
+        navigate(path);
+        return;
+      }
     }
 
     container.addEventListener('click', handleClick, true); // capture phase
@@ -202,9 +294,9 @@ export default function LegacyPage({ source, title }) {
     setContentKey((k) => k + 1);
   }, [source]);
 
+  // ── Render (loading screen removed) ──
   return (
     <div className="legacy-page-shell">
-      {loading ? <div className="legacy-loading">Loading studio...</div> : null}
       <div ref={ref} className="legacy-page-content" key={contentKey} />
     </div>
   );

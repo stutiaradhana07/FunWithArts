@@ -7,6 +7,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
 
     <style>
@@ -287,6 +289,7 @@
         const lenis = new Lenis({ duration: 1.2, smooth: true });
         requestAnimationFrame(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); });
 
+        const ORDER_CONFIRMATION_KEY = 'udaan_last_order_confirmation';
         let cartItems = [];       // legacy-shaped from API
         let productImageMap = {}; // product_id → image_url
 
@@ -308,6 +311,43 @@
             document.querySelectorAll('.payment-option').forEach(function(opt) { opt.classList.remove('selected'); });
             var checked = document.querySelector('input[name="payment"]:checked');
             if (checked) { checked.closest('.payment-option').classList.add('selected'); }
+        }
+
+        function formatCurrency(value) {
+            return '₹' + Number(value || 0).toLocaleString('en-IN');
+        }
+
+        function buildOrderConfirmationPayload(order, form, items) {
+            var firstName = form.querySelector('[name="shipping_first_name"]')?.value.trim() || '';
+            var email = form.querySelector('[name="contact_email"]')?.value.trim() || '';
+            var paymentMethod = form.querySelector('input[name="payment"]:checked')?.value || 'cod';
+            var subtotal = items.reduce(function (sum, item) {
+                return sum + ((Number(item.basePrice) || 0) * (Number(item.qty) || 1));
+            }, 0);
+            var shippingFee = subtotal >= 10000 ? 0 : 500;
+
+            return {
+                id: order?.id || '',
+                orderNumber: order?.order_number || order?.reference || ('FWA-' + String(order?.id || '').padStart(5, '0')),
+                customerName: firstName,
+                email: email,
+                paymentMethod: paymentMethod,
+                subtotal: subtotal,
+                shipping: shippingFee,
+                total: subtotal + shippingFee,
+                itemCount: items.reduce(function (count, item) {
+                    return count + (Number(item.qty) || 1);
+                }, 0),
+                items: items.map(function (item) {
+                    return {
+                        title: item.title,
+                        qty: Number(item.qty) || 1,
+                        basePrice: Number(item.basePrice) || 0,
+                        imgSrc: getItemImage(item)
+                    };
+                }),
+                placedAt: new Date().toISOString()
+            };
         }
 
         function renderCheckout() {
@@ -382,24 +422,85 @@
                 return;
             }
 
+            var paymentMethod = (form.querySelector('input[name="payment"]:checked') || {}).value || 'cod';
+
             btn.innerText = "Processing...";
             btn.style.pointerEvents = "none";
             btn.style.background = "#555";
             btn.style.boxShadow = "none";
 
             try {
+                // 1. Create the order (status: PENDING for online, CONFIRMED for COD)
                 var order = await window.UdaanAPI.submitCheckoutOrder(form, cartItems);
-                showToast('Order #' + order.id + ' confirmed! Redirecting...');
-                await window.UdaanAPI.clearCart();
-                cartItems = [];
-                setTimeout(function () {
-                    window.location.href = '/';
-                }, 2000);
+
+                if (paymentMethod === 'cod') {
+                    // COD: direct confirmation — no payment gateway needed
+                    var confirmation = buildOrderConfirmationPayload(order, form, cartItems);
+                    localStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmation));
+                    showToast('Order #' + (confirmation.orderNumber || order.id) + ' confirmed!');
+                    await window.UdaanAPI.clearCart();
+                    cartItems = [];
+                    setTimeout(function () {
+                        window.location.href = 'success.html';
+                    }, 900);
+                    return;
+                }
+
+                // 2. Online payment: initiate Razorpay order
+                var initData = await window.UdaanAPI.initiateOrderPayment(order.id);
+
+                // 3. Open Razorpay checkout modal
+                var options = {
+                    key: initData.key_id,
+                    amount: initData.amount,
+                    currency: initData.currency,
+                    name: initData.name,
+                    description: initData.description,
+                    order_id: initData.razorpay_order_id,
+                    prefill: initData.prefill,
+                    handler: async function (response) {
+                        try {
+                            await window.UdaanAPI.verifyOrderPayment(
+                                response.razorpay_order_id,
+                                response.razorpay_payment_id,
+                                response.razorpay_signature
+                            );
+                            // Payment verified — now the order is CONFIRMED
+                            var confirmation = buildOrderConfirmationPayload(order, form, cartItems);
+                            localStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmation));
+                            showToast('Order #' + (confirmation.orderNumber || order.id) + ' confirmed!');
+                            await window.UdaanAPI.clearCart();
+                            cartItems = [];
+                            setTimeout(function () {
+                                window.location.href = 'success.html';
+                            }, 900);
+                        } catch (verifyErr) {
+                            showToast('Payment verification failed. Please contact support.');
+                            resetBtn();
+                        }
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            showToast('Payment cancelled. You can try again.');
+                            resetBtn();
+                        }
+                    },
+                    theme: { color: '#D7A88D' }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+
             } catch (error) {
                 showToast(error.message || 'Could not place your order.');
+                resetBtn();
+            }
+
+            function resetBtn() {
                 btn.innerText = "Place Order";
                 btn.style.pointerEvents = "all";
                 btn.style.background = "#111";
+                btn.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
             }
         });
 

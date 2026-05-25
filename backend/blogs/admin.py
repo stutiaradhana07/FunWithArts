@@ -1,6 +1,17 @@
+from django import forms
 from django.contrib import admin
 from django.utils.text import slugify
 from .models import NewsletterSubscriber, Post
+
+
+class PostAdminForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = '__all__'
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'vLargeTextField rich-text-editor'}),
+            'excerpt': forms.Textarea(attrs={'rows': 4}),
+        }
 
 
 @admin.register(NewsletterSubscriber)
@@ -19,14 +30,53 @@ class NewsletterSubscriberAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'status', 'author', 'created_at')
+    form = PostAdminForm
+    list_display = ('title', 'status', 'author', 'published_at', 'created_at')
     list_filter = ('status', 'created_at')
     search_fields = ('title', 'excerpt', 'content')
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'published_at')
     prepopulated_fields = {'slug': ('title',)}
     ordering = ('-created_at',)
+    fieldsets = (
+        (None, {
+            'fields': (
+                'title',
+                'title_is_bold',
+                'title_is_italic',
+                'title_font_size',
+                'title_color',
+                'slug',
+                'author',
+                'cover_image',
+                'cover_image_position',
+                'excerpt',
+                'content',
+                'status',
+                'published_at',
+                'created_at',
+                'updated_at',
+            ),
+        }),
+    )
+
+    class Media:
+        js = ['https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.request = request
+        return form
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['tinymce_init'] = True
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:
             obj.author = request.user
+        # Set published_at when status flips from non-published to published
+        if obj.status == 'published' and obj.published_at is None:
+            from django.utils import timezone
+            obj.published_at = timezone.now()
         super().save_model(request, obj, form, change)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import BlogNavbar from './BlogNavbar';
 
 function formatBlogDate(dateStr) {
   if (!dateStr) return '';
@@ -11,12 +12,23 @@ function formatBlogDate(dateStr) {
   });
 }
 
+function getPostCover(post) {
+  return (
+    post?.cover_image ||
+    post?.image_url ||
+    post?.image ||
+    'https://placehold.co/1600x900/EAE6DB/3D2A20?text=Fun+With+Art'
+  );
+}
+
 export default function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const headerRef = useRef(null);
+  const lenisRef = useRef(null);
+  const rafRef = useRef(null);
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -31,19 +43,19 @@ export default function BlogPost() {
         }
       } catch (err) {
         if (!cancelled) {
-          if (err.message && (err.message.includes('404') || err.message.includes('not found'))) {
-            setError('not_found');
-          } else {
-            setError('load_error');
-          }
+          setError(err.message?.includes('404') ? 'not_found' : 'load_error');
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   useEffect(() => {
@@ -52,11 +64,51 @@ export default function BlogPost() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (typeof window.Lenis !== 'function') {
+      return undefined;
+    }
+
+    try {
+      const lenis = new window.Lenis({ duration: 1.8, smooth: true });
+      lenisRef.current = lenis;
+      let lastScrollY = window.scrollY;
+      const mainNav = document.getElementById('main-nav');
+
+      lenis.on('scroll', (e) => {
+        const current = e.scroll;
+        if (current > lastScrollY && current > 150) {
+          mainNav?.classList.add('hide');
+        } else {
+          mainNav?.classList.remove('hide');
+        }
+        lastScrollY = current;
+      });
+
+      function raf(time) {
+        lenis.raf(time);
+        rafRef.current = requestAnimationFrame(raf);
+      }
+
+      rafRef.current = requestAnimationFrame(raf);
+    } catch (e) {
+      lenisRef.current = null;
+    }
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      lenisRef.current?.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="blog-loading">
         <div className="blog-loading__spinner" />
-        <p>Opening the kiln…</p>
+        <p>Opening the kiln...</p>
       </div>
     );
   }
@@ -64,14 +116,9 @@ export default function BlogPost() {
   if (error === 'not_found') {
     return (
       <div className="blog-error">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
         <h1>Story Not Found</h1>
         <p>This article may have been moved or is no longer available.</p>
-        <Link to="/blogs" className="blog-cta-btn">← Back to Stories</Link>
+        <Link to="/blogs" className="blog-cta-btn">Back to Stories</Link>
       </div>
     );
   }
@@ -80,35 +127,40 @@ export default function BlogPost() {
     return (
       <div className="blog-error">
         <p>Something went wrong loading this story. Please try again.</p>
-        <Link to="/blogs" className="blog-cta-btn">← Back to Stories</Link>
+        <Link to="/blogs" className="blog-cta-btn">Back to Stories</Link>
       </div>
     );
   }
 
+  const titleStyle = {
+    fontWeight: post.title_is_bold ? '700' : undefined,
+    fontStyle: post.title_is_italic ? 'italic' : undefined,
+    fontSize: post.title_font_size || undefined,
+    color: post.title_color || undefined,
+  };
+
+  const coverStyle = {
+    objectPosition: post.cover_image_position || 'center center',
+  };
+
   return (
     <div className="blog-post" ref={headerRef}>
-      {/* ── Nav ── */}
-      <nav className="blog-nav">
-        <Link to="/" className="blog-nav__logo">Fun With Art</Link>
-        <div className="blog-nav__links">
-          <Link to="/collection">Collection</Link>
-          <Link to="/studio">Studio</Link>
-          <Link to="/blogs">Blogs</Link>
-        </div>
-      </nav>
+      <BlogNavbar />
 
-      {/* ── Immersive Parallax Header ── */}
       <header className="blog-header">
         <div
           className="blog-header__bg"
           style={{ transform: `translateY(${scrollY * 0.35}px)` }}
         >
-          <img src={post.cover_image} alt={post.title} />
+          <img
+            src={getPostCover(post)}
+            alt={post.title}
+            style={coverStyle}
+          />
           <div className="blog-header__gradient" />
         </div>
       </header>
 
-      {/* ── Title Block ── */}
       <section className="blog-title-block">
         <div className="blog-title-block__inner">
           <Link to="/blogs" className="blog-title-block__back">
@@ -118,7 +170,7 @@ export default function BlogPost() {
             </svg>
             All Stories
           </Link>
-          <h1 className="blog-title-block__title">{post.title}</h1>
+          <h1 className="blog-title-block__title" style={titleStyle}>{post.title}</h1>
           <div className="blog-title-block__meta">
             <span>By {post.author_name || 'Udaan Studio'}</span>
             <span className="blog-title-block__sep">·</span>
@@ -127,7 +179,6 @@ export default function BlogPost() {
         </div>
       </section>
 
-      {/* ── Reading Column ── */}
       <main className="blog-content">
         <div className="blog-content__body">
           {post.content ? (
@@ -143,25 +194,9 @@ export default function BlogPost() {
         </div>
       </main>
 
-      {/* ── Call to Action ── */}
-      <section className="blog-cta">
-        <div className="blog-cta__inner">
-          <h2>Inspired by the craft?</h2>
-          <p>Explore our handcrafted collection — each piece carries its own story.</p>
-          <Link to="/collection" className="blog-cta-btn">
-            Shop the Studio
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </Link>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
       <footer className="blog-footer">
         <div className="blog-footer__inner">
-          <p>© {new Date().getFullYear()} Fun With Art — Handcrafted in New Delhi</p>
+          <p>© {new Date().getFullYear()} Fun With Art - Handcrafted in New Delhi</p>
           <div className="blog-footer__links">
             <Link to="/contact">Contact</Link>
             <Link to="/support">Support</Link>

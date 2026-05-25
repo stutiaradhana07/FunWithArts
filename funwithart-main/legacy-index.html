@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
     <script src="shared.js"></script>
 
     <style>
@@ -42,8 +43,8 @@
         .shape-3 { top: 30%; right: 12%; width: 80px; animation: floatA 7s ease-in-out infinite; animation-delay: 2s; }
         .shape-4 { top: 80%; right: 10%; width: 70px; animation: floatB 9s ease-in-out infinite; animation-delay: 1.5s; }
 
-        .page-wipe { position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%; background: var(--accent-color); z-index: 99999; transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1); }
-        .page-wipe.active { transform: translateY(-100%); }
+        .page-wipe { display: none !important; }
+        .page-wipe.active { transform: none !important; }
 
         /* NAV BAR */
         nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
@@ -119,8 +120,8 @@
         
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: clamp(40px, 5vw, 60px) 40px; perspective: 2000px;}
         
-        .product-card { opacity: 0; transform: scale(1.2) translateZ(150px) translateY(80px) rotateX(-5deg); transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease; will-change: transform, opacity; }
-        .product-card.exploded { opacity: 1; transform: scale(1) translateZ(0) translateY(0) rotateX(0); }
+        .product-card { opacity: 1; transform: none; transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease; will-change: transform, opacity; }
+        .product-card.exploded { opacity: 1; transform: none; }
 
         .product-badge { position: absolute; top: 20px; left: 20px; background: #111; color: #fff; padding: 6px 14px; font-size: 0.65rem; font-family: var(--body-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 30px; z-index: 10; pointer-events: none; }
         .badge-hot { background: var(--accent-color); }
@@ -382,18 +383,18 @@
 
         /* Scroll Reveal */
         [data-reveal] {
-            opacity: 0;
-            transform: translateY(30px);
+            opacity: 1;
+            transform: none;
             transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
         [data-reveal].revealed {
             opacity: 1;
-            transform: translateY(0);
+            transform: none;
         }
-        [data-reveal="fade-left"]  { transform: translateX(-30px); }
-        [data-reveal="fade-left"].revealed  { transform: translateX(0); }
-        [data-reveal="fade-right"] { transform: translateX(30px); }
-        [data-reveal="fade-right"].revealed { transform: translateX(0); }
+        [data-reveal="fade-left"]  { transform: none; }
+        [data-reveal="fade-left"].revealed  { transform: none; }
+        [data-reveal="fade-right"] { transform: none; }
+        [data-reveal="fade-right"].revealed { transform: none; }
 
         /* STUDIO CLUB SECTION */
         .studio-club-section {
@@ -546,6 +547,18 @@
             .about-doodle { opacity: 0.07; }
             .sc-float-el  { opacity: 0.05; }
         }
+
+        /* ── Star Ratings (Reviews) ── */
+        .stars-row { margin-top: 2px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .star-rating { display: inline-flex; gap: 1px; align-items: center; }
+        .star-rating--sm .star-icon { width: 13px; height: 13px; }
+        .star-rating--md .star-icon { width: 18px; height: 18px; }
+        .star-rating--lg .star-icon { width: 24px; height: 24px; }
+        .star-icon--full { fill: #E8A317; color: #E8A317; }
+        .star-icon--half { fill: none; color: #E8A317; }
+        .star-icon--empty { fill: none; color: #D4C5B2; stroke: #D4C5B2; stroke-width: 0.5px; }
+        .star-rating--empty { font-family: var(--body-font); font-size: 0.75rem; color: #999; font-style: italic; }
+        .review-count-text { font-family: var(--body-font); font-size: 0.8rem; color: #888; margin-left: 2px; }
     </style>
 </head>
 <body>
@@ -868,6 +881,7 @@
         const amb1 = document.getElementById('amb-1');
         const amb2 = document.getElementById('amb-2');
         const dreamscape = document.getElementById('dreamscape');
+        const latestGrid = document.getElementById('product-grid');
 
         lenis.on('scroll', (e) => {
             scrollY = e.scroll; speed = e.velocity;
@@ -901,6 +915,14 @@
             }); 
         }, { threshold: 0.2 });
         document.querySelectorAll('.explode-target').forEach(el => explodeObserver.observe(el));
+
+        const latestFallbackProducts = [
+            { id: 'kala-tikka-trio', productId: 'kala-tikka-trio', slug: 'kala-tikka-trio', title: 'Kala Tikka Trio', price: 180, img: 'Teen Shagun .jpg', category: 'decor', desc: 'Every aesthetic home needs a little black dot to keep the nazar away. Minimalist but totally desi.', badge: 'Latest Drop', avg_rating: null, review_count: 0, created_at: '' },
+            { id: 'bhukkad-nandi', productId: 'bhukkad-nandi', slug: 'bhukkad-nandi', title: 'Bhukkad Nandi', price: 500, img: 'Bhala Nandi.png', category: 'decor', desc: 'Perfect for holding your keys, or just a massive pile of snacks.', badge: 'Latest Drop', avg_rating: null, review_count: 0, created_at: '' },
+            { id: 'nautanki-twins', productId: 'nautanki-twins', slug: 'nautanki-twins', title: 'Nautanki Twins', price: 120, img: 'character-pots.jpg', category: 'pots', desc: 'One with an orange collar, one green, and absolutely zero chill. Pure drama for any plant shelf.', badge: 'Latest Drop', avg_rating: null, review_count: 0, created_at: '' },
+            { id: 'terracotta-holder', productId: 'terracotta-holder', slug: 'terracotta-holder', title: 'Terracotta Holder', price: 250, img: 'wall-pen-holder.PNG', category: 'decor', desc: 'Keep your pens, incense, brushes, or even dried flowers perfectly organized.', badge: 'Latest Drop', avg_rating: null, review_count: 0, created_at: '' }
+        ];
+        let latestCatalog = latestFallbackProducts;
 
         // CART & WISHLIST LOGIC
         let cartItems = [];  // legacy-shaped from API
@@ -948,24 +970,94 @@
             });
         }
 
-        async function syncProductIdsFromApi() {
+        function ensureStarsRow(card) {
+            let starsRow = card.querySelector('.stars-row');
+            if (!starsRow) {
+                starsRow = document.createElement('div');
+                starsRow.className = 'stars-row';
+                const metaRow = card.querySelector('.meta-row');
+                if (metaRow) metaRow.appendChild(starsRow);
+            }
+            return starsRow;
+        }
+
+        function sortLatestProducts(items) {
+            return [...items].sort((a, b) => {
+                const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return bTime - aTime;
+            });
+        }
+
+        function pickLatestProducts(products) {
+            const latest = products.filter((item) => item.is_new || item.isNew);
+            if (latest.length) {
+                return sortLatestProducts(latest).slice(0, 4);
+            }
+            return sortLatestProducts(products).slice(0, 4);
+        }
+
+        function renderLatestGrid(items) {
+            if (!latestGrid) return;
+
+            latestGrid.innerHTML = '';
+            items.forEach((item) => {
+                const starsHTML = window.UdaanAPI.renderStars(item.avg_rating, {
+                    showCount: true,
+                    count: item.review_count,
+                    size: 'sm'
+                });
+
+                latestGrid.insertAdjacentHTML('beforeend', `
+                    <div class="product-card exploded" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" data-desc="${item.desc || ''}">
+                        <div class="product-badge badge-hot">${item.badge || 'Latest Drop'}</div>
+                        <div class="image-wrapper view-link">
+                            <img src="${item.img}" class="product-image" alt="${item.title}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Product'">
+                            <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
+                            <div class="action-layer">
+                                <button class="quick-add-btn">Add to Bag</button>
+                                <div class="grid-qty-controls">
+                                    <button class="grid-qty-btn minus">-</button>
+                                    <span class="grid-qty-val">1</span>
+                                    <button class="grid-qty-btn plus">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="meta-row">
+                            <div class="info"><h3 class="product-title">${item.title}</h3><span class="price">₹${Number(item.price).toLocaleString('en-IN')}</span></div>
+                            <div class="stars-row">${starsHTML}</div>
+                        </div>
+                    </div>
+                `);
+            });
+
+            attachLatestGridListeners();
+            updateBadges();
+            updateCardUIs();
+        }
+
+        async function syncLatestProductsFromApi() {
             if (!window.UdaanAPI) return;
             try {
                 const products = await window.UdaanAPI.fetchProducts();
-                const byName = new Map(products.map((product) => [window.UdaanAPI.normalize(product.name), product]));
-                document.querySelectorAll('.product-card[data-id]').forEach((card) => {
-                    const title = card.querySelector('.product-title')?.innerText;
-                    if (!title) return;
-                    const match = byName.get(window.UdaanAPI.normalize(title));
-                    if (match) {
-                        card.setAttribute('data-product-id', match.id);
-                        card.setAttribute('data-base-price', match.price);
-                        const priceEl = card.querySelector('.price');
-                        if (priceEl) priceEl.innerText = '₹' + Number(match.price).toLocaleString('en-IN');
-                    }
-                });
+                latestCatalog = pickLatestProducts(products).map((product) => ({
+                    id: product.id,
+                    productId: product.id,
+                    slug: product.slug || '',
+                    title: product.name,
+                    price: Number(product.price),
+                    img: product.image_url || product.image || '',
+                    category: (product.category || 'decor').toLowerCase(),
+                    desc: product.description || '',
+                    badge: 'Latest Drop',
+                    avg_rating: product.avg_rating,
+                    review_count: product.review_count || 0,
+                    created_at: product.created_at || '',
+                }));
+                renderLatestGrid(latestCatalog);
             } catch (error) {
-                console.warn('Could not sync live product data:', error);
+                console.warn('Could not sync live latest products:', error);
+                renderLatestGrid(latestCatalog);
             }
         }
 
@@ -1063,24 +1155,85 @@
                 const card = this.closest('.product-card');
                 
                 const prodData = {
-                    id: card.getAttribute('data-id'),
+                    id: card.getAttribute('data-product-id') || card.getAttribute('data-id'),
+                    slug: card.getAttribute('data-product-slug') || '',
                     title: card.querySelector('.product-title').innerText,
                     price: parseFloat(card.getAttribute('data-base-price')),
                     desc: card.getAttribute('data-desc'),
                     img: card.querySelector('.product-image').src
                 };
                 localStorage.setItem('udaan_active_product', JSON.stringify(prodData));
-
-                document.getElementById('page-wipe').classList.add('active');
-                setTimeout(() => { window.location.href = 'product.html'; }, 800);
+                window.location.href = '/product/' + encodeURIComponent(prodData.slug || prodData.id);
             });
         });
+
+        function attachLatestGridListeners() {
+            document.querySelectorAll('.quick-add-btn').forEach(btn => {
+                btn.onclick = function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), 1);
+                };
+            });
+
+            document.querySelectorAll('.grid-qty-btn.minus').forEach(btn => {
+                btn.onclick = function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), -1);
+                };
+            });
+
+            document.querySelectorAll('.grid-qty-btn.plus').forEach(btn => {
+                btn.onclick = function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), 1);
+                };
+            });
+
+            document.querySelectorAll('.quick-save-btn').forEach(btn => {
+                btn.onclick = async function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    const card = this.closest('.product-card');
+                    const product = {
+                        id: card.getAttribute('data-id'),
+                        productId: card.getAttribute('data-product-id'),
+                        title: card.querySelector('.product-title').innerText,
+                        img: card.querySelector('.product-image').src,
+                        price: parseFloat(card.getAttribute('data-base-price')),
+                    };
+                    try {
+                        const saved = await window.UdaanAPI.toggleWishlist(product);
+                        wishlistData = await window.UdaanAPI.loadWishlistCache();
+                        updateBadges();
+                        showToast(saved ? 'Saved for later!' : 'Removed from saved.');
+                    } catch (error) {
+                        showToast(error.message || 'Could not update wishlist.');
+                    }
+                };
+            });
+
+            document.querySelectorAll('.view-link').forEach(link => {
+                link.onclick = function(e) {
+                    if(e.target.closest('.action-layer') || e.target.closest('.quick-save-btn')) return;
+                    e.preventDefault();
+                    const card = this.closest('.product-card');
+                    const prodData = {
+                        id: card.getAttribute('data-product-id') || card.getAttribute('data-id'),
+                        slug: card.getAttribute('data-product-slug') || '',
+                        title: card.querySelector('.product-title').innerText,
+                        price: parseFloat(card.getAttribute('data-base-price')),
+                        desc: card.getAttribute('data-desc'),
+                        img: card.querySelector('.product-image').src
+                    };
+                    localStorage.setItem('udaan_active_product', JSON.stringify(prodData));
+                    window.location.href = '/product/' + encodeURIComponent(prodData.slug || prodData.id);
+                };
+            });
+        }
 
         document.querySelectorAll('.nav-route').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault(); const target = this.getAttribute('data-target');
-                document.getElementById('page-wipe').classList.add('active');
-                setTimeout(() => { window.location.href = target; }, 800);
+                window.location.href = target;
             });
         });
 
@@ -1094,7 +1247,8 @@
             updateCardUIs();
         }
 
-        syncProductIdsFromApi();
+        renderLatestGrid(latestCatalog);
+        syncLatestProductsFromApi();
         initWishlist();
 
         // CURSOR-DRIVEN PARALLAX FOR BACKGROUND DOODLES
