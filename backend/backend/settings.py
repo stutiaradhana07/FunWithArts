@@ -31,6 +31,11 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")).split(",")
+# Always allow Railway's auto-assigned public domain
+_railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+if _railway_domain:
+    ALLOWED_HOSTS.append(_railway_domain)
+    ALLOWED_HOSTS.append(f".{_railway_domain}")
 
 
 # Application definition
