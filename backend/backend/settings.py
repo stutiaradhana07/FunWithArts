@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+if os.getenv('RAILWAY_ENV') is None and os.getenv('PRODUCTION') is None:
+    load_dotenv()
 
 import os as _os_reimport  # noqa: F811 — keep the explicit os import for clarity
 from pathlib import Path
@@ -28,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # TEMPORARY: show traceback for debugging, REVERT after fix
+DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")).split(",")
 # Always allow Railway's auto-assigned public domain
@@ -100,7 +101,6 @@ DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600,
-        conn_health_checks=True,
     )
 }
 
