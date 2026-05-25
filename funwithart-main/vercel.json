@@ -24,6 +24,7 @@
     { "source": "/support", "destination": "/support.html" },
     { "source": "/wishlist", "destination": "/wishlist.html" },
     { "source": "/workshop-confirmation", "destination": "/workshop-confirmation.html" },
-    { "source": "/legacy", "destination": "/legacy-index.html" }
+    { "source": "/legacy", "destination": "/legacy-index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
