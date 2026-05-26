@@ -3,6 +3,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
+    "preDeployCommand": "python manage.py migrate --noinput",
     "restartPolicyType": "ON_FAILURE"
   }
 }

@@ -60,6 +60,15 @@ def create_payment_order(request):
             status=status.HTTP_403_FORBIDDEN
         )
     
+    # Guest order: verify caller knows the contact email on the order
+    if order.user is None:
+        contact_email = request.data.get('contact_email', '')
+        if not contact_email or contact_email.strip().lower() != (order.contact_email or '').strip().lower():
+            return Response(
+                {'error': 'Email verification required for guest orders'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+    
     try:
         # Check for an existing CREATED payment (retry safety)
         existing = Payment.objects.filter(

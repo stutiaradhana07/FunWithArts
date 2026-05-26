@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.test import TestCase
 from django.core.management import call_command
-from products.models import Product
+from products.models import Product, Category
 from .delivery import lookup_pincode
 
 
@@ -41,12 +41,13 @@ class DeliveryAPITests(TestCase):
     @classmethod
     def setUpTestData(cls):
         call_command('seed_shipping_zones')
+        category, _ = Category.objects.get_or_create(name='Decor')
         cls.product = Product.objects.create(
             name='Test Pot',
             description='Test',
             price=Decimal('1000.00'),
             stock=5,
-            category='Decor',
+            category=category,
             is_available=True,
         )
 

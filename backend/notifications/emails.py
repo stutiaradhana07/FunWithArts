@@ -9,6 +9,7 @@ Features:
 - Thread-safe fire-and-forget sending
 """
 
+import sys
 import threading
 import logging
 from datetime import timedelta
@@ -103,14 +104,23 @@ def send_email_async(subject, body_plain, body_html, recipient_list, user=None):
         )
         tracking_records.append(tracking)
     
-    # Send in background thread
+    # Detect test mode: SQLite cannot handle concurrent writes from background threads
+    is_test = (
+        'test' in sys.argv
+        or settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend'
+    )
+    
     for tracking in tracking_records:
-        thread = threading.Thread(
-            target=_send_mail_thread,
-            args=(subject, body_plain, body_html, [tracking.recipient_email], user, tracking.id),
-            daemon=True,
-        )
-        thread.start()
+        if is_test:
+            # Run synchronously to avoid SQLite thread-lock errors
+            _send_mail_thread(subject, body_plain, body_html, [tracking.recipient_email], user, tracking.id)
+        else:
+            thread = threading.Thread(
+                target=_send_mail_thread,
+                args=(subject, body_plain, body_html, [tracking.recipient_email], user, tracking.id),
+                daemon=True,
+            )
+            thread.start()
 
 
 def process_email_retry_queue():
@@ -128,25 +138,40 @@ def process_email_retry_queue():
         is_processed=False,
     ).select_related('tracking')
     
+    # Detect test mode
+    is_test = (
+        'test' in sys.argv
+        or settings.EMAIL_BACKEND == 'django.core.mail.backends.locmem.EmailBackend'
+    )
+    
     for retry in pending_retries:
         tracking = retry.tracking
         if tracking.should_retry():
             logger.info('Processing retry for tracking_id=%s (attempt %d)', tracking.id, tracking.attempt_count + 1)
             
-            # Send email again
-            thread = threading.Thread(
-                target=_send_mail_thread,
-                args=(
+            if is_test:
+                _send_mail_thread(
                     tracking.subject,
                     tracking.body_plain,
                     tracking.body_html,
                     [tracking.recipient_email],
                     tracking.user,
                     tracking.id,
-                ),
-                daemon=True,
-            )
-            thread.start()
+                )
+            else:
+                thread = threading.Thread(
+                    target=_send_mail_thread,
+                    args=(
+                        tracking.subject,
+                        tracking.body_plain,
+                        tracking.body_html,
+                        [tracking.recipient_email],
+                        tracking.user,
+                        tracking.id,
+                    ),
+                    daemon=True,
+                )
+                thread.start()
             
             retry.is_processed = True
             retry.save()

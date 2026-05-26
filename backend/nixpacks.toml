@@ -1,0 +1,7 @@
+# nixpacks.toml
+# Overrides nixpacks Django auto-detection which runs `migrate` during the
+# Docker BUILD phase where DATABASE_URL is not yet available.
+# Migrate is handled via railway.json `preDeployCommand` instead.
+
+[phases.build]
+cmds = ["python manage.py collectstatic --noinput"]

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
-from products.models import Product
+from products.models import Product, Category
 
 
 class OrderAPITests(TestCase):
@@ -12,12 +12,13 @@ class OrderAPITests(TestCase):
         call_command('seed_shipping_zones')
 
     def setUp(self):
+        category, _ = Category.objects.get_or_create(name='Vase')
         self.product = Product.objects.create(
             name='Earth Vessel',
             description='Statement vase',
             price=Decimal('8900.00'),
             stock=3,
-            category='Vase',
+            category=category,
             is_available=True,
         )
         self.user = User.objects.create_user(username='buyer', email='b@b.com', password='pass1234')
@@ -107,7 +108,7 @@ class OrderAPITests(TestCase):
 
         response = self.client.get('/api/orders/', **self.auth)
         self.assertEqual(response.status_code, 200)
-        orders = response.json()
+        orders = response.json()['results']
         self.assertEqual(len(orders), 1)
         self.assertEqual(orders[0]['contact_email'], 'buyer@example.com')
 

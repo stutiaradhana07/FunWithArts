@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
-from products.models import Product
+from products.models import Product, Category
 
 
 class UserProfileAPITests(TestCase):
@@ -10,12 +10,13 @@ class UserProfileAPITests(TestCase):
         self.user = User.objects.create_user(username='testuser', email='t@t.com', password='pass1234')
         self.token = Token.objects.create(user=self.user)
         self.auth = {'HTTP_AUTHORIZATION': f'Token {self.token.key}'}
+        category, _ = Category.objects.get_or_create(name='Tableware')
         self.product = Product.objects.create(
             name='Clay Mug',
             description='A handmade mug',
             price=Decimal('1500.00'),
             stock=5,
-            category='Tableware',
+            category=category,
             is_available=True,
         )
 

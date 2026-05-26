@@ -1,7 +1,7 @@
 from datetime import date, timedelta, time
 from decimal import Decimal
 from django.core.management.base import BaseCommand
-from products.models import Product
+from products.models import Category, Product
 from workshops.models import Workshop
 
 
@@ -18,7 +18,8 @@ class Command(BaseCommand):
             ('Geometric Trio',   'Sets',      Decimal('12500.00'),  6, True,  'Three-piece geometric decor set for premium interiors.'),
         ]
 
-        for name, category, price, stock, is_new, description in products:
+        for name, category_name, price, stock, is_new, description in products:
+            category, _ = Category.objects.get_or_create(name=category_name)
             Product.objects.update_or_create(
                 name=name,
                 defaults={
