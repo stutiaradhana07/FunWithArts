@@ -88,14 +88,34 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # --- DATABASE CONFIGURATION ---
-database_config = dj_database_url.config(
-    default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
-    conn_max_age=600,
-    conn_health_checks=True,
-) or {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / 'db.sqlite3',
-}
+# dj-database-url >= 2.x changed its API: conn_max_age / conn_health_checks
+# must NOT be passed to config() — they go to parse() instead.
+# We also guard against a truthy-but-incomplete dict (NAME='') which Django
+# would reject with ImproperlyConfigured.
+_db_url = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('DATABASE_PRIVATE_URL')  # Railway private network URL
+    or os.environ.get('POSTGRES_URL')
+)
+
+if _db_url:
+    database_config = dj_database_url.parse(
+        _db_url,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+else:
+    database_config = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+
+# Safety net: if parse() returned a dict without a usable NAME, fall back
+if not database_config.get('NAME'):
+    database_config = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 DATABASES = {'default': database_config}
 
