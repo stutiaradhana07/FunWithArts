@@ -1,6 +1,7 @@
 from datetime import date, timedelta, time
 from decimal import Decimal
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from products.models import Category, Product
 from workshops.models import Workshop
 
@@ -19,7 +20,10 @@ class Command(BaseCommand):
         ]
 
         for name, category_name, price, stock, is_new, description in products:
-            category, _ = Category.objects.get_or_create(name=category_name)
+            category, _ = Category.objects.get_or_create(
+                name=category_name,
+                defaults={'slug': slugify(category_name)}
+            )
             Product.objects.update_or_create(
                 name=name,
                 defaults={
