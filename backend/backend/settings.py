@@ -254,3 +254,6 @@ if not DEBUG:
 
 # --- FIX FOR LOG WARNINGS ---
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- TINYMCE CONFIGURATION ---
+TINYMCE_API_KEY = os.getenv('TINYMCE_API_KEY', 'no-api-key')
