@@ -15,6 +15,7 @@ PHONE_VALIDATOR = RegexValidator(
 class OrderItemCreateSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
+    purchase_option = serializers.ChoiceField(choices=['individual', 'set'], default='individual')
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -24,6 +25,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'id',
             'product',
             'product_name',
+            'purchase_option',
             'unit_price',
             'quantity',
             'line_total',
@@ -113,9 +115,21 @@ class OrderCreateSerializer(serializers.Serializer):
                         {'items': [f"Only {product.stock} units available for '{product.name}'."]}
                     )
 
-                line_total = product.price * qty
+                purchase_option = item.get('purchase_option', 'individual')
+                if purchase_option == 'set':
+                    if not product.has_set_option:
+                        raise serializers.ValidationError(
+                            {'items': [f"Product '{product.name}' does not have a set buying option."]}
+                        )
+                    unit_price = product.set_price if product.set_price is not None else product.price
+                    product_name = f"{product.name} (Set)"
+                else:
+                    unit_price = product.price
+                    product_name = product.name
+
+                line_total = unit_price * qty
                 subtotal += line_total
-                order_items.append((product, qty, line_total))
+                order_items.append((product, qty, line_total, unit_price, product_name, purchase_option))
 
             shipping_fee = Decimal('0.00') if subtotal >= Decimal('10000.00') else Decimal('500.00')
             total_amount = subtotal + shipping_fee
@@ -137,12 +151,13 @@ class OrderCreateSerializer(serializers.Serializer):
                 status=initial_status,
             )
 
-            for product, qty, line_total in order_items:
+            for product, qty, line_total, unit_price, product_name, purchase_option in order_items:
                 OrderItem.objects.create(
                     order=order,
                     product=product,
-                    product_name=product.name,
-                    unit_price=product.price,
+                    product_name=product_name,
+                    purchase_option=purchase_option,
+                    unit_price=unit_price,
                     quantity=qty,
                     line_total=line_total,
                 )

@@ -73,6 +73,9 @@ class ProductQuestionAnswerSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    image2_url = serializers.SerializerMethodField()
+    image3_url = serializers.SerializerMethodField()
+    video_url = serializers.SerializerMethodField()
     isNew = serializers.BooleanField(source='is_new', read_only=True)
     avg_rating = serializers.FloatField(read_only=True)
     review_count = serializers.IntegerField(read_only=True)
@@ -90,6 +93,14 @@ class ProductSerializer(serializers.ModelSerializer):
             'stock',
             'image',
             'image_url',
+            'image2',
+            'image2_url',
+            'image3',
+            'image3_url',
+            'video',
+            'video_url',
+            'has_set_option',
+            'set_price',
             'category',
             'is_available',
             'is_new',
@@ -99,10 +110,22 @@ class ProductSerializer(serializers.ModelSerializer):
             'review_count',
         ]
 
-    def get_image_url(self, obj):
-        request = self.context.get('request')
-        if not obj.image:
+    def _build_absolute_url(self, file_field):
+        if not file_field:
             return None
+        request = self.context.get('request')
         if request is None:
-            return obj.image.url
-        return request.build_absolute_uri(obj.image.url)
+            return file_field.url
+        return request.build_absolute_uri(file_field.url)
+
+    def get_image_url(self, obj):
+        return self._build_absolute_url(obj.image)
+
+    def get_image2_url(self, obj):
+        return self._build_absolute_url(obj.image2)
+
+    def get_image3_url(self, obj):
+        return self._build_absolute_url(obj.image3)
+
+    def get_video_url(self, obj):
+        return self._build_absolute_url(obj.video)

@@ -49,15 +49,21 @@ def cart_add_item(request):
 
     product_id = serializer.validated_data['product_id']
     qty = serializer.validated_data['quantity']
+    purchase_option = serializer.validated_data.get('purchase_option', 'individual')
     product = get_object_or_404(Product, id=product_id, is_available=True)
 
     if product.stock < qty:
         return Response({'error': f'Only {product.stock} units available.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
+    if purchase_option == 'set' and not product.has_set_option:
+        return Response({'error': f"Product '{product.name}' does not have a set buying option."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
     item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
+        purchase_option=purchase_option,
         defaults={'quantity': qty},
     )
     if not created:

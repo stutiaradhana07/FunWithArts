@@ -5,7 +5,7 @@ from .models import Cart, CartItem
 class CartItemSerializer(serializers.ModelSerializer):
     product_id = serializers.IntegerField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
-    price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
+    price = serializers.DecimalField(source='price', max_digits=10, decimal_places=2, read_only=True)
     stock = serializers.IntegerField(source='product.stock', read_only=True)
 
     class Meta:
@@ -14,6 +14,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             'id',
             'product_id',
             'product_name',
+            'purchase_option',
             'price',
             'stock',
             'quantity',
@@ -45,7 +46,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_total(self, obj):
         return sum(
-            item.quantity * item.product.price
+            item.quantity * item.price
             for item in obj.items.all()
             if item.product is not None and item.product.is_available
         )
@@ -54,6 +55,7 @@ class CartSerializer(serializers.ModelSerializer):
 class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1, default=1)
+    purchase_option = serializers.ChoiceField(choices=['individual', 'set'], default='individual')
 
     def validate_product_id(self, value):
         from products.models import Product

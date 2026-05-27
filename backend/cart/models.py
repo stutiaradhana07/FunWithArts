@@ -112,7 +112,10 @@ class Cart(models.Model):
                     continue
 
                 try:
-                    existing = user_cart.items.get(product=guest_item.product)
+                    existing = user_cart.items.get(
+                        product=guest_item.product,
+                        purchase_option=guest_item.purchase_option,
+                    )
                     existing.quantity += guest_item.quantity
                     existing.save(update_fields=['quantity'])
                     guest_item.delete()
@@ -129,12 +132,24 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    purchase_option = models.CharField(
+        max_length=20,
+        default='individual',
+        choices=[('individual', 'Individual'), ('set', 'Set')],
+    )
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['cart', 'product']
+        unique_together = ['cart', 'product', 'purchase_option']
         ordering = ['added_at']
 
+    @property
+    def price(self):
+        if self.purchase_option == 'set' and self.product.set_price:
+            return self.product.set_price
+        return self.product.price
+
     def __str__(self):
-        return f'{self.product.name} x {self.quantity}'
+        suffix = " (Set)" if self.purchase_option == 'set' else ""
+        return f'{self.product.name}{suffix} x {self.quantity}'

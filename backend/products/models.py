@@ -23,6 +23,14 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/', null=True, blank=True)
+    image2 = models.ImageField(upload_to='products/', null=True, blank=True)
+    image3 = models.ImageField(upload_to='products/', null=True, blank=True)
+    video = models.FileField(upload_to='products/videos/', null=True, blank=True)
+    
+    # Set vs. Individual options
+    has_set_option = models.BooleanField(default=False, help_text="Allow buying as a set")
+    set_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Price for the set option")
+    
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
