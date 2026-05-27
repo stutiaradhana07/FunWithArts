@@ -4,7 +4,37 @@ from django.utils.text import slugify
 from .models import NewsletterSubscriber, Post
 
 
+FONT_SIZE_CHOICES = [
+    ('', 'Default Size'),
+    ('24px', '24px (Small)'),
+    ('28px', '28px (Medium-Small)'),
+    ('32px', '32px (Medium)'),
+    ('40px', '40px (Large)'),
+    ('48px', '48px (Extra Large)'),
+    ('56px', '56px (2XL)'),
+    ('64px', '64px (3XL)'),
+    ('72px', '72px (4XL)'),
+]
+
+
 class PostAdminForm(forms.ModelForm):
+    title_font_size = forms.ChoiceField(
+        choices=FONT_SIZE_CHOICES,
+        initial='40px',
+        required=False,
+        help_text='Select the font size for the title'
+    )
+    title_color = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'color-picker-input',
+            'style': 'width: 60px; height: 35px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; padding: 0; vertical-align: middle;'
+        }),
+        initial='#1e293b',
+        required=False,
+        help_text='Choose the title color'
+    )
+
     class Meta:
         model = Post
         fields = '__all__'
