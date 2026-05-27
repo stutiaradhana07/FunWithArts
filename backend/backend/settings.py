@@ -166,6 +166,27 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# --- CSRF ---
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'DJANGO_CSRF_TRUSTED_ORIGINS',
+        os.getenv(
+            'CSRF_TRUSTED_ORIGINS',
+            'http://127.0.0.1:5173,http://localhost:5173',
+        ),
+    ).split(',')
+    if origin.strip()
+]
+
+if _railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
+    CSRF_TRUSTED_ORIGINS.append(f"http://{_railway_domain}")
+
+# Hardcode the known production domain as a fallback
+CSRF_TRUSTED_ORIGINS.append("https://funwitharts-production.up.railway.app")
+
+
 # --- REST FRAMEWORK ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
