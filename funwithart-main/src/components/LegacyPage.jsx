@@ -308,7 +308,10 @@ export default function LegacyPage({ source, title }) {
         const script = document.createElement('script');
         script.dataset.legacyScript = source;
         if (scriptTag.textContent) {
-          script.textContent = scriptTag.textContent;
+          // Replace top-level const/let declarations with var to avoid "Identifier already declared" syntax errors during SPA transitions
+          script.textContent = scriptTag.textContent.replace(/(?:^|;|\n|{)\s*(const|let)\s+/g, (match, type) => {
+            return match.replace(type, 'var');
+          });
         }
         document.body.appendChild(script);
       });
