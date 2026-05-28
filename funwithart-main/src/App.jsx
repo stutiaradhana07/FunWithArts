@@ -36,8 +36,12 @@ export default function App() {
 
   useEffect(() => {
     const onHome = shouldShowIntro(location.pathname);
+    if (onHome) {
+      // Mark as seen IMMEDIATELY so navigating away and back never re-triggers the splash
+      markIntroSeen();
+      setHomeRevealed(false);
+    }
     setShowIntro(onHome);
-    if (onHome) setHomeRevealed(false);
   }, [location.pathname]);
 
   // ── Shell class composition ──
@@ -53,7 +57,7 @@ export default function App() {
       {showIntro ? (
         <IntroSplash
           onExitStart={() => setHomeRevealed(true)}
-          onComplete={() => { markIntroSeen(); setShowIntro(false); }}
+          onComplete={() => setShowIntro(false)}
         />
       ) : null}
       <div className={shellClass}>
