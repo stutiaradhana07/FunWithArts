@@ -30,11 +30,13 @@ body.legacy-route-active {
   color: var(--text-color, #222);
   font-family: var(--body-font, 'Lato', sans-serif);
   opacity: 1;
-  transition: opacity 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .legacy-page-shell--intro-pending {
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .legacy-loading {

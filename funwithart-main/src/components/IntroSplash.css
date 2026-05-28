@@ -9,9 +9,9 @@
   justify-content: center;
   overflow: hidden;
   cursor: default;
-  opacity: 0;
+  opacity: 1;
   background: #2a1f1a;
-  transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .intro-splash--visible {
@@ -21,7 +21,7 @@
 .intro-splash--exit {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 2.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* —— Rich gradient layers (no photos) —— */
@@ -93,7 +93,7 @@
 
 .intro-splash--exit .intro-splash__gradient {
   opacity: 0;
-  transition: opacity 2.2s ease;
+  transition: opacity 1.2s ease;
 }
 
 /* —— Cursor-follow glow —— */
@@ -130,7 +130,7 @@
 
 .intro-splash--exit .intro-splash__cursor-glow {
   opacity: 0;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.2s ease;
 }
 
 /* —— Pottery doodles —— */
@@ -235,7 +235,7 @@
 
 .intro-splash--exit .intro-doodle {
   opacity: 0;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.2s ease;
   animation: none;
 }
 
@@ -259,7 +259,7 @@
 .intro-splash--exit .intro-splash__content {
   opacity: 0;
   transform: translateY(-12px);
-  transition: opacity 2s ease, transform 2.2s ease;
+  transition: opacity 1.2s ease, transform 1.2s ease;
 }
 
 .intro-splash__card {
@@ -351,7 +351,7 @@
 
 .intro-splash--exit .intro-splash__loader {
   opacity: 0;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.2s ease;
 }
 
 .intro-splash__loader-label {
@@ -379,7 +379,7 @@
   border-radius: 2px;
   background: linear-gradient(90deg, #c4896a, #f5e6d8, #d7a88d);
   box-shadow: 0 0 14px rgba(215, 168, 141, 0.7);
-  animation: introLoader 6.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: introLoader 3.0s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes introLoader {

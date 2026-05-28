@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import IntroPotteryDoodles from './IntroPotteryDoodles';
 import './IntroSplash.css';
 
-const FADE_IN_MS = 1400;
-const HOLD_MS = 5000;
-const FADE_OUT_MS = 2600;
+const HOLD_MS = 3000;
+const FADE_OUT_MS = 1200;
 
 const INTRO_SEEN_KEY = 'fwa_intro_seen';
 
@@ -23,7 +22,7 @@ export function markIntroSeen() {
 }
 
 export default function IntroSplash({ onComplete, onExitStart }) {
-  const [phase, setPhase] = useState('hidden');
+  const [phase, setPhase] = useState('visible');
   const splashRef = useRef(null);
   const cursorRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef(null);
@@ -36,23 +35,18 @@ export default function IntroSplash({ onComplete, onExitStart }) {
       root.style.setProperty('--cursor-y', '50%');
     }
 
-    const showTimer = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => setPhase('visible'));
-    });
-
     const exitTimer = window.setTimeout(() => {
       setPhase('exit');
       onExitStart?.();
-    }, FADE_IN_MS + HOLD_MS);
+    }, HOLD_MS);
 
     const doneTimer = window.setTimeout(
       () => onComplete?.(),
-      FADE_IN_MS + HOLD_MS + FADE_OUT_MS
+      HOLD_MS + FADE_OUT_MS
     );
 
     return () => {
       document.body.classList.remove('intro-active');
-      window.cancelAnimationFrame(showTimer);
       window.clearTimeout(exitTimer);
       window.clearTimeout(doneTimer);
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current);

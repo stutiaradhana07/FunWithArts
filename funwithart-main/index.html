@@ -9,6 +9,12 @@
       content="Art you can hold. Hand-thrown, sustainable, and minimalist terracotta pottery crafted in our New Delhi studio."
     />
     <meta name="google-signin-client_id" content="576569277083-rkco6ojbej4m1r2mmjtvn71rlq2oph54.apps.googleusercontent.com" />
+    <script>
+      if (window.location.pathname === '/' && !sessionStorage.getItem('fwa_intro_seen')) {
+        document.documentElement.style.backgroundColor = '#2a1f1a';
+        document.write('<style>body { background-color: #2a1f1a !important; background-image: none !important; }</style>');
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
