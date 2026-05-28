@@ -421,6 +421,12 @@
             if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') return;
             if (!window.google?.accounts?.id) return;
 
+            try {
+                google.accounts.id.disableAutoSelect();
+            } catch (e) {
+                console.warn('Failed to call disableAutoSelect:', e);
+            }
+
             google.accounts.id.initialize({
                 client_id: clientId,
                 callback: window.handleGoogleCredentialResponse,

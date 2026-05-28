@@ -154,6 +154,13 @@
     } catch (error) {
       // Token may already be invalid — still clear local session.
     } finally {
+      if (window.google?.accounts?.id) {
+        try {
+          google.accounts.id.disableAutoSelect();
+        } catch (e) {
+          console.warn('Failed to call disableAutoSelect:', e);
+        }
+      }
       setAuth(null);
     }
   }
@@ -891,6 +898,14 @@ window.addEventListener('load', updateNavLinks);
         'Google Sign-In client ID not configured. ' +
         'Add <meta name="google-signin-client_id" content="..."> or set GOOGLE_CLIENT_ID.'
       );
+    }
+
+    if (window.google?.accounts?.id) {
+      try {
+        google.accounts.id.disableAutoSelect();
+      } catch (e) {
+        console.warn('Failed to call disableAutoSelect:', e);
+      }
     }
 
     google.accounts.id.initialize({
