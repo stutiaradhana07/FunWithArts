@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Studio Bag | FUN WITH ART Ceramics</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+
+    <style>
+        * { cursor: auto !important; margin: 0; padding: 0; box-sizing: border-box; }
+        a, button, .qty-btn { cursor: pointer !important; }
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); }
+        
+        /* NAV & WIPES */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px; }
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); text-decoration: none; transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0; right: 0; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; }
+
+        /* CART LAYOUT */
+        .cart-header { padding: 120px 5% 40px; text-align: center; }
+        .cart-header h1 { font-family: var(--header-font); font-size: clamp(2.5rem, 6vw, 4rem); font-style: italic; color: var(--primary-color); margin-bottom: 10px;}
+        
+        .cart-container { max-width: 1200px; margin: 0 auto 100px; padding: 0 5%; display: flex; gap: 50px; align-items: flex-start; flex-wrap: wrap;}
+        .cart-items-section { flex: 2; min-width: 300px; }
+        .cart-summary-section { flex: 1; min-width: 300px; background: #fff; padding: 30px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); position: sticky; top: 100px; box-shadow: 0 20px 40px rgba(0,0,0,0.03);}
+
+        /* CART ITEMS */
+        .cart-item { display: flex; gap: 20px; padding: 25px 0; border-bottom: 1px solid rgba(0,0,0,0.05); align-items: center;}
+        .item-img { width: 100px; height: 120px; object-fit: cover; border-radius: 12px; }
+        .item-details { flex: 1; }
+        .item-title { font-family: var(--header-font); font-size: 1.5rem; font-style: italic; margin-bottom: 5px; color: #111; }
+        .item-price { font-family: var(--art-font); font-weight: 700; color: var(--accent-color); font-size: 1.1rem; margin-bottom: 15px;}
+        .item-actions { display: flex; justify-content: space-between; align-items: center;}
+        .qty-controls { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 50px; padding: 2px 15px; }
+        .qty-btn { background: none; border: none; font-size: 1.2rem; color: #555; padding: 0 10px; }
+        .qty-val { font-family: var(--art-font); font-weight: bold; font-size: 0.9rem; width: 30px; text-align: center; }
+        .remove-btn { background: none; border: none; font-family: var(--art-font); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; text-decoration: underline; transition: 0.3s;}
+        .remove-btn:hover { color: #e63946; }
+
+        /* SUMMARY */
+        .summary-title { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 1rem; margin-bottom: 25px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 15px;}
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-family: var(--body-font); color: #555; }
+        .summary-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-family: var(--art-font); font-weight: bold; font-size: 1.2rem; color: #111; }
+        .checkout-btn { width: 100%; padding: 18px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-top: 30px; transition: 0.3s; text-align: center; text-decoration: none; display: block;}
+        .checkout-btn:hover { background: var(--accent-color); }
+
+        /* PROGRESS BAR */
+        .shipping-progress-container { margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 12px; text-align: center;}
+        .progress-text { font-family: var(--body-font); font-size: 0.85rem; color: #555; margin-bottom: 10px; }
+        .progress-bar-bg { width: 100%; height: 6px; background: #ddd; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.5s ease; }
+
+        .empty-cart { text-align: center; padding: 50px 0; display: none;}
+        .empty-cart h2 { font-family: var(--header-font); font-size: 2rem; font-style: italic; margin-bottom: 20px;}
+        .shop-link { display: inline-block; padding: 12px 30px; border: 1px solid #111; color: #111; text-decoration: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; transition: 0.3s;}
+        .shop-link:hover { background: #111; color: #fff; }
+
+        /* Hidden by default until renderCart() reveals the appropriate state */
+        #summary-section { display: none; }
+        #cart-loading { text-align: center; padding: 60px 0; font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; font-size: 0.85rem; color: #888; }
+        .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); margin: 0 4px; animation: dotPulse 1.4s infinite ease-in-out; }
+        .loading-dot:nth-child(1) { animation-delay: 0s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dotPulse { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-actions">
+            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
+    </nav>
+
+    <div class="cart-header">
+        <h1>Your Studio Bag</h1>
+        <p style="font-family: var(--art-font); letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; color: #888;">Review your selected pieces</p>
+    </div>
+
+    <div class="cart-container">
+        <div class="cart-items-section">
+            <div id="cart-loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Loading your bag</div>
+            <div id="cart-items-container"></div>
+            <div class="empty-cart" id="empty-state">
+                <h2>Your bag is currently empty.</h2>
+                <a href="collection.html" class="shop-link nav-route" data-target="collection.html">Explore the Archive</a>
+            </div>
+        </div>
+
+        <div class="cart-summary-section" id="summary-section">
+            <div class="shipping-progress-container">
+                <p class="progress-text" id="progress-text">Calculating shipping...</p>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+            </div>
+            <div class="summary-title">Order Summary</div>
+            <div class="summary-row"><span>Subtotal</span><span id="subtotal-val">₹0</span></div>
+            <div class="summary-row"><span>Shipping</span><span id="shipping-val">Calculated at checkout</span></div>
+            <div class="summary-total"><span>Total</span><span id="total-val">₹0</span></div>
+            <a href="checkout.html" class="checkout-btn">Proceed to Checkout</a>
+        </div>
+    </div>
+
+    <script>
+        const lenis = new Lenis({ duration: 1.2, smooth: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+
+        const freeShippingThreshold = 2000;
+        let cartItems = [];       // legacy-shaped items from API
+        let productImageMap = {}; // product_id → image_url
+
+        async function buildProductImageMap() {
+            try {
+                const products = await window.UdaanAPI.fetchProducts();
+                products.forEach(function (p) {
+                    productImageMap[String(p.id)] = p.image_url || p.image || '';
+                });
+            } catch (e) {
+                console.warn('Could not build product image map:', e);
+            }
+        }
+
+        function getItemImage(item) {
+            if (item.imgSrc) return item.imgSrc;
+            return productImageMap[String(item.productId)] || '';
+        }
+
+        function renderCart() {
+            var container = document.getElementById('cart-items-container');
+            var emptyState = document.getElementById('empty-state');
+            var summarySec = document.getElementById('summary-section');
+            container.innerHTML = '';
+
+            var loadingEl = document.getElementById('cart-loading');
+            if (loadingEl) loadingEl.style.display = 'none';
+
+            if (cartItems.length === 0) {
+                emptyState.style.display = 'block';
+                summarySec.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                summarySec.style.display = 'block';
+                var subtotal = 0;
+
+                cartItems.forEach(function (item) {
+                    subtotal += (item.basePrice * item.qty);
+                    var imgSrc = getItemImage(item);
+                    container.innerHTML +=
+                        '<div class="cart-item">' +
+                        '  <img src="' + imgSrc + '" class="item-img" alt="' + item.title + '" onerror="this.src=\'https://placehold.co/100x120/EAE6DB/111\'">' +
+                        '  <div class="item-details">' +
+                        '    <h3 class="item-title">' + item.title + '</h3>' +
+                        '    <div class="item-price">₹' + item.basePrice.toLocaleString('en-IN') + '</div>' +
+                        '    <div class="item-actions">' +
+                        '      <div class="qty-controls">' +
+                        '        <button class="qty-btn" onclick="updateQty(' + item.cartItemId + ', ' + (item.qty - 1) + ')">-</button>' +
+                        '        <span class="qty-val">' + item.qty + '</span>' +
+                        '        <button class="qty-btn" onclick="updateQty(' + item.cartItemId + ', ' + (item.qty + 1) + ')">+</button>' +
+                        '      </div>' +
+                        '      <button class="remove-btn" onclick="removeItem(' + item.cartItemId + ')">Remove</button>' +
+                        '    </div>' +
+                        '  </div>' +
+                        '</div>';
+                });
+
+                document.getElementById('subtotal-val').innerText = '₹' + subtotal.toLocaleString('en-IN');
+                document.getElementById('total-val').innerText = '₹' + subtotal.toLocaleString('en-IN');
+
+                var progressFill = document.getElementById('progress-fill');
+                var progressText = document.getElementById('progress-text');
+                var percentage = Math.min((subtotal / freeShippingThreshold) * 100, 100);
+
+                if (subtotal >= freeShippingThreshold) {
+                    progressFill.style.width = '100%';
+                    progressFill.style.background = '#2a9d8f';
+                    progressText.innerHTML = '<strong>Congratulations!</strong> You get free Pan-India shipping. ✨';
+                } else {
+                    progressFill.style.width = percentage + '%';
+                    progressFill.style.background = 'var(--accent-color)';
+                    progressText.innerHTML = 'Add <strong>₹' + (freeShippingThreshold - subtotal).toLocaleString('en-IN') + '</strong> more for free shipping!';
+                }
+            }
+            updateBadges();
+        }
+
+        function updateBadges() {
+            var totalItems = cartItems.reduce(function (sum, item) { return sum + item.qty; }, 0);
+            document.getElementById('cart-count').innerText = totalItems;
+        }
+
+        window.updateQty = async function (cartItemId, newQty) {
+            try {
+                if (newQty <= 0) {
+                    await window.UdaanAPI.removeCartItem(cartItemId);
+                } else {
+                    await window.UdaanAPI.updateCartItem(cartItemId, newQty);
+                }
+                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+                renderCart();
+            } catch (e) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast(e.message || 'Could not update item.');
+                }
+            }
+        };
+
+        window.removeItem = async function (cartItemId) {
+            try {
+                await window.UdaanAPI.removeCartItem(cartItemId);
+                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+                renderCart();
+            } catch (e) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast(e.message || 'Could not remove item.');
+                }
+            }
+        };
+
+        (async function init() {
+            await buildProductImageMap();
+            try {
+                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+            } catch (e) {
+                cartItems = [];
+            }
+            renderCart();
+            if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                window.UdaanAPI.updateBadges();
+            }
+        })();
+    </script>
+</body>
+</html>

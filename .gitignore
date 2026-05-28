@@ -21,7 +21,6 @@ backend/staticfiles/
 
 # ── Node / Frontend ────────────────────────────────────────────────────────
 node_modules/
-funwithart-main/dist/
 funwithart-main/node_modules/
 *.local
 

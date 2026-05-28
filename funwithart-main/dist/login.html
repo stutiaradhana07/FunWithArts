@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account | Fun With Art</title>
+    <meta name="google-signin-client_id" content="576569277083-rkco6ojbej4m1r2mmjtvn71rlq2oph54.apps.googleusercontent.com">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+    <script src="https://accounts.google.com/gsi/client?onload=onGoogleLibraryLoad" async defer></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        a, button, input { cursor: pointer; }
+
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh;}
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+        /* FLOATING BACKGROUND SHAPES */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; opacity: 1; }
+        .cutu-shape { position: absolute; fill: var(--accent-color); opacity: 0.3; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05)); }
+        @keyframes floatA { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 50% { transform: translateY(-20px) rotate(8deg) scale(1.05); } }
+        .shape-1 { top: 15%; left: 8%; width: 100px; animation: floatA 8s ease-in-out infinite; }
+        .shape-3 { top: 80%; right: 10%; width: 85px; animation: floatA 9s ease-in-out infinite; animation-delay: 2s; }
+
+        /* NAV BAR */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; transition: transform 0.3s; }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: #000; font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
+        .desktop-links a:hover { color: var(--accent-color); }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0; right: 0; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; }
+        .nav-account-link:hover, .desktop-links a.active-account { background: #111; color: #fff; }
+        .desktop-links a.active-account { border-radius: 50px; padding: 8px 14px; }
+
+        /* AUTH CONTAINER */
+        .auth-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 150px 5% 100px; position: relative; z-index: 5; }
+        
+        .auth-card { background: #fff; padding: 60px 50px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); max-width: 500px; width: 100%; text-align: center; overflow: hidden; position: relative; }
+        
+        .auth-card h1 { font-family: var(--header-font); font-size: 2.8rem; font-style: italic; margin-bottom: 10px; color: #111; }
+        .auth-card p { font-family: var(--body-font); font-size: 1.05rem; color: #666; margin-bottom: 40px; }
+
+        /* TOGGLE SWITCH */
+        .auth-toggle { display: flex; background: #fafafa; border-radius: 50px; padding: 5px; margin-bottom: 30px; border: 1px solid #eee; position: relative;}
+        .toggle-btn { flex: 1; padding: 12px; background: none; border: none; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; color: #888; transition: 0.3s; position: relative; z-index: 2; }
+        .toggle-btn.active { color: #111; }
+        .toggle-slider { position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px); background: #fff; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); z-index: 1; }
+
+        /* GOOGLE SIGN-IN */
+        .auth-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #e5e0dc; }
+        .auth-divider span { font-family: var(--body-font); font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        .google-btn-container { text-align: center; }
+        .google-btn-container #googleSignInDiv { display: flex; justify-content: center; min-height: 48px; }
+        .google-hint { font-family: var(--body-font); font-size: 0.75rem; color: #aaa; margin-top: 10px; }
+
+        /* FORMS */
+        .form-section { display: none; text-align: left; animation: fadeIn 0.5s ease forwards; }
+        .form-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .input-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+        .input-group label { font-family: var(--art-font); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 10px; font-weight: bold; }
+        .input-group input { padding: 18px; border: 1px solid #eee; border-radius: 15px; font-family: var(--body-font); font-size: 1.05rem; background: #fafafa; outline: none; transition: 0.3s; width: 100%;}
+        .input-group input:focus { border-color: var(--accent-color); background: #fff; box-shadow: 0 5px 15px rgba(215, 168, 141, 0.1); }
+        
+        .forgot-password { display: block; text-align: right; font-family: var(--body-font); font-size: 0.9rem; color: #888; text-decoration: none; margin-top: -10px; margin-bottom: 25px; transition: 0.3s; }
+        .forgot-password:hover { color: var(--accent-color); }
+
+        .submit-btn { width: 100%; padding: 22px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; font-size: 1rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .submit-btn:hover { background: var(--accent-color); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(215, 168, 141, 0.3); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .auth-error { display: none; background: #fff5f5; color: #b42318; border: 1px solid #fecdca; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.95rem; text-align: left; }
+        .auth-error.visible { display: block; }
+        .auth-logged-in { display: none; text-align: center; }
+        .auth-logged-in.visible { display: block; }
+        .auth-logged-in .user-greeting { font-family: var(--header-font); font-size: 2rem; font-style: italic; margin-bottom: 8px; }
+        .auth-logged-in .user-meta { color: #666; margin-bottom: 28px; }
+        .auth-actions-row { display: flex; flex-direction: column; gap: 12px; }
+        .secondary-btn { display: block; padding: 16px; border-radius: 50px; border: 1px solid #ddd; text-decoration: none; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; color: #111; transition: 0.3s; background: #fafafa; }
+        .secondary-btn:hover { border-color: #111; }
+        .logout-btn { background: transparent; color: #888; border: none; font-family: var(--body-font); margin-top: 16px; text-decoration: underline; }
+        #auth-forms-wrap.hidden { display: none; }
+
+        /* FULL FOOTER INCLUDED! */
+        .site-footer { background: #111; color: #fff; padding: 80px 5% 40px; position: relative; z-index: 5; }
+        .footer-grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 60px; }
+        .footer-brand h2 { font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px; }
+        .footer-brand p { font-family: var(--body-font); color: #888; line-height: 1.6; max-width: 300px; }
+        .footer-col h4 { font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color); }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 15px; }
+        .footer-col ul li a { color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s; }
+        .footer-col ul li a:hover { color: #fff; padding-left: 5px; }
+        .footer-bottom { border-top: 1px solid #222; text-align: center; padding-top: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); }
+
+        /* TOAST */
+        .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--accent-color); color: #111; padding: 15px 30px; border-radius: 50px; font-family: var(--body-font); font-weight: bold; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 900px) {
+            .footer-grid { grid-template-columns: 1fr; }
+            .desktop-links { display: none; }
+            .auth-card { padding: 40px 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-dreamscape">
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-1" viewBox="0 0 100 100"><path d="M30,10 L70,10 L65,30 Q90,60 70,90 L30,90 Q10,60 35,30 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
+    </div>
+
+    <nav>
+        <a href="/" class="logo-fusion">
+            <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
+        </a>
+        <div class="nav-links desktop-links">
+            <a href="/">Home</a>
+            <a href="/collection">Collection</a>
+            <a href="/studio">Studio</a>
+            <a href="account.html" class="active-account">Account</a>
+        </div>
+        <div class="nav-actions">
+            <a href="search.html" class="nav-icon" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="orders.html" class="nav-icon" title="My orders"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></a>
+            <a href="wishlist.html" class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
+    </nav>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <h1 id="auth-heading">Welcome Back.</h1>
+            <p id="auth-sub">Sign in to track orders and save your wishlist.</p>
+
+            <div id="auth-logged-in" class="auth-logged-in">
+                <p class="user-greeting" id="user-greeting">Hello</p>
+                <p class="user-meta" id="user-meta"></p>
+                <div class="auth-actions-row">
+                    <a href="account.html" class="submit-btn" style="display:inline-block;text-align:center;text-decoration:none;line-height:1.2;">My Account</a>
+                    <a href="/collection" class="secondary-btn">Continue Shopping</a>
+                </div>
+                <button type="button" class="logout-btn" id="logout-btn">Sign out</button>
+            </div>
+
+            <div id="auth-forms-wrap">
+            <div class="auth-error" id="auth-error" role="alert"></div>
+            <div class="auth-toggle">
+                <div class="toggle-slider" id="toggle-slider"></div>
+                <button type="button" class="toggle-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button type="button" class="toggle-btn" id="tab-register" onclick="switchTab('register')">Create Account</button>
+            </div>
+
+            <form id="login-form" class="form-section active">
+                <div class="input-group">
+                    <label>Email or Username</label>
+                    <input type="text" name="username" required placeholder="hello@example.com" autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                
+                <button type="submit" class="submit-btn" id="login-submit">Sign In</button>
+            </form>
+
+            <form id="register-form" class="form-section">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" name="username" required placeholder="studio_name" autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" required placeholder="hello@example.com" autocomplete="email">
+                </div>
+                <div class="input-group">
+                    <label>Create Password</label>
+                    <input type="password" name="password" required minlength="8" placeholder="••••••••" autocomplete="new-password">
+                </div>
+                
+                <button type="submit" class="submit-btn" id="register-submit">Create Account</button>
+            </form>
+
+            <div class="auth-divider"><span>or</span></div>
+            <div class="google-btn-container">
+                <div id="googleSignInDiv"></div>
+                <p class="google-hint">Use your Google account for one‑tap sign‑in</p>
+            </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Fun With Art</h2>
+                <p>Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="collection.html">All Ceramics</a></li>
+                    <li><a href="studio.html">Studio Classes</a></li>
+                    <li><a href="about.html">Our Story</a></li> </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="support.html">FAQ</a></li>
+                    <li><a href="support.html">Shipping & Returns</a></li>
+                    <li><a href="support.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="legal.html">Terms of Service</a></li>
+                    <li><a href="legal.html">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        const lenis = new Lenis({ duration: 1.2, smooth: true });
+        requestAnimationFrame(function raf(time) { lenis.raf(time); requestAnimationFrame(raf); });
+
+        const authError = document.getElementById('auth-error');
+        const authFormsWrap = document.getElementById('auth-forms-wrap');
+        const authLoggedIn = document.getElementById('auth-logged-in');
+        const authHeading = document.getElementById('auth-heading');
+        const authSub = document.getElementById('auth-sub');
+
+        function showAuthError(message) {
+            if (!authError) return;
+            authError.textContent = message || '';
+            authError.classList.toggle('visible', Boolean(message));
+        }
+
+        function switchTab(tab) {
+            const loginBtn = document.getElementById('tab-login');
+            const registerBtn = document.getElementById('tab-register');
+            const slider = document.getElementById('toggle-slider');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            showAuthError('');
+
+            if (tab === 'login') {
+                loginBtn.classList.add('active');
+                registerBtn.classList.remove('active');
+                slider.style.left = '5px';
+                // Force animation restart
+                loginForm.classList.remove('active');
+                void loginForm.offsetWidth;
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                if (authHeading) authHeading.textContent = 'Welcome Back.';
+                if (authSub) authSub.textContent = 'Sign in to track orders and save your wishlist.';
+            } else {
+                registerBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                slider.style.left = 'calc(50% + 5px)';
+                // Force animation restart
+                registerForm.classList.remove('active');
+                void registerForm.offsetWidth;
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                if (authHeading) authHeading.textContent = 'Join the Studio.';
+                if (authSub) authSub.textContent = 'Create an account to book workshops and sync your wishlist.';
+            }
+        }
+
+        function showLoggedInState(user) {
+            if (authFormsWrap) authFormsWrap.classList.add('hidden');
+            if (authLoggedIn) authLoggedIn.classList.add('visible');
+            if (authHeading) authHeading.textContent = `Hello, ${user?.username || 'friend'}.`;
+            if (authSub) authSub.textContent = 'You are signed in to Fun With Art.';
+            const greeting = document.getElementById('user-greeting');
+            const meta = document.getElementById('user-meta');
+            if (greeting) greeting.textContent = user?.username ? `Welcome, ${user.username}` : 'Welcome back';
+            if (meta) meta.textContent = user?.email || '';
+        }
+
+        // Toast Helper
+        window.showToast = function(message) { 
+            const container = document.getElementById('toast-container'); 
+            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message; 
+            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); 
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000); 
+        }
+
+        function redirectAfterAuth() {
+            const params = new URLSearchParams(window.location.search);
+            const next = params.get('next') || '/account';
+            window.location.href = next;
+        }
+
+        const tabParam = new URLSearchParams(window.location.search).get('tab');
+        if (tabParam === 'register') switchTab('register');
+
+        if (window.UdaanAPI?.isLoggedIn()) {
+            const auth = window.UdaanAPI.getAuth();
+            if (new URLSearchParams(window.location.search).get('next')) {
+                redirectAfterAuth();
+            } else {
+                showLoggedInState(auth?.user);
+            }
+        }
+
+        document.getElementById('logout-btn')?.addEventListener('click', async () => {
+            await window.UdaanAPI.logoutUser();
+            showToast('Signed out.');
+            window.location.reload();
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const btn = document.getElementById('login-submit');
+            btn.disabled = true;
+            btn.innerText = 'Signing in...';
+            showAuthError('');
+            try {
+                await window.UdaanAPI.loginUser({
+                    username: form.username.value.trim(),
+                    password: form.password.value,
+                });
+                showToast('Logged in successfully!');
+                setTimeout(redirectAfterAuth, 800);
+            } catch (error) {
+                showAuthError(error.message || 'Could not sign in.');
+                btn.disabled = false;
+                btn.innerText = 'Sign In';
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const btn = document.getElementById('register-submit');
+            btn.disabled = true;
+            btn.innerText = 'Creating account...';
+            showAuthError('');
+            try {
+                await window.UdaanAPI.registerUser({
+                    username: form.username.value.trim(),
+                    email: form.email.value.trim(),
+                    password: form.password.value,
+                });
+                showToast('Account created! Welcome to the studio.');
+                setTimeout(redirectAfterAuth, 800);
+            } catch (error) {
+                showAuthError(error.message || 'Could not create account.');
+                btn.disabled = false;
+                btn.innerText = 'Create Account';
+            }
+        });
+
+        // ── Google Sign-In (page-specific credential handler override) ──
+        // The GIS SDK initialisation (onGoogleLibraryLoad) lives in shared.js
+        // and runs early.  After overriding the credential handler, we must
+        // re-initialise so the GIS SDK picks up the new callback reference.
+        window.handleGoogleCredentialResponse = async function (response) {
+            const idToken = response.credential;
+            if (!idToken) {
+                showAuthError('Google sign-in did not return a credential.');
+                return;
+            }
+
+            const loginBtn = document.getElementById('login-submit');
+            const registerBtn = document.getElementById('register-submit');
+            if (loginBtn) { loginBtn.disabled = true; loginBtn.innerText = 'Signing in...'; }
+            if (registerBtn) { registerBtn.disabled = true; registerBtn.innerText = 'Signing in...'; }
+            showAuthError('');
+
+            try {
+                await window.UdaanAPI.googleLogin(idToken);
+                showToast('Signed in with Google!');
+                setTimeout(redirectAfterAuth, 800);
+            } catch (error) {
+                showAuthError(error.message || 'Google sign-in failed.');
+                if (loginBtn) { loginBtn.disabled = false; loginBtn.innerText = 'Sign In'; }
+                if (registerBtn) { registerBtn.disabled = false; registerBtn.innerText = 'Create Account'; }
+            }
+        };
+
+        // Re-initialise GIS with the overridden callback and render the button.
+        // Works whether the SDK has already loaded (sync) or loads later (async via onGoogleLibraryLoad override).
+        function initGoogleButton() {
+            const clientIdMeta = document.querySelector('meta[name="google-signin-client_id"]');
+            const clientId = (clientIdMeta && clientIdMeta.content) || '';
+            if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') return;
+            if (!window.google?.accounts?.id) return;
+
+            google.accounts.id.initialize({
+                client_id: clientId,
+                callback: window.handleGoogleCredentialResponse,
+                auto_select: false,
+                context: 'signin',
+            });
+            const btnContainer = document.getElementById('googleSignInDiv');
+            if (btnContainer) {
+                google.accounts.id.renderButton(btnContainer, {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'continue_with',
+                    shape: 'rectangular',
+                    width: Math.min(btnContainer.offsetWidth || 300, 300),
+                });
+            }
+            google.accounts.id.prompt();
+        }
+
+        // If the SDK already loaded (sync), init immediately.
+        // If it loads later (async), onGoogleLibraryLoad in shared.js will call it — but
+        // we override onGoogleLibraryLoad here to also run initGoogleButton.
+        const _prevOnGoogleLibraryLoad = window.onGoogleLibraryLoad;
+        window.onGoogleLibraryLoad = function () {
+            if (typeof _prevOnGoogleLibraryLoad === 'function') _prevOnGoogleLibraryLoad();
+            initGoogleButton();
+        };
+        // Try immediately too (in case it already loaded)
+        initGoogleButton();
+        // ── End Google Sign-In override ──
+
+        window.UdaanAPI?.updateBadges();
+    </script>
+</body>
+</html>

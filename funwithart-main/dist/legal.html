@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal | Fun With Art</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        a, button { cursor: pointer; }
+
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); overflow-x: hidden; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+        /* EXACT FLOATING BACKGROUND SHAPES */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.5; }
+        .cutu-shape { position: absolute; fill: var(--accent-color); opacity: 0.3; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05)); }
+        @keyframes floatA { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 50% { transform: translateY(-20px) rotate(8deg) scale(1.05); } }
+        .shape-1 { top: 15%; left: 8%; width: 100px; animation: floatA 8s ease-in-out infinite; }
+        .shape-3 { top: 80%; right: 20%; width: 85px; animation: floatA 9s ease-in-out infinite; }
+
+        /* NAV BAR */
+        nav { background: rgba(253, 251, 249, 0.85); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s; }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: #000; font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
+        .desktop-links a:hover { color: var(--accent-color); }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0; right: 0; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; }
+
+        /* LEGAL CONTENT CONTAINER */
+        .legal-container { max-width: 800px; margin: 180px auto 100px; padding: 0 5%; position: relative; z-index: 5; background: #fff; padding: 60px; border-radius: 30px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 15px 40px rgba(0,0,0,0.04); }
+        
+        .legal-container h1 { font-family: var(--header-font); font-size: 3rem; font-style: italic; margin-bottom: 10px; color: #111; text-align: center; }
+        .last-updated { text-align: center; font-family: var(--art-font); font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 50px; }
+
+        .legal-section { margin-bottom: 40px; }
+        .legal-section h2 { font-family: var(--header-font); font-size: 1.8rem; margin-bottom: 15px; color: #111; }
+        .legal-section p { font-family: var(--body-font); font-size: 1.05rem; color: #555; line-height: 1.8; margin-bottom: 15px; }
+        .legal-section ul { margin-left: 20px; margin-bottom: 15px; font-family: var(--body-font); color: #555; line-height: 1.8; }
+
+        @media (max-width: 768px) { .desktop-links {display:none;} .legal-container { padding: 40px 20px; margin-top: 140px;} }
+
+        /* FOOTER */
+        .footer-bottom { background: #111; text-align: center; padding: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); position: relative; z-index: 5;}
+    </style>
+</head>
+<body>
+
+    <div class="floating-dreamscape">
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-1" viewBox="0 0 100 100"><path d="M30,10 L70,10 L65,30 Q90,60 70,90 L30,90 Q10,60 35,30 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
+    </div>
+
+    <nav>
+        <a href="index.html" class="logo-fusion">
+            <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
+        </a>
+        <div class="nav-links desktop-links">
+            <a href="index.html">Home</a>
+            <a href="collection.html">Collection</a>
+            <a href="studio.html">Studio</a>
+        </div>
+        <div class="nav-actions">
+             <a href="wishlist.html" class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
+    </nav>
+
+    <div class="legal-container">
+        <h1>Terms & Privacy</h1>
+        <div class="last-updated">Last Updated: May 2026</div>
+
+        <div class="legal-section">
+            <h2>1. Studio & Workshop Terms</h2>
+            <p>By booking a workshop at Fun With Art Studio, you agree to our cancellation policy. Full refunds are available up to 48 hours prior to the scheduled session. Cancellations made within 48 hours are eligible for a 50% refund or studio credit.</p>
+            <p>Pottery involves inherent risks of breakage during the firing process. While we take every precaution, we cannot guarantee that every piece will survive the kiln. In the rare event of a kiln misfire destroying your work, we will offer a complimentary remake session.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2>2. Online Shop Policies</h2>
+            <p>All items are handcrafted and therefore unique. Slight variations in size, shape, and glaze color are to be expected and celebrated. We do not accept returns based on these natural variations.</p>
+            <p>If an item arrives damaged, you must contact us with photographic evidence within 48 hours of delivery to qualify for a replacement or refund.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2>3. Privacy Policy</h2>
+            <p>We respect your privacy. Fun With Art collects only the information necessary to process your orders and studio bookings (Name, Email, Phone Number, and Shipping Address). We will never sell, rent, or trade your personal information to third parties.</p>
+            <p>Your payment information is processed securely through encrypted third-party gateways. We do not store your credit card details on our servers.</p>
+        </div>
+    </div>
+
+    <footer class="site-footer" style="background: #111; color: #fff; padding: 80px 5% 40px; position: relative; z-index: 5;">
+        <div style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 60px;">
+            <div class="footer-brand" style="grid-column: span 2;">
+                <h2 style="font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px;">Fun With Art</h2>
+                <p style="font-family: var(--body-font); color: #888; line-height: 1.6; max-width: 300px;">Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Shop</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="collection.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">All Ceramics</a></li>
+                    <li style="margin-bottom: 15px;"><a href="studio.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Studio Classes</a></li>
+                    <li style="margin-bottom: 15px;"><a href="about.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Support</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">FAQ</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Shipping & Returns</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Legal</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Terms of Service</a></li>
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom" style="border-top: 1px solid #222; text-align: center; padding-top: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font);">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+    <script>
+        // Update badges
+        let cartData = JSON.parse(localStorage.getItem('udaan_cart_v2')) || [];
+        let wishlistData = JSON.parse(localStorage.getItem('udaan_wishlist_v2')) || [];
+        const cartCount = document.getElementById('cart-count'); 
+        const wishCount = document.getElementById('wishlist-count');
+        if(cartCount) { cartCount.innerText = cartData.reduce((sum, item) => sum + item.qty, 0); cartCount.style.opacity = cartData.length > 0 ? '1' : '0';}
+        if(wishCount) { wishCount.innerText = wishlistData.length; wishCount.style.opacity = wishlistData.length > 0 ? '1' : '0';}
+    </script>
+</body>
+</html>

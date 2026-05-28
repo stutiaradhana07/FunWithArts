@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Archive | FUN WITH ART Ceramics Delhi</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+
+    <style>
+        * { cursor: auto !important; margin: 0; padding: 0; box-sizing: border-box; }
+        a, button, .image-wrapper, .filter-btn, .nav-icon, select { cursor: pointer !important; }
+
+        :root { 
+            --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; 
+            --text-color: #222; --card-bg: rgba(255,255,255,0.7);
+            --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; 
+        }
+
+        html { scroll-behavior: auto; } 
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); transition: background 1s ease; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
+
+        body { font-family: var(--body-font); color: var(--text-color); overflow-x: hidden; background-color: var(--bg-color); transition: background-color 1.5s cubic-bezier(0.19, 1, 0.22, 1), color 1.5s ease; z-index: 0; opacity: 1; display: block; }
+
+        /* CUTE FLOATING BACKGROUND */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 1; overflow: hidden; }
+        .page-header, .toolbar-wrapper, .container { position: relative; z-index: 2; }
+        .cutu-shape { position: absolute; fill: var(--accent-color); opacity: 0.8; will-change: transform; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05)); }
+        @keyframes floatA { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        @keyframes floatB { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(-8deg); } }
+        @keyframes floatC { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.1); } }
+        .shape-1 { top: 15%; left: 8%; width: 120px; animation: floatA 8s ease-in-out infinite; }
+        .shape-2 { top: 60%; left: 15%; width: 80px; animation: floatB 12s ease-in-out infinite; animation-delay: 2s; }
+        .shape-3 { top: 25%; right: 12%; width: 100px; animation: floatA 10s ease-in-out infinite; animation-delay: 1s; }
+        .shape-4 { top: 75%; right: 8%; width: 90px; animation: floatB 9s ease-in-out infinite; animation-delay: 3s; }
+        .shape-5 { top: 40%; left: 50%; width: 50px; animation: floatC 6s ease-in-out infinite; opacity: 0.5; }
+
+        /* WIPE TRANSITION */
+        .page-wipe { display: none !important; }
+        .page-wipe.active { transform: none !important; }
+
+        /* NAV BAR */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        nav.hide { transform: translateY(-100%); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px; }
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px; }
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: 0.3s; background: transparent; border: none; color: var(--primary-color);}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; opacity: 0; transition: 0.3s; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold; }
+        .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color); }
+
+        /* HEADER & TOOLBAR */
+        .page-header { text-align: center; padding: 140px 0 40px; position: relative; z-index: 2; overflow: hidden; }
+        .bg-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--art-font); font-size: clamp(8rem, 20vw, 16rem); font-weight: 800; z-index: 0; pointer-events: none; user-select: none; white-space: nowrap; }
+        .page-header h1 { font-family: var(--header-font); font-size: clamp(3rem, 8vw, 5rem); font-style: italic; color: var(--primary-color); position: relative; z-index: 2; margin: 0; transition: color 1.5s ease;}
+        .page-header p { font-family: var(--art-font); letter-spacing: 4px; text-transform: uppercase; color: var(--text-color); font-size: 0.8rem; margin-top: 10px; position: relative; z-index: 2;}
+
+        .toolbar-wrapper { max-width: 1400px; margin: 0 auto 50px; padding: 0 5%; position: relative; z-index: 2; display: flex; flex-direction: column; gap: 20px; }
+        .breadcrumbs { font-family: var(--art-font); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-color); transition: color 1.5s ease;}
+        .breadcrumbs a { color: var(--primary-color); text-decoration: none; transition: 0.3s; font-weight: bold;}
+        .breadcrumbs a:hover { color: var(--accent-color); }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;}
+        .filter-bar { display: flex; gap: 30px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; }
+        .filter-btn { background: none; border: none; color: #888; padding-bottom: 5px; border-bottom: 1px solid transparent; transition: 0.3s; outline: none; font-weight: bold;}
+        .filter-btn:hover, .filter-btn.active { color: var(--primary-color); border-color: var(--primary-color); }
+        .sort-select { background: transparent; border: none; border-bottom: 1px solid var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; text-transform: uppercase; padding-bottom: 5px; outline: none; color: var(--primary-color); transition: color 1.5s ease, border-color 1.5s ease;}
+
+        /* DYNAMIC GRID STYLES */
+        .container { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; padding: 0 5% 100px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 80px 40px; perspective: 2000px; }
+
+        .product-card { opacity: 0; transform: translateY(30px); animation: fadeIn 0.6s ease forwards; will-change: transform, opacity; }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .product-card.filtered-out { opacity: 0 !important; transform: scale(0.8) translateY(50px) !important; pointer-events: none; display: none; }
+
+        .image-wrapper { overflow: hidden; margin-bottom: 15px; width: 100%; aspect-ratio: 4 / 3; position: relative; border-radius: 20px; transition: border-radius 0.8s cubic-bezier(0.19, 1, 0.22, 1), background 1.5s ease, box-shadow 0.4s; background: var(--card-bg); will-change: transform, border-radius; display: block; border: 1px solid rgba(0,0,0,0.03); }
+        .product-card:hover .image-wrapper { box-shadow: 0 20px 50px rgba(0,0,0,0.08); transform: translateY(-5px); }
+
+        .product-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s ease; will-change: transform, object-position; }
+        .product-card:hover .product-image { transform: scale(1.05); }
+
+        /* QUICK SAVE HEART */
+        .quick-save-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 10; opacity: 0; transform: translateY(-10px); transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1); border: none; color: #111;}
+        .product-card:hover .quick-save-btn { opacity: 1; transform: translateY(0); }
+        .quick-save-btn:hover { background: #ffebee; color: #e63946; transform: scale(1.1); }
+        .quick-save-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; transition: 0.3s; }
+        .quick-save-btn.saved { opacity: 1; transform: translateY(0); color: #e63946;}
+        .quick-save-btn.saved svg { fill: currentColor; }
+
+        /* === NEW INTERACTIVE UI: ADD TO BAG & QTY SELECTOR === */
+        .action-layer { position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%); z-index: 10; transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); width: max-content; }
+        .product-card:hover .action-layer { bottom: 25px; }
+        .product-card.in-cart .action-layer { bottom: 25px; } /* Stays permanently visible if in cart! */
+        
+        .quick-add-btn { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); color: #111; padding: 12px 25px; border-radius: 50px; font-family: var(--art-font); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; display: block; }
+        .quick-add-btn:hover { background: var(--accent-color); color: #fff; }
+        
+        .grid-qty-controls { display: none; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); align-items: center; padding: 8px 15px; border-radius: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); gap: 15px; }
+        .grid-qty-btn { background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #555; outline: none; transition: 0.3s; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%;}
+        .grid-qty-btn:hover { background: #eee; color: #111; }
+        .grid-qty-val { font-family: var(--art-font); font-weight: bold; font-size: 0.9rem; min-width: 20px; text-align: center; }
+
+        /* Magic Swap Logic */
+        .product-card.in-cart .quick-add-btn { display: none; }
+        .product-card.in-cart .grid-qty-controls { display: flex; }
+
+        /* PRODUCT INFO */
+        .info { display: flex; flex-direction: column; gap: 4px; }
+        .product-card h3 { font-family: var(--header-font); font-size: clamp(1.4rem, 2vw, 1.8rem); font-style: italic; color: var(--primary-color); margin: 0; transition: color 1.5s ease;}
+        .price-row { display: flex; justify-content: space-between; align-items: center; }
+        .price { font-family: var(--art-font); color: var(--accent-color); font-weight: 700; letter-spacing: 1px; }
+
+        /* ── Star Ratings ── */
+        .stars-row { margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .star-rating { display: inline-flex; gap: 1px; align-items: center; }
+        .star-rating--sm .star-icon { width: 13px; height: 13px; }
+        .star-rating--md .star-icon { width: 18px; height: 18px; }
+        .star-rating--lg .star-icon { width: 24px; height: 24px; }
+        .star-icon--full { fill: #E8A317; color: #E8A317; }
+        .star-icon--half { fill: none; color: #E8A317; }
+        .star-icon--empty { fill: none; color: #D4C5B2; stroke: #D4C5B2; stroke-width: 0.5px; }
+        .star-rating--empty { font-family: var(--body-font); font-size: 0.75rem; color: #999; font-style: italic; }
+        .review-count-text { font-family: var(--body-font); font-size: 0.8rem; color: #888; margin-left: 2px; }
+
+        .product-badge { position: absolute; top: 20px; left: 20px; color: #fff; padding: 6px 14px; font-size: 0.65rem; font-family: var(--body-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border-radius: 30px; z-index: 10; pointer-events: none; display: flex; align-items: center; gap: 6px; }
+        .badge-new { background: var(--primary-color); color: var(--bg-color); }
+        
+        /* FOOTER & TOAST */
+        .footer-top { padding-top: 100px; position: relative; z-index: 5; background: #Fdfbf9; }
+        .newsletter { text-align: center; padding: 0 5% 80px; border-bottom: 1px solid rgba(0,0,0,0.05);}
+        .newsletter h2 { font-family: var(--header-font); font-size: 3rem; font-style: italic; margin-bottom: 15px; color: #111; }
+        .newsletter p { font-family: var(--body-font); font-size: 1.1rem; color: #666; margin-bottom: 30px; }
+        .news-input-group { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .news-input { border: none; border-bottom: 2px solid #111; background: transparent; padding: 10px 0; font-family: var(--body-font); font-size: 1.1rem; width: 350px; outline: none; transition: 0.3s; }
+        .news-input:focus { border-color: var(--accent-color); }
+        .news-btn { background: none; border: none; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-color); transition: 0.3s; font-size: 1rem; }
+        .news-btn:hover { color: #111; }
+        .real-footer { background: #111; color: #fff; padding: 80px 5% 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 50px; font-family: var(--body-font); position: relative; z-index: 5; }
+        .footer-brand h3 { font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px; }
+        .footer-brand p { color: #888; font-size: 0.95rem; line-height: 1.6; max-width: 320px; }
+        .footer-col h4 { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 25px; color: var(--accent-color); font-weight: bold; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col ul li { margin-bottom: 15px; }
+        .footer-col ul li a { color: #ccc; text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
+        .footer-col ul li a:hover { color: #fff; padding-left: 5px; }
+        .footer-bottom { background: #111; text-align: center; padding: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); border-top: 1px solid #222; position: relative; z-index: 5; }
+
+        .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--primary-color); color: var(--bg-color); padding: 15px 30px; border-radius: 50px; font-family: var(--body-font); font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) { 
+            .nav-links { display: none; }
+            .gallery-grid { grid-template-columns: 1fr; } 
+            .toolbar { flex-direction: column; align-items: flex-start; gap: 30px;} 
+            .real-footer { grid-template-columns: 1fr; text-align: center; } 
+            .footer-brand p { margin: 0 auto; }
+            .footer-bottom { flex-direction: column; gap: 20px; text-align: center;}
+            .floating-dreamscape { display: none; } 
+            .bg-text { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-dreamscape" id="dreamscape">
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-1" viewBox="0 0 100 100"><path d="M30,10 L70,10 L65,30 Q90,60 70,90 L30,90 Q10,60 35,30 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-2" viewBox="0 0 100 100"><path d="M50,0 Q50,50 100,50 Q50,50 50,100 Q50,50 0,50 Q50,50 50,0 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-4" viewBox="0 0 100 100"><path d="M40,20 L60,20 L55,40 Q80,70 65,90 L35,90 Q20,70 45,40 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-5" viewBox="0 0 100 100"><path d="M50,0 Q50,50 100,50 Q50,50 50,100 Q50,50 0,50 Q50,50 50,0 Z"/></svg>
+    </div>
+
+    <div class="page-wipe" id="page-wipe"></div>
+
+    <nav id="main-nav">
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-links desktop-links">
+            <a href="/" class="nav-route" data-target="/">Home</a>
+            <a href="/collection" class="active">Collection</a>
+            <a href="javascript:void(0)" class="nav-route" data-target="/studio">Studio</a>
+            <a href="/blogs" class="nav-route" data-target="/blogs">Blogs</a>
+            <a href="javascript:void(0)" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
+        </div>
+        <div class="nav-actions">
+            <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon nav-route" data-target="cart.html"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="bg-text" style="color: transparent; -webkit-text-stroke: 2px rgba(0,0,0,0.03);">CLAY</div>
+        <h1>The Archive</h1>
+        <p>Full Catalog • 2026</p>
+    </div>
+
+    <div class="toolbar-wrapper">
+        <div class="breadcrumbs"><a href="/">Home</a> / Collection</div>
+        <div class="toolbar">
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="latest">Latest</button>
+                <button class="filter-btn" data-filter="decor">Decor</button>
+                <button class="filter-btn" data-filter="vases">Vases</button>
+                <button class="filter-btn" data-filter="pots">Pots</button>
+            </div>
+            <select class="sort-select" id="sort-dropdown">
+                <option value="default">Sort: Newest</option>
+                <option value="low-high">Price: Low to High</option>
+                <option value="high-low">Price: High to Low</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="gallery-grid" id="product-grid">
+            </div>
+    </div>
+
+    <div class="footer-top" id="footer-top">
+        <div class="newsletter">
+            <h2>Join the Studio.</h2>
+            <p>Get 10% off your first piece of clay.</p>
+            <div class="news-input-group">
+                <input type="email" class="news-input" placeholder="Enter your email address">
+                <button class="news-btn" onclick="showToast('Welcome to the inner circle! ✨')">Subscribe</button>
+            </div>
+        </div>
+        <div class="real-footer">
+            <div class="footer-brand">
+                <h3>FUN WITH ART</h3>
+                <p>Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col"><h4>Shop</h4><ul><li><a href="#">All Ceramics</a></li><li><a href="#">New Arrivals</a></li></ul></div>
+            <div class="footer-col"><h4>Support</h4><ul><li><a href="#">FAQ</a></li><li><a href="#">Shipping & Returns</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms of Service</a></li><li><a href="#">Privacy Policy</a></li></ul></div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 FUN WITH ART Ceramics. Built in Delhi.</p>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        const storage = window.UdaanAPI?.STORAGE_KEYS || { cart: 'udaan_cart_v2', wishlist: 'udaan_wishlist_v2', activeProduct: 'udaan_active_product' };
+
+        /* --- FALLBACK CATALOG (used if API is offline) --- */
+        const catalogFallback = [
+            { id: "p1", title: "Midnight Leaf Trio", price: 1800, img: "tall-vases.jpg", category: "vases", desc: "Deep, moody, and elegant. These tall vases feature delicate hand-etched leaf patterns.", badge: "Studio Exclusive", isLatest: true },
+            { id: "p2", title: "Kala Tikka Trio", price: 180, img: "Teen Shagun .jpg", category: "decor", desc: "Every aesthetic home needs a little black dot to keep the nazar away. Minimalist but totally desi.", isLatest: true },
+            { id: "p3", title: "Nautanki Twins", price: 120, img: "character-pots.jpg", category: "pots", desc: "One with an orange collar, one green, and absolutely zero chill. Pure drama for any plant shelf.", isLatest: true },
+            { id: "p4", title: "Babu Moshai Desk Set", price: 900, img: "desk-set.jpg", category: "decor", desc: "For that ultimate, respected boss-energy on the work desk." },
+            { id: "p5", title: "Serenity Fountain", price: 5000, img: "fountain.jpg", category: "decor", desc: "Bring the soothing sound of water indoors. This tabletop fountain is hand-sculpted in raw terracotta.", badge: "Best Seller" },
+            { id: "p6", title: "The Guardians", price: 200, img: "wall-faces.jpg", category: "decor", desc: "A beautiful pair of locally sourced Delhi clay figures, hand-thrown to create protectors for your windowsill." },
+            { id: "p7", title: "Nakhrewala Mor", price: 50, img: "Mor ki Diya .png", category: "decor", desc: "Full of attitude and ready to steal the show at Diwali." },
+            { id: "p8", title: "Chidiya Rani Pourer", price: 200, img: "Veena ji.png", category: "pots", desc: "Because she is definitely the queen of the garden." },
+            { id: "p9", title: "Terracotta Holder", price: 250, img: "wall-pen-holder.PNG", category: "decor", desc: "Keep your pens, incense, brushes, or even dried flowers perfectly organized.", badge: "Selling Fast", isLatest: true },
+            { id: "p10", title: "Jaali Jaadui Bowls", price: 250, img: "Jaali Jaadui Bowls.png", category: "decor", desc: "Aesthetic, traditional, and casts magical shadows when light hits them." },
+            { id: "p11", title: "Bachat Gullak", price: 150, img: "paisa jaisa.png", category: "decor", desc: "Bringing back 90s childhood memories. Store your spare change in pure terracotta." },
+            { id: "p12", title: "Tapri Kulhad Set", price: 200, img: "The Tapri kulhad Set.png", category: "decor", desc: "Because these literally scream 'cutting chai in the monsoon'." },
+            { id: "p13", title: "Dramebaaz Duo", price: 120, img: "Dramebaaz Duo.png", category: "pots", desc: "Look at those faces! Absolute drama queens ready for your small succulents." },
+            { id: "p14", title: "The Choudharain", price: 200, img: "The Sarpanch.png", category: "decor", desc: "Hands on her hips, silently judging your plant care routine." },
+            { id: "p15", title: "Bhukkad Nandi", price: 500, img: "Bhala Nandi.png", category: "decor", desc: "Perfect for holding your keys, or just a massive pile of snacks." },
+            { id: "p16", title: "Small Carved Bowl", price: 50, img: "Chinnu Munnu.png", category: "decor", desc: "A tiny accent piece for a minimalist shelf." },
+            { id: "p17", title: "Bhangra Mendhaks", price: 800, img: "Bhangra Mendhaks.png", category: "vases", desc: "They literally look like they are mid-bhangra step. Balle balle!" },
+            { id: "p18", title: "Chugli Gang", price: 150, img: "Chugli Gang.png", category: "pots", desc: "The side-eyes. The expressions. They are definitely gossiping about the other pots." },
+            { id: "p19", title: "Jugaadu Mendhak", price: 300, img: "Jugaadu Mendhak.png", category: "decor", desc: "The ultimate desi jugaad for watching videos on your phone while eating." },
+            { id: "p20", title: "Jalpari Lantern", price: 600, img: "The Jalpari.png", category: "decor", desc: "Machhli jal ki rani hai, and she belongs on your aesthetic shelf." }
+        ];
+        let catalogDB = catalogFallback;
+
+        function normalizeCategory(category) {
+            const value = String(category || 'decor').trim().toLowerCase();
+            if (value === 'vase') return 'vases';
+            if (value === 'pot') return 'pots';
+            if (value === 'vases' || value === 'pots' || value === 'decor') return value;
+            return 'decor';
+        }
+
+        function normalizeCatalogItem(item) {
+            return {
+                ...item,
+                id: String(item.id),
+                productId: item.productId || item.id,
+                slug: item.slug || '',
+                title: item.title || item.name || '',
+                price: Number(item.price || 0),
+                img: item.img || item.image_url || item.image || '',
+                category: normalizeCategory(item.category),
+                desc: item.desc || item.description || '',
+                isLatest: Boolean(item.isLatest || item.is_new || item.isNew),
+                created_at: item.created_at || '',
+                badge: item.badge || ((item.isLatest || item.is_new || item.isNew) ? 'Latest Drop' : ''),
+            };
+        }
+
+        /* --- SAFE LOCAL STORAGE PARSING --- */
+        let cartItems = [];  // legacy-shaped from API, loaded async
+        let wishlistData = [];
+        try {
+            wishlistData = JSON.parse(localStorage.getItem(storage.wishlist)) || [];
+            if (!Array.isArray(wishlistData)) wishlistData = [];
+        } catch(e) { wishlistData = []; }
+
+        async function loadCartItems() {
+            try {
+                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+            } catch (e) {
+                cartItems = [];
+            }
+        }
+
+        const grid = document.getElementById('product-grid');
+        
+        function renderGrid(data) {
+            grid.innerHTML = '';
+            data.forEach((item, index) => {
+                const delay = index * 0.05; 
+                const badgeHTML = item.badge ? `<div class="product-badge badge-new">${item.badge}</div>` : '';
+                
+                // NEW: Action Layer with BOTH Add button and Qty Controls
+                const card = `
+                    <div class="product-card" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
+                        ${badgeHTML}
+                        <div class="image-wrapper view-link">
+                            <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
+                            <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
+                            
+                            <div class="action-layer">
+                                <button class="quick-add-btn">Quick Add +</button>
+                                <div class="grid-qty-controls">
+                                    <button class="grid-qty-btn minus">-</button>
+                                    <span class="grid-qty-val">1</span>
+                                    <button class="grid-qty-btn plus">+</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="info">
+                            <h3>${item.title}</h3>
+                            <div class="price-row">
+                                <span class="price">₹${item.price.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="stars-row">${window.UdaanAPI.renderStars(item.avg_rating, { showCount: true, count: item.review_count, size: 'sm' })}</div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+            attachEventListeners();
+            updateBadges();
+            updateCardUIs(); // Instantly checks if any items are already in the cart
+        }
+
+        async function initCatalog() {
+            if (window.UdaanAPI) {
+                try {
+                    const products = await window.UdaanAPI.fetchProducts();
+                    if (Array.isArray(products) && products.length) {
+                        catalogDB = products.map((product) => normalizeCatalogItem(window.UdaanAPI.mapApiProduct(product)));
+                    }
+                    wishlistData = await window.UdaanAPI.loadWishlistCache();
+                    await loadCartItems();
+                } catch (error) {
+                    console.warn('Using fallback catalog:', error);
+                }
+            }
+            catalogDB = catalogDB.map(normalizeCatalogItem);
+            renderGrid(getVisibleCatalog());
+        }
+
+        initCatalog();
+
+        function updateBadges() {
+            if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                window.UdaanAPI.updateBadges();
+            }
+            const wishCount = document.getElementById('wishlist-count');
+            if(wishCount) { wishCount.innerText = wishlistData.length; wishCount.style.opacity = wishlistData.length > 0 ? '1' : '0'; }
+
+            document.querySelectorAll('.product-card').forEach(card => {
+                const id = card.getAttribute('data-id');
+                const btn = card.querySelector('.quick-save-btn');
+                if (btn) {
+                    if (wishlistData.some(item => item.id === id)) { btn.classList.add('saved'); }
+                    else { btn.classList.remove('saved'); }
+                }
+            });
+        }
+
+        // --- NEW: THE MAGIC UI UPDATER ---
+        function updateCardUIs() {
+            document.querySelectorAll('.product-card').forEach(card => {
+                const productId = card.getAttribute('data-product-id');
+                const fallbackId = card.getAttribute('data-id');
+                const item = cartItems.find(function (ci) {
+                    return String(ci.productId) === String(productId) || String(ci.id) === String(fallbackId);
+                });
+
+                if (item && item.qty > 0) {
+                    card.classList.add('in-cart');
+                    card.querySelector('.grid-qty-val').innerText = item.qty;
+                } else {
+                    card.classList.remove('in-cart');
+                }
+            });
+        }
+
+        // --- NEW: CENTRALIZED CART UPDATE FUNCTION ---
+        async function updateCart(card, change) {
+            const productIdAttr = card.getAttribute('data-product-id');
+            const fallbackId = card.getAttribute('data-id');
+            const numericProductId = Number(productIdAttr) || null;
+
+            // Find existing cart item by matching product ID
+            const existingItem = cartItems.find(function (ci) {
+                return numericProductId ? String(ci.productId) === String(productIdAttr) : String(ci.id) === String(fallbackId);
+            });
+
+            try {
+                if (existingItem) {
+                    const newQty = existingItem.qty + change;
+                    if (newQty <= 0) {
+                        await window.UdaanAPI.removeCartItem(existingItem.cartItemId);
+                        showToast('Removed from bag.');
+                    } else {
+                        await window.UdaanAPI.updateCartItem(existingItem.cartItemId, newQty);
+                    }
+                } else if (change > 0 && numericProductId) {
+                    await window.UdaanAPI.addToCart(numericProductId, 1);
+                    showToast('🛍️ Added to your bag!');
+                } else if (change > 0 && !numericProductId) {
+                    showToast('Product not available from server.');
+                    return;
+                }
+
+                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+            } catch (e) {
+                showToast(e.message || 'Could not update bag.');
+            }
+
+            updateBadges();
+            updateCardUIs();
+        }
+
+        window.showToast = function(message) { 
+            const container = document.getElementById('toast-container'); 
+            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message; 
+            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); 
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000); 
+        }
+
+        function attachEventListeners() {
+            
+            // The "Quick Add" Click
+            document.querySelectorAll('.quick-add-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), 1);
+                });
+            });
+
+            // The "-" Qty Click
+            document.querySelectorAll('.grid-qty-btn.minus').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), -1);
+                });
+            });
+
+            // The "+" Qty Click
+            document.querySelectorAll('.grid-qty-btn.plus').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    updateCart(this.closest('.product-card'), 1);
+                });
+            });
+
+            document.querySelectorAll('.quick-save-btn').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.stopPropagation(); e.preventDefault();
+                    const card = this.closest('.product-card');
+                    const product = {
+                        id: card.getAttribute('data-id'),
+                        productId: card.getAttribute('data-product-id'),
+                        title: card.querySelector('h3').innerText,
+                        img: card.querySelector('img').src,
+                        price: parseFloat(card.getAttribute('data-base-price')),
+                    };
+                    try {
+                        const saved = await window.UdaanAPI.toggleWishlist(product);
+                        wishlistData = await window.UdaanAPI.loadWishlistCache();
+                        updateBadges();
+                        showToast(saved ? '🤎 Saved for later!' : 'Removed from saved.');
+                    } catch (error) {
+                        showToast(error.message || 'Could not update wishlist.');
+                    }
+                });
+            });
+
+            // Page Transition to Product Details
+            document.querySelectorAll('.view-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if(e.target.closest('.action-layer') || e.target.closest('.quick-save-btn')) return;
+                    e.preventDefault();
+                    const card = this.closest('.product-card');
+                    const prodData = catalogDB.find(p => String(p.id) === String(card.getAttribute('data-id')));
+                    localStorage.setItem(storage.activeProduct, JSON.stringify(prodData));
+                    window.location.href = `/product/${encodeURIComponent(prodData.slug || prodData.productId || prodData.id)}`;
+                });
+            });
+        }
+
+        /* --- FILTERS & SORT --- */
+        let activeCategory = 'all';
+        let activeSort = 'default';
+
+        function sortCatalog(items) {
+            const sorted = [...items];
+            if (activeSort === 'low-high') {
+                sorted.sort((a, b) => a.price - b.price);
+                return sorted;
+            }
+            if (activeSort === 'high-low') {
+                sorted.sort((a, b) => b.price - a.price);
+                return sorted;
+            }
+
+            sorted.sort((a, b) => {
+                if (a.isLatest !== b.isLatest) return Number(b.isLatest) - Number(a.isLatest);
+                const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return bTime - aTime;
+            });
+            return sorted;
+        }
+
+        function getVisibleCatalog() {
+            const filtered = catalogDB.filter((item) => {
+                if (activeCategory === 'all') return true;
+                if (activeCategory === 'latest') return item.isLatest;
+                return item.category === activeCategory;
+            });
+            return sortCatalog(filtered);
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => { 
+            btn.addEventListener('click', function() { 
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
+                this.classList.add('active');
+                activeCategory = this.getAttribute('data-filter').toLowerCase();
+                renderGrid(getVisibleCatalog());
+            }); 
+        });
+
+        document.getElementById('sort-dropdown').addEventListener('change', function() { 
+            activeSort = this.value;
+            renderGrid(getVisibleCatalog());
+        });
+
+        document.querySelectorAll('.nav-route').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); const target = this.getAttribute('data-target');
+                window.location.href = target;
+            });
+        });
+
+        /* --- SAFE LENIS IMPLEMENTATION --- */
+        try {
+            const lenis = new Lenis({ duration: 1.8, smooth: true });
+            let scrollY = 0; let speed = 0; let lastScrollY = window.scrollY;
+            const mainNav = document.getElementById('main-nav');
+            const dreamscape = document.getElementById('dreamscape');
+
+            lenis.on('scroll', (e) => {
+                scrollY = e.scroll; speed = e.velocity;
+                if (scrollY > lastScrollY && scrollY > 150) { mainNav.classList.add('hide'); } 
+                else { mainNav.classList.remove('hide'); }
+                lastScrollY = scrollY;
+                if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
+                const skew = Math.max(-15, Math.min(15, speed * 0.6));
+                const scale = 1 - Math.min(0.1, Math.abs(speed * 0.01));
+                document.querySelectorAll('.liquid-img').forEach(img => { img.style.transform = `skewY(${skew}deg) scale(${scale})`; });
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+        } catch(e) { console.log("Smooth scroll disabled for safety."); }
+
+    </script>
+</body>
+</html>

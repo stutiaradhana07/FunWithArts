@@ -1,0 +1,181 @@
+<style>
+  .settings-container {
+    max-width: 800px;
+    margin: 100px auto;
+    padding: 0 5%;
+    font-family: 'Lato', sans-serif;
+  }
+
+  .settings-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: #111111;
+    margin-bottom: 40px;
+  }
+
+  .glass-form {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(215, 168, 141, 0.3); /* Clay Beige border */
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  }
+
+  .form-group { margin-bottom: 25px; }
+
+  .form-group label {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: #555555;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 15px 25px;
+    border-radius: 50px;
+    border: 1px solid #EDE5D8;
+    background: #FDFBF9;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #D7A88D;
+    box-shadow: 0 0 0 4px rgba(215, 168, 141, 0.1);
+  }
+
+  .save-btn {
+    background: #111111;
+    color: #ffffff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 18px 45px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+  }
+
+  .save-btn:hover {
+    background: #D7A88D; /* Clay Beige */
+    transform: translateY(-3px);
+    letter-spacing: 2px;
+  }
+
+  .settings-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    background: #111111;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 999px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .settings-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+
+<div class="settings-container">
+  <div class="settings-header">
+    <h1>Your Studio Profile.</h1>
+  </div>
+
+  <form id="settings-form" class="glass-form">
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="set-username" placeholder="Enter your name">
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="set-email" readonly style="opacity: 0.6; cursor: not-allowed;">
+    </div>
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" id="set-phone" placeholder="+91 ...">
+    </div>
+    
+    <button type="submit" class="save-btn">Save Changes</button>
+  </form>
+</div>
+
+<script>
+  (async function() {
+    const api = window.UdaanAPI;
+    if (!api.isLoggedIn()) { window.location.href = '/login'; return; }
+
+    const [user, profile] = await Promise.all([
+      api.fetchCurrentUser(),
+      api.fetchCurrentProfile().catch(() => ({})),
+    ]);
+
+    document.getElementById('set-username').value = user.username || '';
+    document.getElementById('set-email').value = user.email || '';
+    document.getElementById('set-phone').value = profile.phone || '';
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'settings-toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.add('is-visible');
+      });
+
+      setTimeout(() => {
+        toast.classList.remove('is-visible');
+        setTimeout(() => toast.remove(), 250);
+      }, 2500);
+    }
+
+    document.getElementById('settings-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const originalText = btn.innerText;
+
+      btn.innerText = 'Updating...';
+      btn.disabled = true;
+
+      try {
+        await api.updateCurrentUser({
+          username: document.getElementById('set-username').value,
+          phone: document.getElementById('set-phone').value
+        });
+
+        await api.fetchCurrentUser();
+        await api.updateBadges();
+        showToast('Profile updated, Artisan.');
+        setTimeout(() => {
+          window.location.href = '/account';
+        }, 900);
+      } catch (err) {
+        showToast(err.message || 'Update failed.');
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    });
+  })();
+</script>

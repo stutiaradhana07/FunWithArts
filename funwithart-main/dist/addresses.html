@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Addresses | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #111; --accent: #D7A88D; --bg: #Fdfbf9; 
+            --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; 
+        }
+
+        body { font-family: 'Lato', sans-serif; background: var(--bg); margin: 0; padding: 120px 5% 40px; }
+        .page-shell { max-width: 1000px; margin: 0 auto; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 26px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            color: var(--primary);
+            text-decoration: none;
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+        }
+        .back-link:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+        .back-link-arrow { font-size: 1rem; line-height: 1; }
+
+        .address-container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+
+        /* Left Side: Address Cards */
+        .address-list h1 { font-family: var(--header-font); font-style: italic; font-size: 3.5rem; margin-bottom: 10px; }
+        .address-list p.subtitle { color: #888; margin-bottom: 40px; font-size: 1.1rem; }
+        
+        .address-card { 
+            background: #fff; padding: 25px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.04);
+            margin-bottom: 20px; position: relative; transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .address-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
+        .tag { display: inline-block; padding: 4px 10px; background: #faf2ed; color: var(--accent); font-family: var(--art-font); font-size: 0.65rem; font-weight: bold; border-radius: 50px; margin-bottom: 12px; text-transform: uppercase; }
+        .address-card p { margin: 0; color: #444; line-height: 1.6; font-size: 1rem; }
+        .delete-btn { position: absolute; top: 25px; right: 25px; background: none; border: none; cursor: pointer; color: #ccc; transition: 0.3s; }
+        .delete-btn:hover { color: #ff6b6b; }
+
+        /* Right Side: Form */
+        .address-editor { background: #fff; padding: 40px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); position: sticky; top: 120px; }
+        .address-editor h3 { font-family: var(--art-font); font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 25px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full { grid-column: span 2; }
+        
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: #aaa; margin-bottom: 8px; font-family: var(--art-font); }
+        .input-group input { padding: 15px; border: 1px solid #eee; border-radius: 12px; outline: none; background: #fafafa; transition: 0.3s; font-family: 'Lato'; font-size: 1rem; }
+        .input-group input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 5px 15px rgba(215, 168, 141, 0.1); }
+
+        .save-btn { 
+            width: 100%; padding: 20px; background: var(--primary); color: #fff; border: none; 
+            border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase;
+            letter-spacing: 2px; margin-top: 25px; cursor: pointer; transition: 0.3s;
+        }
+        .save-btn:hover { background: var(--accent); transform: translateY(-3px); }
+
+        @media (max-width: 900px) { .address-container { grid-template-columns: 1fr; } .address-editor { position: static; } }
+    </style>
+</head>
+<body>
+
+<div class="page-shell">
+    <a href="/account" class="back-link">
+        <span class="back-link-arrow">&#8592;</span>
+        <span>Back to Dashboard</span>
+    </a>
+
+<div class="address-container">
+    <div class="address-list">
+        <h1>Your Studio Deliveries.</h1>
+        <p class="subtitle">Manage where your handcrafted pieces will land.</p>
+        <div id="address-items">
+            </div>
+    </div>
+
+    <div class="address-editor">
+        <h3>Add New Address</h3>
+        <form id="address-form">
+            <div class="form-grid">
+                <div class="input-group full">
+                    <label>Full Address / Street</label>
+                    <input type="text" id="addr-full" required placeholder="House No, Apartment, Landmark">
+                </div>
+                <div class="input-group">
+                    <label>City</label>
+                    <input type="text" id="addr-city" required placeholder="New Delhi">
+                </div>
+                <div class="input-group">
+                    <label>Pincode</label>
+                    <input type="text" id="addr-pincode" required placeholder="110001">
+                </div>
+                <div class="input-group full">
+                    <label>Address Label</label>
+                    <input type="text" id="addr-label" required placeholder="Home, Office, Studio">
+                </div>
+            </div>
+            <button type="submit" class="save-btn">Add Address</button>
+        </form>
+    </div>
+</div>
+</div>
+
+<script src="/api-config.js"></script>
+<script src="shared.js"></script>
+<script>
+    // In-memory data linked to localStorage
+    let addresses = JSON.parse(localStorage.getItem('udaan_addresses_v1')) || [];
+
+    function renderAddresses() {
+        const container = document.getElementById('address-items');
+        if (addresses.length === 0) {
+            container.innerHTML = `<p style="color: #bbb; font-style: italic;">No addresses saved yet. Add your first one to get started!</p>`;
+            return;
+        }
+
+        container.innerHTML = addresses.map((addr, index) => `
+            <div class="address-card">
+                <span class="tag">${addr.label}</span>
+                <button class="delete-btn" onclick="deleteAddress(${index})">✕</button>
+                <p><strong>${addr.full}</strong><br>${addr.city} - ${addr.pincode}</p>
+            </div>
+        `).join('');
+    }
+
+    function deleteAddress(index) {
+        addresses.splice(index, 1);
+        saveAndRefresh();
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('udaan_addresses_v1', JSON.stringify(addresses));
+        renderAddresses();
+        // Update badges if addresses are linked to a count elsewhere
+        if(window.UdaanAPI) window.UdaanAPI.updateBadges();
+    }
+
+    document.getElementById('address-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const newAddr = {
+            full: document.getElementById('addr-full').value,
+            city: document.getElementById('addr-city').value,
+            pincode: document.getElementById('addr-pincode').value,
+            label: document.getElementById('addr-label').value
+        };
+
+        addresses.push(newAddr);
+        saveAndRefresh();
+        e.target.reset();
+    });
+
+    // Initial load
+    renderAddresses();
+</script>
+</body>
+</html>

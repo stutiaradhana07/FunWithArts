@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Purchases | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --accent: #D7A88D;
+            --accent-dark: #c4957a;
+            --accent-light: rgba(215, 168, 141, 0.12);
+            --bg: #Fdfbf9;
+            --card-bg: #fff;
+            --text: #222;
+            --text-muted: #777;
+            --text-light: #aaa;
+            --border: rgba(0,0,0,0.06);
+            --header-font: 'Playfair Display', serif;
+            --art-font: 'Syne', sans-serif;
+            --body-font: 'Lato', sans-serif;
+            --shadow: 0 10px 30px rgba(0,0,0,0.04);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.06);
+            --radius: 20px;
+            --radius-sm: 14px;
+        }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text);
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: rgba(253, 251, 249, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo-fusion {
+            display: flex;
+            align-items: baseline;
+            text-decoration: none;
+            color: #111;
+            z-index: 101;
+            transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part {
+            font-family: var(--art-font);
+            font-weight: 700;
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-right: 5px;
+        }
+        .hindi-char {
+            font-family: var(--header-font);
+            color: var(--accent);
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-style: italic;
+            position: relative;
+            top: 3px;
+        }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a {
+            text-decoration: none;
+            color: #111;
+            font-family: var(--art-font);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-left: 30px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .desktop-links a:hover,
+        .desktop-links a.active { color: var(--accent); }
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-left: 30px;
+        }
+        .nav-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #111;
+            transition: 0.3s;
+        }
+        .nav-icon:hover { background: rgba(0,0,0,0.05); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .nav-account-link {
+            font-family: var(--art-font);
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #111;
+            font-weight: bold;
+            padding: 10px 18px;
+            border: 1px solid #111;
+            border-radius: 50px;
+            white-space: nowrap;
+            transition: 0.3s;
+            line-height: 1;
+        }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent); color: var(--accent); }
+        .badge-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.62rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--art-font);
+            font-weight: bold;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            max-width: 1000px;
+            margin: 60px auto 20px;
+            padding: 0 5%;
+            width: 100%;
+            text-align: center;
+        }
+        .page-header h1 {
+            font-family: var(--header-font);
+            font-size: 3.2rem;
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: var(--shadow);
+            color: var(--text);
+            text-decoration: none;
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            transition: 0.25s ease;
+        }
+        .back-link:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            transform: translateY(-2px);
+        }
+        .back-link-arrow {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .history-wrapper {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto 80px;
+            padding: 0 5%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* ── ORDER CARD ── */
+        .order-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+        .order-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        /* CARD HEADER */
+        .card-header-bar {
+            background: #fafaf8;
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .order-meta-info {
+            display: flex;
+            gap: 36px;
+            flex-wrap: wrap;
+        }
+        .meta-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .meta-label {
+            font-family: var(--art-font);
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .meta-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .order-id-label {
+            font-family: var(--art-font);
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--accent-dark);
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            font-family: var(--art-font);
+            font-size: 0.68rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+        .status-badge.confirmed { background: #d4edda; color: #155724; }
+        .status-badge.shipped { background: #cce5ff; color: #004085; }
+        .status-badge.delivered { background: #d4edda; color: #155724; }
+        .status-badge.cancelled { background: #f8d7da; color: #721c24; }
+
+        /* LINE ITEMS */
+        .order-items-list {
+            padding: 10px 28px 0;
+        }
+        .line-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid #f0ede9;
+            gap: 20px;
+        }
+        .line-item:last-child {
+            border-bottom: none;
+        }
+        .item-details-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .item-thumbnail {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            background: #fafaf8;
+            border: 1px solid rgba(0,0,0,0.03);
+            flex-shrink: 0;
+        }
+        .item-name {
+            font-family: var(--header-font);
+            font-size: 1.25rem;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .item-qty-price {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .item-line-total {
+            font-family: var(--header-font);
+            font-size: 1.2rem;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* CARD FOOTER */
+        .card-footer-bar {
+            padding: 20px 28px;
+            background: #fafaf8;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .footer-left {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .order-total-price {
+            font-family: var(--header-font);
+            font-size: 1.45rem;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            border-radius: 50px;
+            background: #111;
+            color: #fff;
+            text-decoration: none;
+            font-family: var(--art-font);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.72rem;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.25s;
+            line-height: 1.4;
+        }
+        .btn:hover { background: var(--accent-dark); }
+        .btn-outline {
+            background: transparent;
+            color: #111;
+            border: 1px solid #111;
+        }
+        .btn-outline:hover {
+            background: #111;
+            color: #fff;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #888;
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+        .empty-state h2 {
+            font-family: var(--header-font);
+            font-style: italic;
+            font-size: 2.2rem;
+            color: #111;
+            margin-bottom: 8px;
+        }
+        .empty-state p { margin-bottom: 24px; font-size: 1rem; color: var(--text-muted); }
+
+        /* ── UNAUTH STATE ── */
+        .unauth-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            margin: 40px auto;
+            width: 100%;
+        }
+        .unauth-state h2 {
+            font-family: var(--header-font);
+            font-style: italic;
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+        }
+        .unauth-state p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        /* ── LOADING ── */
+        .loading-spinner {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-light);
+            font-family: var(--art-font);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        /* ── FOOTER ── */
+        .site-footer {
+            background: #111;
+            color: #fff;
+            padding: 60px 5% 30px;
+            margin-top: auto;
+        }
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+        .footer-brand h2 {
+            font-family: var(--header-font);
+            font-size: 2rem;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+        .footer-brand p { color: #888; line-height: 1.6; max-width: 300px; }
+        .footer-col h4 {
+            font-family: var(--art-font);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col ul li { margin-bottom: 12px; }
+        .footer-col ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-family: var(--body-font);
+            transition: 0.3s;
+        }
+        .footer-col ul li a:hover { color: #fff; padding-left: 5px; }
+        .footer-bottom {
+            border-top: 1px solid #222;
+            text-align: center;
+            padding-top: 24px;
+            color: #666;
+            font-size: 0.82rem;
+            font-family: var(--art-font);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 800px) {
+            .page-header h1 { font-size: 2.5rem; }
+            .card-header-bar { padding: 18px 20px; }
+            .order-items-list { padding: 8px 20px 0; }
+            .card-footer-bar { padding: 18px 20px; }
+            .order-meta-info { gap: 20px; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .desktop-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── NAVIGATION ── -->
+    <nav>
+        <a href="/" class="logo-fusion">
+            <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
+        </a>
+        <div class="nav-links desktop-links">
+            <a href="/">Home</a>
+            <a href="/collection">Collection</a>
+            <a href="/studio">Studio</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/wishlist" class="nav-icon" title="Wishlist">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <span class="badge-count" id="wishlist-count">0</span>
+            </a>
+            <a href="/cart" class="nav-icon" title="Cart">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                <span class="badge-count" id="cart-count">0</span>
+            </a>
+            <a href="/account" id="account-link" class="nav-account-link" title="My Account">
+                Account
+            </a>
+        </div>
+    </nav>
+
+    <!-- ── PAGE HEADER ── -->
+    <header class="page-header">
+        <a href="/account" class="back-link">
+            <span class="back-link-arrow">&#8592;</span>
+            <span>Back to Dashboard</span>
+        </a>
+        <h1>Your Orders</h1>
+        <p>A history of your handcrafted terracotta & studio ceramics.</p>
+    </header>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="history-wrapper" id="history-root">
+        <div class="loading-spinner">Opening the studio records...</div>
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Fun With Art</h2>
+                <p>Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="/collection">All Ceramics</a></li>
+                    <li><a href="/studio">Studio Classes</a></li>
+                    <li><a href="/about">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/support">FAQ</a></li>
+                    <li><a href="/support">Shipping & Returns</a></li>
+                    <li><a href="/contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="/legal">Terms of Service</a></li>
+                    <li><a href="/legal">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <script>
+        (async function () {
+            var root = document.getElementById('history-root');
+
+            // ── Auth Guard: redirect unauthenticated users ──
+            if (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn()) {
+                root.innerHTML = renderUnauthenticated();
+                return;
+            }
+
+            try {
+                // Fetch user orders and product map in parallel to resolve thumbnails
+                var data = await Promise.all([
+                    window.UdaanAPI.fetchOrders().catch(function () { return []; }),
+                    window.UdaanAPI.buildProductMap().catch(function () { return new Map(); })
+                ]);
+
+                var orders = data[0];
+                var productMap = data[1];
+
+                renderOrderHistory(orders, productMap);
+            } catch (error) {
+                root.innerHTML = renderErrorState(error.message || 'Could not load your purchase records.');
+            }
+
+            // ── Unauthenticated state ──
+            function renderUnauthenticated() {
+                return '<div class="unauth-state">' +
+                    '<h2>Your Kiln is Empty</h2>' +
+                    '<p style="margin-bottom: 20px;">Please sign in to view your past purchases and track active orders.</p>' +
+                    '<a href="/login?next=/order-history" class="btn">Sign In</a>' +
+                    '</div>';
+            }
+
+            // ── Error state ──
+            function renderErrorState(msg) {
+                return '<div class="empty-state">' +
+                    '<div class="empty-icon">⚠️</div>' +
+                    '<h2>Something went wrong</h2>' +
+                    '<p>' + msg + '</p>' +
+                    '<a href="/order-history" class="btn" style="margin-top: 10px;">Retry</a>' +
+                    '</div>';
+            }
+
+            // ── Main order history rendering ──
+            function renderOrderHistory(orders, productMap) {
+                if (!orders.length) {
+                    root.innerHTML = '<div class="empty-state">' +
+                        '<div class="empty-icon">🏺</div>' +
+                        '<h2>No orders placed yet</h2>' +
+                        '<p>It seems you haven\'t collected any of our ceramics yet.</p>' +
+                        '<a href="/collection" class="btn">Browse the Archive</a>' +
+                        '</div>';
+                    return;
+                }
+
+                // Render each order card
+                root.innerHTML = orders.map(function (order) {
+                    var created = new Date(order.created_at).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                    });
+                    var statusLabel = window.UdaanAPI.formatOrderStatus(order.status);
+
+                    // Render lines
+                    var linesHtml = (order.items || []).map(function (item) {
+                        // Attempt to resolve live image from product catalog mapping
+                        var matchedProduct = productMap.get(window.UdaanAPI.normalize(item.product_name));
+                        var imageSrc = matchedProduct ? (matchedProduct.image_url || matchedProduct.image) : '';
+                        
+                        // Use default placeholder if no catalog match found
+                        if (!imageSrc) {
+                            imageSrc = 'https://placehold.co/150x150/fdf6f2/d7a88d?text=' + encodeURIComponent(item.product_name);
+                        }
+
+                        return '<div class="line-item">' +
+                            '<div class="item-details-left">' +
+                                '<img src="' + imageSrc + '" class="item-thumbnail" alt="' + escapeHtml(item.product_name) + '" onerror="this.src=\'https://placehold.co/150x150/fdf6f2/d7a88d?text=Ceramics\'">' +
+                                '<div>' +
+                                    '<h3 class="item-name">' + escapeHtml(item.product_name) + '</h3>' +
+                                    '<div class="item-qty-price">Qty: ' + item.quantity + ' &middot; ' + window.UdaanAPI.formatMoney(item.unit_price) + ' each</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<span class="item-line-total">' + window.UdaanAPI.formatMoney(item.line_total) + '</span>' +
+                            '</div>';
+                    }).join('');
+
+                    return '<article class="order-card">' +
+                        '<div class="card-header-bar">' +
+                            '<div class="order-meta-info">' +
+                                '<div class="meta-col">' +
+                                    '<span class="meta-label">Date Placed</span>' +
+                                    '<span class="meta-value">' + created + '</span>' +
+                                '</div>' +
+                                '<div class="meta-col">' +
+                                    '<span class="meta-label">Payment</span>' +
+                                    '<span class="meta-value">' + (order.payment_method || '').toUpperCase() + '</span>' +
+                                '</div>' +
+                                '<div class="meta-col">' +
+                                    '<span class="meta-label">Total</span>' +
+                                    '<span class="meta-value" style="font-family:var(--header-font);font-style:italic;font-weight:bold;">' + window.UdaanAPI.formatMoney(order.total_amount) + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div>' +
+                                '<div style="margin-bottom:4px; text-align:right;" class="order-id-label">Order #' + order.id + '</div>' +
+                                '<span class="status-badge ' + order.status + '">' + statusLabel + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="order-items-list">' + linesHtml + '</div>' +
+                        '<div class="card-footer-bar">' +
+                            '<div class="footer-left">' +
+                                '<span class="meta-label">Shipping to:</span>' +
+                                '<span class="meta-value" style="font-size:0.88rem;color:var(--text-muted);">' + escapeHtml(order.shipping_city) + ', ' + escapeHtml(order.shipping_pincode) + '</span>' +
+                            '</div>' +
+                            '<a href="/orders" class="btn btn-outline btn-sm">Track Shipment</a>' +
+                        '</div>' +
+                        '</article>';
+                }).join('');
+            }
+
+            // ── Utility ──
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // Update site badges
+            if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                window.UdaanAPI.updateBadges();
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Workshop | Fun With Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="/api-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="shared.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #Fdfbf9;
+            --bg-warm: #F8F4EF;
+            --surface: #fff;
+            --text: #2c2c2c;
+            --text-light: #7a7a7a;
+            --accent: #D7A88D;
+            --accent-dark: #C49A7A;
+            --accent-light: #F0E0D6;
+            --warning: #E8C547;
+            --success: #6BAF7B;
+            --error: #D4685A;
+            --border: #e8e2db;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --radius: 14px;
+            --header-font: 'Playfair Display', serif;
+            --art-font: 'Syne', sans-serif;
+            --body-font: 'Lato', sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        .site-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .site-header .logo {
+            font-family: var(--art-font);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .site-header .logo span {
+            color: var(--accent);
+        }
+
+        .site-header .header-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .site-header .header-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+
+        .site-header .header-links a:hover {
+            color: var(--accent-dark);
+        }
+
+        /* ── Main ── */
+        #confirmation-root {
+            flex: 1;
+            max-width: 660px;
+            width: 100%;
+            margin: 48px auto;
+            padding: 0 20px;
+        }
+
+        /* ── Step Indicator ── */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 36px;
+        }
+
+        .step-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        .step-dot.done {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 0 6px var(--accent-light);
+        }
+
+        .step-line {
+            width: 64px;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            transition: background var(--transition);
+        }
+
+        .step-line.done {
+            background: var(--success);
+        }
+
+        /* ── Card ── */
+        .confirm-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 40px 36px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .confirm-card h1 {
+            font-family: var(--header-font);
+            font-size: 1.7rem;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .confirm-card .subtitle {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 28px;
+        }
+
+        /* ── Workshop Summary ── */
+        .workshop-summary {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            background: var(--bg-warm);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .workshop-icon {
+            font-size: 2.6rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .workshop-info h2 {
+            font-family: var(--header-font);
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .wi-instructor {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .wi-datetime {
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .wi-duration {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        /* ── Price Section ── */
+        .price-section {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            margin-bottom: 24px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.95rem;
+        }
+
+        .price-row.muted {
+            color: var(--text-light);
+        }
+
+        .price-row.total {
+            font-weight: 700;
+            font-size: 1.15rem;
+            border-top: 1px dashed var(--border);
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+
+        .seats-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        /* ── Action Row ── */
+        .action-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-family: var(--art-font);
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            letter-spacing: 0.01em;
+            width: auto;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-accent:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(215,168,141,0.4);
+        }
+
+        .btn-accent:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        /* ── Success State ── */
+        .success-state {
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+
+        .success-state h2 {
+            font-family: var(--header-font);
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            color: var(--success);
+        }
+
+        .success-state p {
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .booking-ref {
+            background: var(--bg-warm);
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            display: inline-block;
+            margin: 16px 0 24px;
+        }
+
+        /* ── Error State ── */
+        .error-state {
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+
+        .error-state h2 {
+            font-family: var(--header-font);
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: var(--error);
+        }
+
+        .error-state p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        /* ── Toast ── */
+        #toast-container {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #2c2c2c;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.35s ease;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            pointer-events: auto;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Footer ── */
+        .site-footer {
+            background: #111;
+            color: #fff;
+            padding: 60px 5% 30px;
+            margin-top: auto;
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 36px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand h3 {
+            font-family: var(--art-font);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .footer-brand h3 span {
+            color: var(--accent);
+        }
+
+        .footer-brand p {
+            color: #aaa;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .footer-col h4 {
+            font-family: var(--art-font);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #ccc;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 6px;
+        }
+
+        .footer-col ul li a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color var(--transition);
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: center;
+            color: #777;
+            font-size: 0.8rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            #confirmation-root {
+                margin: 24px auto;
+            }
+
+            .confirm-card {
+                padding: 28px 20px;
+            }
+
+            .workshop-summary {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .step-line {
+                width: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <a href="/" class="logo">Fun <span>With Art</span></a>
+        <div class="header-links">
+            <a href="/studio">Workshops</a>
+            <a href="/account">Account</a>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <div id="confirmation-root"></div>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand" style="grid-column: span 2;">
+                <h3>Fun <span>With Art</span></h3>
+                <p>Hand-thrown terracotta pottery & ceramic workshops out of our New Delhi studio.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Studio</h4>
+                <ul>
+                    <li><a href="/studio">Workshops</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="/">All Products</a></li>
+                    <li><a href="/collection">Collections</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="/support">Help</a></li>
+                    <li><a href="/legal">Legal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var root = document.getElementById('confirmation-root');
+
+            // ── Parse URL params ──
+            var params = new URLSearchParams(window.location.search);
+            var workshopId = parseInt(params.get('workshop_id'), 10);
+            var seats = parseInt(params.get('seats'), 10) || 1;
+
+            // ── Validate params ──
+            if (!workshopId || workshopId < 1) {
+                root.innerHTML = renderError('Invalid workshop selection.', 'Please go back and choose a workshop.');
+                return;
+            }
+            if (seats < 1 || seats > 10) {
+                root.innerHTML = renderError('Invalid seat count.', 'Please select between 1 and 10 seats.');
+                return;
+            }
+
+            // ── Auth Guard ──
+            if (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn()) {
+                window.location.href = 'login.html?next=' + encodeURIComponent(
+                    'workshop-confirmation.html?workshop_id=' + workshopId + '&seats=' + seats
+                );
+                return;
+            }
+
+            // ── Fetch workshop data ──
+            window.UdaanAPI.fetchWorkshop(workshopId)
+                .then(function (workshop) {
+                    if (!workshop || !workshop.is_active) {
+                        root.innerHTML = renderError(
+                            'This workshop is no longer available.',
+                            'It may have been cancelled or sold out.'
+                        );
+                        return;
+                    }
+                    root.innerHTML = renderConfirmation(workshop, seats);
+                    wireActions(workshop, seats);
+                })
+                .catch(function () {
+                    root.innerHTML = renderError(
+                        'Could not load workshop details.',
+                        'Please check your connection and try again.'
+                    );
+                });
+
+            // ── Render confirmation card ──
+            function renderConfirmation(w, s) {
+                var dateStr = window.UdaanAPI.formatWorkshopDate(w.date, w.time);
+                var pricePerSeat = window.UdaanAPI.formatMoney(w.price);
+                var total = window.UdaanAPI.formatMoney(w.price * s);
+
+                return [
+                    '<div class="step-indicator">',
+                        '<div class="step-dot done">1</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot active">2</div>',
+                        '<div class="step-line"></div>',
+                        '<div class="step-dot">3</div>',
+                    '</div>',
+
+                    '<div class="confirm-card">',
+                        '<h1>Review Your Booking</h1>',
+                        '<p class="subtitle">Confirm the details below before proceeding to payment.</p>',
+
+                        // Workshop summary
+                        '<div class="workshop-summary">',
+                            '<div class="workshop-icon">' + escapeHtml(w.icon || '🏺') + '</div>',
+                            '<div class="workshop-info">',
+                                '<h2>' + escapeHtml(w.title) + '</h2>',
+                                w.instructor ? '<div class="wi-instructor">with ' + escapeHtml(w.instructor) + '</div>' : '',
+                                '<div class="wi-datetime">' + dateStr + '</div>',
+                                w.duration ? '<div class="wi-duration">Duration: ' + escapeHtml(w.duration) + '</div>' : '',
+                            '</div>',
+                        '</div>',
+
+                        // Price breakdown
+                        '<div class="price-section">',
+                            '<div class="price-row muted">',
+                                '<span>Price per seat</span>',
+                                '<span>' + pricePerSeat + '</span>',
+                            '</div>',
+                            '<div class="price-row muted">',
+                                '<span>Seats <span class="seats-badge">' + s + '</span></span>',
+                                '<span>&times; ' + s + '</span>',
+                            '</div>',
+                            '<div class="price-row total">',
+                                '<span>Total</span>',
+                                '<span>' + total + '</span>',
+                            '</div>',
+                            '<div class="price-row muted" style="margin-top:4px;">',
+                                '<span>' + (w.available_slots != null ? w.available_slots + ' spot' + (w.available_slots !== 1 ? 's' : '') + ' remaining' : '') + '</span>',
+                                '<span></span>',
+                            '</div>',
+                        '</div>',
+
+                        // Actions
+                        '<div class="action-row">',
+                            '<a href="/studio" class="btn btn-outline btn-back">&larr; Back</a>',
+                            '<button class="btn btn-accent" id="btn-pay-now">Proceed to Payment &rarr;</button>',
+                        '</div>',
+
+                        '<p style="text-align:center;color:var(--text-light);font-size:0.8rem;margin-top:16px;">',
+                            'Your spot is reserved for 30 minutes once you initiate payment.',
+                        '</p>',
+                    '</div>',
+                ].join('');
+            }
+
+            // ── Wire the Pay Now button ──
+            function wireActions(workshop, seatCount) {
+                var payBtn = document.getElementById('btn-pay-now');
+                if (!payBtn) return;
+
+                payBtn.addEventListener('click', function () {
+                    payBtn.disabled = true;
+                    payBtn.innerText = 'Initiating Payment\u2026';
+
+                    window.UdaanAPI.initiateWorkshopPayment(workshop.id, seatCount)
+                        .then(function (initData) {
+                            openRazorpay(initData, workshop, seatCount);
+                        })
+                        .catch(function (err) {
+                            showToast(err.message || 'Could not initiate payment. Please try again.');
+                            payBtn.disabled = false;
+                            payBtn.innerText = 'Proceed to Payment \u2192';
+                        });
+                });
+            }
+
+            // ── Open Razorpay checkout modal ──
+            function openRazorpay(initData, workshop, seatCount) {
+                var payBtn = document.getElementById('btn-pay-now');
+
+                var options = {
+                    key: initData.key_id,
+                    amount: initData.amount,
+                    currency: initData.currency,
+                    name: initData.name,
+                    description: initData.description,
+                    order_id: initData.razorpay_order_id,
+                    prefill: initData.prefill,
+                    handler: function (response) {
+                        // Verify payment on backend
+                        window.UdaanAPI.verifyWorkshopPayment(
+                            response.razorpay_order_id,
+                            response.razorpay_payment_id,
+                            response.razorpay_signature
+                        ).then(function () {
+                            renderSuccess(workshop, seatCount, response.razorpay_payment_id);
+                        }).catch(function () {
+                            showToast('Payment verification failed. Please contact support.');
+                            payBtn.disabled = false;
+                            payBtn.innerText = 'Proceed to Payment \u2192';
+                        });
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            showToast('Payment paused. Your spot is reserved for 30 minutes \u2014 you can try again.');
+                            payBtn.disabled = false;
+                            payBtn.innerText = 'Proceed to Payment \u2192';
+                        }
+                    },
+                    theme: { color: '#D7A88D' }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+            }
+
+            // ── Render success state ──
+            function renderSuccess(workshop, seatCount, paymentId) {
+                var dateStr = window.UdaanAPI.formatWorkshopDate(workshop.date, workshop.time);
+                var total = window.UdaanAPI.formatMoney(workshop.price * seatCount);
+
+                root.innerHTML = [
+                    '<div class="step-indicator">',
+                        '<div class="step-dot done">1</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot done">2</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot done">3</div>',
+                    '</div>',
+
+                    '<div class="confirm-card">',
+                        '<div class="success-state">',
+                            '<div class="success-icon">&#9989;</div>',
+                            '<h2>Booking Confirmed!</h2>',
+                            '<p>You\'re all set for <strong>' + escapeHtml(workshop.title) + '</strong> on <strong>' + dateStr + '</strong>.</p>',
+                            '<p>' + seatCount + ' seat' + (seatCount !== 1 ? 's' : '') + ' reserved &middot; ' + total + ' paid</p>',
+                            '<div class="booking-ref">Payment ID: ' + escapeHtml(paymentId || '\u2014') + '</div>',
+                            '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">',
+                                '<a href="/account" class="btn btn-accent" style="width:auto;">View My Bookings</a>',
+                                '<a href="/studio" class="btn btn-outline" style="width:auto;">Explore More Workshops</a>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                ].join('');
+            }
+
+            // ── Render error state ──
+            function renderError(title, detail) {
+                return [
+                    '<div class="confirm-card">',
+                        '<div class="error-state">',
+                            '<div class="error-icon">&#9888;&#65039;</div>',
+                            '<h2>' + escapeHtml(title) + '</h2>',
+                            '<p>' + escapeHtml(detail) + '</p>',
+                            '<a href="/studio" class="btn">&larr; Back to Studio</a>',
+                        '</div>',
+                    '</div>',
+                ].join('');
+            }
+
+            // ── Utility ──
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.textContent = String(str);
+                return div.innerHTML;
+            }
+
+            function showToast(message) {
+                var container = document.getElementById('toast-container');
+                var toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(function () { toast.classList.add('show'); }, 10);
+                setTimeout(function () {
+                    toast.classList.remove('show');
+                    setTimeout(function () { toast.remove(); }, 400);
+                }, 4000);
+            }
+        })();
+    </script>
+</body>
+</html>

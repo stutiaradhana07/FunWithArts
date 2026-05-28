@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support & FAQ | Fun With Art</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        a, button, input, select, textarea, summary { cursor: pointer; }
+
+        :root { --primary-color: #111; --accent-color: #D7A88D; --bg-color: #Fdfbf9; --text-color: #222; --header-font: 'Playfair Display', serif; --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif; }
+        
+        body { font-family: var(--body-font); color: var(--text-color); background-color: var(--bg-color); overflow-x: hidden; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+        /* CUTE BACKGROUND SHAPES */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; opacity: 1; }
+        .cutu-shape { position: absolute; fill: var(--accent-color); opacity: 0.3; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.05)); }
+        @keyframes floatA { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 50% { transform: translateY(-20px) rotate(8deg) scale(1.05); } }
+        @keyframes floatB { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(-12deg); } }
+        .shape-1 { top: 15%; left: 8%; width: 100px; animation: floatA 8s ease-in-out infinite; }
+        .shape-2 { top: 60%; right: 15%; width: 70px; animation: floatB 10s ease-in-out infinite; }
+        .shape-3 { top: 80%; left: 20%; width: 85px; animation: floatA 9s ease-in-out infinite; }
+
+        /* NAV BAR */
+        nav { background: rgba(253, 251, 249, 0.95); backdrop-filter: blur(15px); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        nav.hide { transform: translateY(-100%); }
+        .logo-fusion { display: flex; align-items: baseline; text-decoration: none; color: #111; z-index: 101; transition: transform 0.3s; }
+        .logo-fusion:hover { transform: scale(1.05) rotate(-2deg); }
+        .english-part { font-family: var(--art-font); font-weight: 700; font-size: clamp(1.2rem, 2vw, 1.5rem); letter-spacing: 1px; text-transform: uppercase; margin-right: 5px;}
+        .hindi-char { font-family: var(--header-font); color: var(--accent-color); font-size: clamp(2rem, 4vw, 2.8rem); font-style: italic; position: relative; top: 3px; }
+        .nav-links { display: flex; align-items: center; }
+        .desktop-links a { text-decoration: none; color: var(--primary-color); font-family: var(--art-font); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-left: 30px; transition: 0.3s; font-weight: bold;}
+        .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color); }
+        .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
+        .nav-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; color: var(--primary-color); transition: 0.3s;}
+        .nav-icon:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+        .nav-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+        .badge-count { position: absolute; top: 0px; right: 0px; background: var(--accent-color); color: #fff; font-size: 0.65rem; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--art-font); font-weight: bold; opacity: 0; transition: 0.3s; }
+        .nav-account-link { font-family: var(--art-font); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; color: #111; font-weight: bold; padding: 10px 18px; border: 1px solid #111; border-radius: 50px; white-space: nowrap; transition: 0.3s; line-height: 1; }
+        .nav-account-link:hover { background: #111; color: #fff; }
+        .nav-account-link.is-logged-in { border-color: var(--accent-color); color: var(--accent-color); }
+
+        /* HEADER */
+        .page-header { padding: 150px 5% 40px; text-align: center; position: relative; z-index: 5; }
+        .page-header h1 { font-family: var(--header-font); font-size: clamp(3rem, 6vw, 4.5rem); font-style: italic; margin-bottom: 20px; color: #111; }
+        .page-header p { font-family: var(--body-font); font-size: 1.1rem; color: #555; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        .back-link-wrap { max-width: 1400px; margin: 120px auto 0; padding: 0 5%; position: relative; z-index: 5; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.88);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+            color: #111;
+            text-decoration: none;
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover { border-color: var(--accent-color); color: var(--accent-color); transform: translateY(-2px); }
+        .back-link-arrow { font-size: 1rem; line-height: 1; }
+
+        /* TRACKING PORTAL */
+        .tracking-portal { max-width: 700px; margin: 0 auto 60px; padding: 30px; background: #fff; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.04); position: relative; z-index: 5; border: 1px solid rgba(0,0,0,0.03); text-align: center;}
+        .tracking-portal h3 { font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-size: 1rem; color: #111; margin-bottom: 15px; }
+        .track-input-group { display: flex; gap: 10px; }
+        .track-input-group input { flex: 1; padding: 15px 20px; border: 1px solid #eee; border-radius: 50px; font-family: var(--body-font); font-size: 1rem; outline: none; transition: 0.3s; background: #fafafa;}
+        .track-input-group input:focus { border-color: var(--accent-color); background: #fff;}
+        .track-input-group button { padding: 0 30px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .track-input-group button:hover { background: var(--accent-color); }
+        @media (max-width: 600px) { .track-input-group { flex-direction: column; } .track-input-group button { padding: 15px; } }
+
+        /* SIDE-BY-SIDE SPLIT LAYOUT */
+        .support-split-container { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1400px; margin: 0 auto 100px; padding: 0 5%; position: relative; z-index: 5; align-items: start; }
+
+        /* POLICY CARDS */
+        .policy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px; }
+        .policy-card { background: #fff; padding: 20px 15px; text-align: center; border-radius: 15px; border: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .policy-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); border-color: var(--accent-color); }
+        .policy-icon { font-size: 1.8rem; margin-bottom: 10px; }
+        .policy-text { font-family: var(--art-font); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #111; }
+
+        /* LEFT SIDE: FAQ ACCORDION */
+        .faq-section h2 { font-family: var(--header-font); font-size: 2.2rem; font-style: italic; margin-bottom: 30px; color: #111; }
+        details { background: #fff; border: 1px solid rgba(0,0,0,0.05); border-radius: 15px; margin-bottom: 15px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); transition: 0.3s; }
+        details[open] { box-shadow: 0 10px 25px rgba(0,0,0,0.06); border-color: var(--accent-color); }
+        summary { font-family: var(--art-font); font-weight: bold; font-size: 1.05rem; color: #111; list-style: none; display: flex; justify-content: space-between; align-items: center; outline: none; padding-right: 10px;}
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '+'; font-size: 1.6rem; color: var(--accent-color); font-weight: normal; transition: 0.3s; line-height: 1; }
+        details[open] summary::after { content: '−'; transform: rotate(180deg); }
+        .faq-content { padding-top: 15px; font-family: var(--body-font); color: #555; line-height: 1.7; font-size: 1rem; }
+
+        /* RIGHT SIDE: CONTACT CARD */
+        .contact-card { background: #fff; padding: 50px 40px; border-radius: 30px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 20px 50px rgba(0,0,0,0.06); position: sticky; top: 100px; }
+        .contact-card h2 { font-family: var(--header-font); font-size: 2.2rem; font-style: italic; margin-bottom: 10px; color: #111; }
+        
+        /* LIVE MAP */
+        .map-wrapper { width: 100%; height: 200px; border-radius: 15px; overflow: hidden; margin: 25px 0; border: 1px solid #eee; }
+        .map-wrapper iframe { width: 100%; height: 100%; border: none; }
+
+        /* Contact Details */
+        .contact-details { margin-bottom: 25px; text-align: left; }
+        .contact-details p { margin-bottom: 10px; font-size: 0.95rem; color: #444; display: flex; align-items: flex-start; gap: 15px; font-family: var(--body-font); line-height: 1.5;}
+        .contact-details strong { color: var(--accent-color); font-family: var(--art-font); letter-spacing: 1px; text-transform: uppercase; font-size: 0.8rem; margin-top: 3px; min-width: 60px; display: inline-block;}
+        
+        /* THE PROMISE */
+        .studio-promise { background: #fafafa; border-left: 3px solid var(--accent-color); padding: 15px 20px; font-family: var(--body-font); font-size: 0.9rem; color: #666; margin-bottom: 25px; border-radius: 0 10px 10px 0; line-height: 1.5;}
+        .studio-promise span { display: block; font-family: var(--art-font); font-weight: bold; color: #111; margin-bottom: 5px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* WhatsApp Button */
+        .whatsapp-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px; background: #25D366; color: #fff; text-decoration: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); }
+        .whatsapp-btn:hover { background: #1ebe5d; transform: translateY(-3px); box-shadow: 0 15px 25px rgba(37, 211, 102, 0.3); }
+        .whatsapp-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .divider { display: flex; align-items: center; text-align: center; margin-bottom: 30px; color: #aaa; font-family: var(--art-font); font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eee; }
+        .divider::before { margin-right: 15px; }
+        .divider::after { margin-left: 15px; }
+
+        .contact-form { text-align: left; }
+        .form-row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .input-group { flex: 1; display: flex; flex-direction: column; }
+        .input-group.full-width { width: 100%; margin-bottom: 20px; }
+        
+        .input-group label { font-family: var(--art-font); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 8px; font-weight: bold; }
+        .input-group input, .input-group textarea { padding: 15px; border: 1px solid #eee; border-radius: 12px; font-family: var(--body-font); font-size: 1rem; background: #fafafa; outline: none; transition: 0.3s; resize: vertical; }
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--accent-color); background: #fff; box-shadow: 0 5px 15px rgba(215, 168, 141, 0.1); }
+        
+        .submit-btn { width: 100%; padding: 18px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; font-size: 0.95rem;}
+        .submit-btn:hover { background: var(--accent-color); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(215, 168, 141, 0.3); }
+
+        /* MODAL OVERLAY */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 30px; max-width: 500px; width: 90%; transform: translateY(30px); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); position: relative; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .close-modal { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #111; cursor: pointer; transition: 0.3s; }
+        .close-modal:hover { color: var(--accent-color); transform: rotate(90deg); }
+        .modal-content h3 { font-family: var(--header-font); font-size: 2rem; font-style: italic; margin-bottom: 15px; color: #111; }
+        .modal-content p { font-family: var(--body-font); line-height: 1.6; color: #555; }
+
+        /* FOOTER */
+        .footer-bottom { background: #111; text-align: center; padding: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); position: relative; z-index: 5;}
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 900px) {
+            .support-split-container { grid-template-columns: 1fr; gap: 50px; }
+            .contact-card { position: relative; top: 0; }
+            .desktop-links {display:none;}
+            .form-row { flex-direction: column; gap: 20px; }
+            .policy-grid { grid-template-columns: 1fr; }
+        }
+        
+        .toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--accent-color); color: #111; padding: 15px 30px; border-radius: 50px; font-family: var(--body-font); font-weight: bold; font-size: 0.95rem; opacity: 0; transform: translateY(20px); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="floating-dreamscape">
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-1" viewBox="0 0 100 100"><path d="M30,10 L70,10 L65,30 Q90,60 70,90 L30,90 Q10,60 35,30 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-2" viewBox="0 0 100 100"><path d="M50,0 Q50,50 100,50 Q50,50 50,100 Q50,50 0,50 Q50,50 50,0 Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="cutu-shape shape-3" viewBox="0 0 100 100"><path d="M20,40 Q50,0 80,40 Q100,70 80,90 Q50,100 20,90 Q0,70 20,40 Z"/></svg>
+    </div>
+
+    <nav id="main-nav">
+        <a href="/" class="logo-fusion nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+        <div class="nav-links desktop-links">
+            <a href="/" class="nav-route" data-target="/">Home</a>
+            <a href="/collection" class="nav-route" data-target="/collection">Collection</a>
+            <a href="javascript:void(0)" class="nav-route" data-target="/studio">Studio</a>
+            <a href="/blogs" class="nav-route" data-target="/blogs">Blogs</a>
+            <a href="javascript:void(0)" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
+        </div>
+        <div class="nav-actions">
+            <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="cart.html" class="nav-icon nav-route" data-target="cart.html"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+        </div>
+    </nav>
+
+    <div class="back-link-wrap">
+        <a href="/account" class="back-link">
+            <span class="back-link-arrow">&#8592;</span>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <header class="page-header">
+        <h1>How can we help?</h1>
+        <p>Everything you need to know about tracking, policies, and getting your hands dirty in the studio.</p>
+    </header>
+
+    <div class="tracking-portal">
+        <h3>Track Your Art</h3>
+        <div class="track-input-group">
+            <input type="text" placeholder="Enter Order # (e.g. FWA-12345)" id="track-input">
+            <button onclick="document.getElementById('track-input').value ? showToast('📦 Connecting to logistics... Check back soon!') : showToast('Please enter an order number first.')">Track Order</button>
+        </div>
+    </div>
+
+    <div class="support-split-container">
+        
+        <section class="faq-section">
+            
+            <div class="policy-grid">
+                <div class="policy-card" onclick="openModal('Shipping Policy', 'All orders are fired, packed, and dispatched within 3-5 business days. We use eco-friendly, plastic-free honeycomb paper to ensure your art arrives safely anywhere in India.')">
+                    <div class="policy-icon">📦</div>
+                    <div class="policy-text">Shipping</div>
+                </div>
+                <div class="policy-card" onclick="openModal('Returns & Breakage', 'Because each piece is handmade, we do not accept returns for slight variations. If an item arrives broken, email us a photo within 48 hours for a full replacement or refund.')">
+                    <div class="policy-icon">🔄</div>
+                    <div class="policy-text">Returns</div>
+                </div>
+                <div class="policy-card" onclick="openModal('Class Cancellations', 'Studio classes are fully refundable up to 48 hours before the session. Cancellations within 48 hours receive a 50% refund or studio credit to rebook at a later date.')">
+                    <div class="policy-icon">❌</div>
+                    <div class="policy-text">Cancellations</div>
+                </div>
+            </div>
+
+            <h2>Frequently Asked Questions</h2>
+    
+            <details>
+                <summary>What payment methods do you accept?</summary>
+                <div class="faq-content">We accept all major credit/debit cards, UPI (Google Pay, PhonePe, Paytm), Net Banking, and <strong>Cash on Delivery (COD)</strong> anywhere in India!</div>
+            </details>
+
+            <details>
+                <summary>Is your pottery microwave safe?</summary>
+                <div class="faq-content">Yes! All our glazed functional pieces are 100% food-safe and thoroughly tested for everyday microwave and dishwasher use.</div>
+            </details>
+
+            <details>
+                <summary>Do you offer wholesale or corporate gifting?</summary>
+                <div class="faq-content">Absolutely! We love fulfilling bulk orders for corporate gifting, cafes, or boutique stores. Use the contact form to reach out for our wholesale catalog and pricing.</div>
+            </details>
+
+            <details>
+                <summary>Do I need experience for a Studio Class?</summary>
+                <div class="faq-content">Not at all! Our "Wheel Throwing 101" and "Handbuilding" classes are designed specifically for absolute beginners. Just bring yourself and clothes you don't mind getting messy!</div>
+            </details>
+
+            <details>
+                <summary>When can I take my studio pottery home?</summary>
+                <div class="faq-content">Pottery is a slow art. Your pieces need to air dry, undergo a first "bisque" firing, be glazed, and then fired again. They will be ready for pickup 2-3 weeks after your session.</div>
+            </details>
+        </section>
+
+        <section class="contact-section">
+            <div class="contact-card">
+                <h2>Get in Touch</h2>
+                
+                <div class="map-wrapper">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.513233857321!2d77.2435773!3d28.5242784!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce1446059635f%3A0xc068832a4e98f79!2sBatra%20Hospital%20%26%20Medical%20Research%20Centre!5e0!3m2!1sen!2sin!4v1715670000000!5m2!1sen!2sin" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+                
+                <div class="contact-details">
+                    <p><strong>Visit</strong> <span>B-700 First Floor, near Batra Hospital,<br>New Delhi 110080</span></p>
+                    <p><strong>Call</strong> <span>+91 72178 06095</span></p>
+                    <p><strong>Email</strong> <span>funwithart3@gmail.com</span></p>
+                </div>
+
+                <div class="studio-promise">
+                    <span>Studio Hours: Tue - Sun (10 AM - 7 PM)</span>
+                    During studio hours, our hands might be covered in clay, but we aim to reply to all messages within 2 hours.
+                </div>
+
+                <a href="https://wa.me/917217806095" target="_blank" class="whatsapp-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                    Chat on WhatsApp
+                </a>
+                
+                <div class="divider">Or drop a message below</div>
+
+                <form class="contact-form" onsubmit="event.preventDefault(); showToast('✨ Message sent! We will get back to you within 24 hours.'); this.reset();">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Your Name</label>
+                            <input type="text" required placeholder="Name">
+                        </div>
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <input type="email" required placeholder="hello@example.com">
+                        </div>
+                    </div>
+                    <div class="input-group full-width">
+                        <label>Order Number (Optional)</label>
+                        <input type="text" placeholder="#FWA-12345">
+                    </div>
+                    <div class="input-group full-width">
+                        <label>How can we help?</label>
+                        <textarea rows="4" required placeholder="Tell us what's on your mind..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="site-footer" style="background: #111; color: #fff; padding: 80px 5% 40px; position: relative; z-index: 5;">
+        <div style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 60px;">
+            <div class="footer-brand" style="grid-column: span 2;">
+                <h2 style="font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px;">Fun With Art</h2>
+                <p style="font-family: var(--body-font); color: #888; line-height: 1.6; max-width: 300px;">Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Shop</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="collection.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">All Ceramics</a></li>
+                    <li style="margin-bottom: 15px;"><a href="studio.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Studio Classes</a></li>
+                    <li style="margin-bottom: 15px;"><a href="about.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Our Story</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Support</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">FAQ</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Shipping & Returns</a></li>
+                    <li style="margin-bottom: 15px;"><a href="support.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 style="font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent-color);">Legal</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Terms of Service</a></li>
+                    <li style="margin-bottom: 15px;"><a href="legal.html" style="color: #ccc; text-decoration: none; font-family: var(--body-font); transition: 0.3s;">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom" style="border-top: 1px solid #222; text-align: center; padding-top: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font);">
+            <p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="policy-modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal(event, true)">×</button>
+            <h3 id="modal-title">Title</h3>
+            <p id="modal-desc">Description</p>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+
+        /* ── LENIS SMOOTH SCROLL ── */
+        try {
+            const lenis = new Lenis({ duration: 1.8, smooth: true });
+            let scrollY = 0; let lastScrollY = window.scrollY;
+            const mainNav = document.getElementById('main-nav');
+
+            lenis.on('scroll', (e) => {
+                scrollY = e.scroll;
+                if (scrollY > lastScrollY && scrollY > 150) { mainNav.classList.add('hide'); }
+                else { mainNav.classList.remove('hide'); }
+                lastScrollY = scrollY;
+            });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
+        } catch(e) { console.log("Smooth scroll disabled for safety."); }
+
+        // --- MODAL LOGIC (Existing) ---
+        const modal = document.getElementById('policy-modal');
+        function openModal(title, desc) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            modal.classList.add('active');
+        }
+        function closeModal(e, force = false) {
+            if (force || e.target === modal) { modal.classList.remove('active'); }
+        }
+
+        // --- TOAST LOGIC (Unified) ---
+        window.showToast = function(message) { 
+            const container = document.getElementById('toast-container'); 
+            const toast = document.createElement('div'); 
+            toast.className = 'toast'; 
+            toast.innerHTML = message; 
+            container.appendChild(toast); 
+            setTimeout(() => toast.classList.add('show'), 10); 
+            setTimeout(() => { 
+                toast.classList.remove('show'); 
+                setTimeout(() => toast.remove(), 400); 
+            }, 3000); 
+        }
+
+        // --- THE "UDAAN" CONNECTION ---
+        async function initSupport() {
+            // Check if shared.js loaded correctly
+            if (window.UdaanAPI) {
+                // This replaces your manual localStorage badge logic
+                // It automatically updates the cart/wishlist numbers in the nav
+                window.UdaanAPI.updateBadges();
+            }
+        }
+
+        // --- FORM SUBMISSION ---
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('.submit-btn');
+            const originalText = btn.innerText;
+
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            // Simulate the artisanal "sending" delay
+            setTimeout(() => {
+                showToast('✨ Message received! We’ll get back to you within 24 hours.');
+                e.target.reset();
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }, 1200);
+        });
+
+        // Start the page logic
+        initSupport();
+    </script>
+</body>
+</html>
