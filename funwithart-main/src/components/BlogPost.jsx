@@ -137,6 +137,7 @@ export default function BlogPost() {
     fontStyle: post.title_is_italic ? 'italic' : undefined,
     fontSize: post.title_font_size || undefined,
     color: post.title_color || undefined,
+    fontFamily: post.title_font_family || undefined,
   };
 
   const coverStyle = {
@@ -144,7 +145,10 @@ export default function BlogPost() {
   };
 
   return (
-    <div className="blog-post" ref={headerRef}>
+    <div className="blog-post" ref={headerRef} style={{ position: 'relative', overflow: 'hidden' }}>
+      <div className="blog-bg-shape blog-bg-shape--1" />
+      <div className="blog-bg-shape blog-bg-shape--2" />
+      <div className="blog-bg-shape blog-bg-shape--3" />
       <BlogNavbar />
 
       <header className="blog-header">
@@ -180,7 +184,7 @@ export default function BlogPost() {
       </section>
 
       <main className="blog-content">
-        <div className="blog-content__body">
+        <div className="blog-content__body" style={{ fontFamily: post.content_font_family || undefined }}>
           {post.content ? (
             <div
               className="blog-content__html"

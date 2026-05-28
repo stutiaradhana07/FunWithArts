@@ -26,6 +26,18 @@ function getPostExcerpt(post) {
 }
 
 function BlogCard({ post, featured }) {
+  const titleStyle = {
+    fontFamily: post.title_font_family || undefined,
+    color: post.title_color || undefined,
+    fontWeight: post.title_is_bold ? '700' : undefined,
+    fontStyle: post.title_is_italic ? 'italic' : undefined,
+    fontSize: (featured && post.title_font_size) ? post.title_font_size : undefined,
+  };
+
+  const excerptStyle = {
+    fontFamily: post.excerpt_font_family || undefined,
+  };
+
   if (featured) {
     return (
       <Link to={`/blogs/${post.slug}`} className="blog-hero-card">
@@ -34,8 +46,8 @@ function BlogCard({ post, featured }) {
           <div className="blog-hero-card__overlay" />
           <div className="blog-hero-card__content">
             <span className="blog-hero-card__label">Featured Story</span>
-            <h1 className="blog-hero-card__title">{post.title}</h1>
-            <p className="blog-hero-card__excerpt">{getPostExcerpt(post)}</p>
+            <h1 className="blog-hero-card__title" style={titleStyle}>{post.title}</h1>
+            <p className="blog-hero-card__excerpt" style={excerptStyle}>{getPostExcerpt(post)}</p>
             <span className="blog-hero-card__cta">
               Read Story
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -55,8 +67,8 @@ function BlogCard({ post, featured }) {
         <img src={getPostCover(post)} alt={post.title} className="blog-card__image" />
       </div>
       <div className="blog-card__body">
-        <h3 className="blog-card__title">{post.title}</h3>
-        <p className="blog-card__excerpt">{getPostExcerpt(post)}</p>
+        <h3 className="blog-card__title" style={titleStyle}>{post.title}</h3>
+        <p className="blog-card__excerpt" style={excerptStyle}>{getPostExcerpt(post)}</p>
         <div className="blog-card__meta">
           <span className="blog-card__author">By {post.author_name || 'Udaan Studio'}</span>
           <span className="blog-card__sep">·</span>
@@ -175,7 +187,10 @@ export default function BlogIndex() {
   const [featured, ...grid] = posts;
 
   return (
-    <div className="blog-index">
+    <div className="blog-index" style={{ position: 'relative', overflow: 'hidden' }}>
+      <div className="blog-bg-shape blog-bg-shape--1" />
+      <div className="blog-bg-shape blog-bg-shape--2" />
+      <div className="blog-bg-shape blog-bg-shape--3" />
       <BlogNavbar />
 
       <main className="blog-index__main">

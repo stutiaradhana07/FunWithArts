@@ -308,6 +308,55 @@ body.legacy-route-active {
 
 /* ──────────────── Blog Styles ──────────────── */
 
+/* Warm Organic Decor Background elements */
+.blog-bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  mix-blend-mode: multiply;
+  animation: floatBG 25s ease-in-out infinite alternate;
+}
+.blog-bg-shape--1 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(215, 168, 141, 0.6) 0%, rgba(234, 230, 219, 0.1) 100%);
+  top: -5%;
+  left: -200px;
+}
+.blog-bg-shape--2 {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(138, 90, 69, 0.4) 0%, rgba(245, 239, 235, 0.1) 100%);
+  top: 30%;
+  right: -250px;
+  animation-duration: 35s;
+  animation-delay: -5s;
+}
+.blog-bg-shape--3 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(224, 169, 138, 0.45) 0%, rgba(253, 251, 249, 0.1) 85%);
+  bottom: 5%;
+  left: 10%;
+  animation-duration: 30s;
+  animation-delay: -10s;
+}
+
+@keyframes floatBG {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(60px, 40px) scale(1.1) rotate(60deg);
+  }
+  100% {
+    transform: translate(-30px, -60px) scale(0.95) rotate(120deg);
+  }
+}
+
 /* ── Standard Nav (matching collection.html) ── */
 
 
@@ -362,7 +411,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  background: #fdfbf9;
+  background: #FAF6F0;
   color: #6b3f30;
   font-family: 'Playfair Display', serif;
   font-style: italic;
@@ -387,7 +436,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: #fdfbf9;
+  background: #FAF6F0;
   color: #3d2a20;
   text-align: center;
   padding: 2rem;
@@ -416,7 +465,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: #fdfbf9;
+  background: #FAF6F0;
   color: #6b5e56;
   text-align: center;
   padding: 2rem;
@@ -438,8 +487,12 @@ nav#main-nav.hide { transform: translateY(-100%); }
 
 /* ── Blog Index ── */
 .blog-index {
-  background: #fdfbf9;
+  background: #FAF6F0;
+  background-image: radial-gradient(rgba(215, 168, 141, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
   font-family: 'Lato', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 .blog-index__main {
   padding: 3rem 0 2rem;
@@ -558,15 +611,21 @@ nav#main-nav.hide { transform: translateY(-100%); }
   display: block;
   text-decoration: none;
   color: inherit;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(215, 168, 141, 0.2);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 4px 20px rgba(107, 63, 48, 0.04);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.4s;
+  z-index: 2;
+  position: relative;
 }
 .blog-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(107, 63, 48, 0.09);
+  border-color: rgba(215, 168, 141, 0.4);
 }
 .blog-card__image-wrap {
   width: 100%;
@@ -619,8 +678,12 @@ nav#main-nav.hide { transform: translateY(-100%); }
 
 /* ── Blog Post ── */
 .blog-post {
-  background: #fdfbf9;
-  padding-bottom: 1rem;
+  background: #FAF6F0;
+  background-image: radial-gradient(rgba(215, 168, 141, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+  padding-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ── Parallax Header ── */
@@ -648,9 +711,9 @@ nav#main-nav.hide { transform: translateY(-100%); }
   inset: 0;
   background: linear-gradient(
     to bottom,
-    transparent 50%,
-    rgba(253, 251, 249, 0.6) 85%,
-    #fdfbf9 100%
+    transparent 45%,
+    rgba(250, 246, 240, 0.65) 80%,
+    #FAF6F0 100%
   );
 }
 
@@ -663,7 +726,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   z-index: 2;
 }
 .blog-title-block__inner {
-  background: #fdfbf9;
+  background: transparent;
   padding: 2rem 0 1.5rem;
 }
 .blog-title-block__back {
@@ -829,7 +892,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
 
 /* ── Footer ── */
 .blog-footer {
-  background: #fdfbf9;
+  background: #FAF6F0;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding: 1.5rem 2rem;
 }
