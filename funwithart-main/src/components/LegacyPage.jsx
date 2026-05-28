@@ -132,7 +132,6 @@ function injectLegacyLinks(doc, source) {
 export default function LegacyPage({ source, title }) {
   const ref = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [contentKey, setContentKey] = useState(0);
   const navigate = useNavigate();
   const clickHandlerRef = useRef(null);
 
@@ -151,19 +150,23 @@ export default function LegacyPage({ source, title }) {
       }
 
       if (anchor && anchor.tagName === 'A') {
-  const rawHref = anchor.getAttribute('href');
-  const linkTarget = anchor.getAttribute('target');
+        const rawHref = anchor.getAttribute('href');
+        const linkTarget = anchor.getAttribute('target');
 
-  if (rawHref) {
-    // Resolve relative paths (e.g., "wishlist.html" → "/wishlist") BEFORE checking
-    const resolved = new URL(rawHref, window.location.origin);
-    const fullPath = resolved.pathname + resolved.search + resolved.hash;
+        if (rawHref && !rawHref.startsWith('javascript:') && !rawHref.startsWith('#')) {
+          try {
+            // Resolve relative paths (e.g., "wishlist.html" → "/wishlist") BEFORE checking
+            const resolved = new URL(rawHref, window.location.origin);
+            const fullPath = resolved.pathname + resolved.search + resolved.hash;
 
-    if (shouldInterceptClick(linkTarget, fullPath)) {
-      path = fullPath;
-    }
-  }
-}
+            if (shouldInterceptClick(linkTarget, fullPath)) {
+              path = fullPath;
+            }
+          } catch (err) {
+            console.warn('Failed to parse URL:', rawHref, err);
+          }
+        }
+      }
 
       // 2. Check for .view-link (product cards)
       if (!path) {
@@ -218,7 +221,7 @@ export default function LegacyPage({ source, title }) {
     return () => {
       container.removeEventListener('click', clickHandlerRef.current, true);
     };
-  }, [navigate, contentKey]);
+  }, [navigate, source]);
 
   useEffect(() => {
     let cancelled = false;
@@ -358,14 +361,10 @@ export default function LegacyPage({ source, title }) {
     };
   }, [source, title]);
 
-  useEffect(() => {
-    setContentKey((k) => k + 1);
-  }, [source]);
-
   // ── Render (loading screen removed) ──
   return (
     <div className="legacy-page-shell">
-      <div ref={ref} className="legacy-page-content" key={contentKey} />
+      <div ref={ref} className="legacy-page-content" key={source} />
     </div>
   );
 }
