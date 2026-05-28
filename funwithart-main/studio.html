@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -169,22 +169,22 @@
     </div>
 
     <nav id="main-nav">
-        <a href="/" class="logo-fusion nav-route" data-target="/">
+        <a href="/" class="logo-fusion" id="nav-logo">
             <span class="english-part">FUN WITH </span>
             <span class="hindi-char">Art</span>
         </a>
         <div class="nav-links desktop-links">
-            <a href="javascript:void(0)" class="nav-route" data-target="/">Home</a>
-            <a href="javascript:void(0)" class="nav-route" data-target="/collection">Collection</a>
+            <a href="/" class="nav-route" data-target="/">Home</a>
+            <a href="/collection" class="nav-route" data-target="/collection">Collection</a>
             <a href="/studio" class="active">Studio</a>
             <a href="/blogs" class="nav-route" data-target="/blogs">Blogs</a>
-            <a href="javascript:void(0)" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
+            <a href="/login" class="nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login?tab=register" data-account-href-logged-in="/account" data-account-label-logged-out="Sign Up" data-account-label-logged-in="My Account">Sign Up</a>
         </div>
         <div class="nav-actions">
-            <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
-            <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
-            <a href="javascript:void(0)" class="nav-icon nav-route" data-target="/wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
-            <a href="javascript:void(0)" class="nav-icon nav-route" data-target="/cart"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
+            <a href="/login" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
+            <a href="/search" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
+            <a href="/wishlist" class="nav-icon nav-route" data-target="/wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="/cart" class="nav-icon nav-route" data-target="/cart"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
         </div>
     </nav>
 
@@ -305,6 +305,14 @@
         let scrollY = 0; let lastScrollY = window.scrollY;
         const mainNav = document.getElementById('main-nav');
         const dreamscape = document.getElementById('dreamscape');
+
+        // TOAST LOGIC — defined first so all other code can call it
+        window.showToast = function(message) { 
+            const container = document.getElementById('toast-container'); 
+            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message; 
+            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); 
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000); 
+        };
 
         lenis.on('scroll', (e) => {
             scrollY = e.scroll; 
@@ -448,8 +456,6 @@ form.addEventListener('submit', function(e) {
     window.location.href = 'workshop-confirmation.html?workshop_id=' + workshopId + '&seats=' + seats;
 });
 
-// 4. Start the load
-loadWorkshops();
 
         // CUSTOM SELECT LOGIC
         function selectWorkshop(el) {
@@ -475,15 +481,25 @@ loadWorkshops();
             }
         });
 
-        // TOAST LOGIC
-        window.showToast = function(message) { 
-            const container = document.getElementById('toast-container'); 
-            const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = message; 
-            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10); 
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000); 
-        }
+        // NAV-ROUTE CLICK HANDLER — wires .nav-route links using their data-target or href
+        // This fixes the "javascript:void(0)" stuck URL bug when the account link updates href
+        document.querySelectorAll('a.nav-route[data-target]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                var target = link.getAttribute('data-target');
+                if (target) {
+                    e.preventDefault();
+                    window.location.href = target;
+                }
+            });
+        });
 
-        window.UdaanAPI?.updateBadges();
+        // Start the workshop load — deferred with setTimeout(0) so UdaanAPI module is fully initialized
+        setTimeout(function() {
+            loadWorkshops();
+            if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                window.UdaanAPI.updateBadges();
+            }
+        }, 0);
     </script>
 </body>
 </html>

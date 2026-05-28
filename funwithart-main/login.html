@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account | Fun With Art</title>
+    <meta name="google-signin-client_id" content="576569277083-rkco6ojbej4m1r2mmjtvn71rlq2oph54.apps.googleusercontent.com">
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
     <script src="/api-config.js"></script>
     <script src="shared.js"></script>
+    <script src="https://accounts.google.com/gsi/client?onload=onGoogleLibraryLoad" async defer></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -166,8 +168,8 @@
             <div class="auth-error" id="auth-error" role="alert"></div>
             <div class="auth-toggle">
                 <div class="toggle-slider" id="toggle-slider"></div>
-                <button class="toggle-btn active" onclick="switchTab('login')">Sign In</button>
-                <button class="toggle-btn" onclick="switchTab('register')">Create Account</button>
+                <button type="button" class="toggle-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button type="button" class="toggle-btn" id="tab-register" onclick="switchTab('register')">Create Account</button>
             </div>
 
             <form id="login-form" class="form-section active">
@@ -265,24 +267,31 @@
         }
 
         function switchTab(tab) {
-            const btns = document.querySelectorAll('.toggle-btn');
+            const loginBtn = document.getElementById('tab-login');
+            const registerBtn = document.getElementById('tab-register');
             const slider = document.getElementById('toggle-slider');
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
             showAuthError('');
 
             if (tab === 'login') {
-                btns[0].classList.add('active');
-                btns[1].classList.remove('active');
+                loginBtn.classList.add('active');
+                registerBtn.classList.remove('active');
                 slider.style.left = '5px';
+                // Force animation restart
+                loginForm.classList.remove('active');
+                void loginForm.offsetWidth;
                 loginForm.classList.add('active');
                 registerForm.classList.remove('active');
                 if (authHeading) authHeading.textContent = 'Welcome Back.';
                 if (authSub) authSub.textContent = 'Sign in to track orders and save your wishlist.';
             } else {
-                btns[1].classList.add('active');
-                btns[0].classList.remove('active');
+                registerBtn.classList.add('active');
+                loginBtn.classList.remove('active');
                 slider.style.left = 'calc(50% + 5px)';
+                // Force animation restart
+                registerForm.classList.remove('active');
+                void registerForm.offsetWidth;
                 registerForm.classList.add('active');
                 loginForm.classList.remove('active');
                 if (authHeading) authHeading.textContent = 'Join the Studio.';
@@ -405,31 +414,42 @@
         };
 
         // Re-initialise GIS with the overridden callback and render the button.
-        // This is needed because onGoogleLibraryLoad (shared.js) may have run
-        // before this page's DOM existed.
-        if (window.google?.accounts?.id) {
+        // Works whether the SDK has already loaded (sync) or loads later (async via onGoogleLibraryLoad override).
+        function initGoogleButton() {
             const clientIdMeta = document.querySelector('meta[name="google-signin-client_id"]');
-            const clientId = (clientIdMeta && clientIdMeta.content) || 'YOUR_GOOGLE_CLIENT_ID';
-            if (clientId && clientId !== 'YOUR_GOOGLE_CLIENT_ID') {
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: window.handleGoogleCredentialResponse,
-                    auto_select: false,
-                    context: 'signin',
+            const clientId = (clientIdMeta && clientIdMeta.content) || '';
+            if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID') return;
+            if (!window.google?.accounts?.id) return;
+
+            google.accounts.id.initialize({
+                client_id: clientId,
+                callback: window.handleGoogleCredentialResponse,
+                auto_select: false,
+                context: 'signin',
+            });
+            const btnContainer = document.getElementById('googleSignInDiv');
+            if (btnContainer) {
+                google.accounts.id.renderButton(btnContainer, {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'continue_with',
+                    shape: 'rectangular',
+                    width: Math.min(btnContainer.offsetWidth || 300, 300),
                 });
-                const btnContainer = document.getElementById('googleSignInDiv');
-                if (btnContainer) {
-                    google.accounts.id.renderButton(btnContainer, {
-                        theme: 'outline',
-                        size: 'large',
-                        text: 'continue_with',
-                        shape: 'rectangular',
-                        width: btnContainer.offsetWidth > 300 ? 300 : btnContainer.offsetWidth,
-                    });
-                }
-                google.accounts.id.prompt();
             }
+            google.accounts.id.prompt();
         }
+
+        // If the SDK already loaded (sync), init immediately.
+        // If it loads later (async), onGoogleLibraryLoad in shared.js will call it — but
+        // we override onGoogleLibraryLoad here to also run initGoogleButton.
+        const _prevOnGoogleLibraryLoad = window.onGoogleLibraryLoad;
+        window.onGoogleLibraryLoad = function () {
+            if (typeof _prevOnGoogleLibraryLoad === 'function') _prevOnGoogleLibraryLoad();
+            initGoogleButton();
+        };
+        // Try immediately too (in case it already loaded)
+        initGoogleButton();
         // ── End Google Sign-In override ──
 
         window.UdaanAPI?.updateBadges();
