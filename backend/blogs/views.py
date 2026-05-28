@@ -39,7 +39,7 @@ def newsletter_subscribe(request):
 def post_list(request):
     """Return all published blog posts (lightweight — no full content)."""
     posts = Post.objects.filter(status='published')
-    serializer = PostListSerializer(posts, many=True)
+    serializer = PostListSerializer(posts, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -47,5 +47,5 @@ def post_list(request):
 def post_detail(request, slug):
     """Return a single published blog post by slug (full content)."""
     post = get_object_or_404(Post, slug=slug, status='published')
-    serializer = PostDetailSerializer(post)
+    serializer = PostDetailSerializer(post, context={'request': request})
     return Response(serializer.data)

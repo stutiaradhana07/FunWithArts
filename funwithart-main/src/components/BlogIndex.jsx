@@ -13,12 +13,16 @@ function formatBlogDate(dateStr) {
 }
 
 function getPostCover(post) {
-  return (
-    post.cover_image ||
-    post.image_url ||
-    post.image ||
-    'https://placehold.co/1200x800/EAE6DB/3D2A20?text=Fun+With+Art'
-  );
+  const rawCover = post?.cover_image || post?.image_url || post?.image;
+  if (!rawCover) {
+    return 'https://placehold.co/1200x800/EAE6DB/3D2A20?text=Fun+With+Art';
+  }
+  if (rawCover.startsWith('http://') || rawCover.startsWith('https://') || rawCover.startsWith('data:')) {
+    return rawCover;
+  }
+  const apiBase = window.__UDAAN_API_BASE__ || 'http://127.0.0.1:8000/api';
+  const backendHost = apiBase.replace(/\/api\/?$/, '');
+  return `${backendHost}${rawCover.startsWith('/') ? '' : '/'}${rawCover}`;
 }
 
 function getPostExcerpt(post) {
