@@ -17,12 +17,17 @@ function getPostCover(post) {
   if (!rawCover) {
     return 'https://placehold.co/1200x800/EAE6DB/3D2A20?text=Fun+With+Art';
   }
-  if (rawCover.startsWith('http://') || rawCover.startsWith('https://') || rawCover.startsWith('data:')) {
-    return rawCover;
+  let secureCover = rawCover;
+  if (secureCover.startsWith('http://')) {
+    secureCover = secureCover.replace('http://', 'https://');
+  }
+  if (secureCover.startsWith('https://') || secureCover.startsWith('data:')) {
+    return secureCover;
   }
   const apiBase = window.__UDAAN_API_BASE__ || 'http://127.0.0.1:8000/api';
   const backendHost = apiBase.replace(/\/api\/?$/, '');
-  return `${backendHost}${rawCover.startsWith('/') ? '' : '/'}${rawCover}`;
+  const finalCover = `${backendHost}${secureCover.startsWith('/') ? '' : '/'}${secureCover}`;
+  return finalCover.startsWith('http://') ? finalCover.replace('http://', 'https://') : finalCover;
 }
 
 function getPostExcerpt(post) {
