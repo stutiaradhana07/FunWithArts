@@ -222,6 +222,51 @@ export default function LegacyPage({ source, title }) {
 
   useEffect(() => {
     let cancelled = false;
+    const activeRafs = [];
+    const originalRaf = window.requestAnimationFrame;
+    const originalCancelRaf = window.cancelAnimationFrame;
+
+    // Track original Lenis
+    if (window.Lenis && !window.__original_lenis__) {
+      window.__original_lenis__ = window.Lenis;
+    }
+    window.__active_lenis_instances__ = window.__active_lenis_instances__ || [];
+
+    // Setup Lenis interceptor
+    if (window.__original_lenis__) {
+      window.Lenis = class InterceptedLenis extends window.__original_lenis__ {
+        constructor(...args) {
+          super(...args);
+          this.__is_destroyed__ = false;
+          window.__active_lenis_instances__.push(this);
+        }
+        raf(...args) {
+          if (this.__is_destroyed__) return;
+          return super.raf(...args);
+        }
+        destroy() {
+          this.__is_destroyed__ = true;
+          super.destroy();
+        }
+      };
+    }
+
+    // Setup requestAnimationFrame interceptor to auto-collect and clean up all loops
+    window.requestAnimationFrame = (callback) => {
+      const id = originalRaf((time) => {
+        if (!cancelled) {
+          callback(time);
+        }
+      });
+      activeRafs.push(id);
+      return id;
+    };
+
+    window.cancelAnimationFrame = (id) => {
+      const idx = activeRafs.indexOf(id);
+      if (idx > -1) activeRafs.splice(idx, 1);
+      return originalCancelRaf(id);
+    };
 
     async function loadPage() {
       setLoading(true);
@@ -283,6 +328,29 @@ export default function LegacyPage({ source, title }) {
 
     return () => {
       cancelled = true;
+
+      // Restore original requestAnimationFrame and cancel all pending animation frames
+      window.requestAnimationFrame = originalRaf;
+      window.cancelAnimationFrame = originalCancelRaf;
+      activeRafs.forEach((id) => originalCancelRaf(id));
+
+      // Destroy all active Lenis scroll managers created during this page session
+      if (window.__active_lenis_instances__) {
+        window.__active_lenis_instances__.forEach((instance) => {
+          try {
+            instance.destroy();
+          } catch (e) {
+            console.warn('Failed to destroy Lenis instance:', e);
+          }
+        });
+        window.__active_lenis_instances__ = [];
+      }
+
+      // Restore original Lenis
+      if (window.__original_lenis__) {
+        window.Lenis = window.__original_lenis__;
+      }
+
       clearManagedNodes();
       if (ref.current) {
         ref.current.innerHTML = '';
