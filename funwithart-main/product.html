@@ -430,6 +430,11 @@
                 title: product.name,
                 price: Number(product.price),
                 img: product.image_url || product.image || '',
+                img2: product.image2_url || product.image2 || '',
+                img3: product.image3_url || product.image3 || '',
+                video: product.video_url || product.video || '',
+                has_set_option: Boolean(product.has_set_option),
+                set_price: product.set_price != null ? Number(product.set_price) : null,
                 desc: product.description || '',
             };
         }
@@ -505,14 +510,60 @@
         function renderPage(productData) {
             document.getElementById('bread-title').innerText = productData.title;
             
+            // Build thumbnails HTML
+            const hasExtraImages = productData.img2 || productData.img3 || productData.video;
+            const thumbnailsHTML = hasExtraImages ? `
+                <div class="pdp-thumbnails" style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
+                    <div class="pdp-thumb active" data-type="image" data-src="${productData.img}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid var(--accent-color); cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Main'">
+                    </div>
+                    ${productData.img2 ? `
+                    <div class="pdp-thumb" data-type="image" data-src="${productData.img2}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img2}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+2'">
+                    </div>
+                    ` : ''}
+                    ${productData.img3 ? `
+                    <div class="pdp-thumb" data-type="image" data-src="${productData.img3}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img3}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+3'">
+                    </div>
+                    ` : ''}
+                    ${productData.video ? `
+                    <div class="pdp-thumb" data-type="video" data-src="${productData.video}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center; background:#000; transition: 0.2s;">
+                        <span style="position:absolute; color:#fff; font-size:1.5rem; z-index:2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">▶</span>
+                        <video src="${productData.video}" style="width:100%; height:100%; object-fit:cover; opacity:0.6;"></video>
+                    </div>
+                    ` : ''}
+                </div>
+            ` : '';
+
+            // Build Variant Picker HTML
+            const variantPickerHTML = productData.has_set_option ? `
+                <div class="variant-picker" style="margin: 25px 0 30px;">
+                    <h3 style="font-family: var(--art-font); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 12px; font-weight: bold;">Select Option:</h3>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="variant-option active" data-type="individual" data-price="${productData.price}" style="flex: 1; padding: 16px; border-radius: 12px; border: 2px solid var(--primary-color); background: #fff; text-align: left; cursor: pointer; transition: 0.3s; outline:none;">
+                            <div style="font-family: var(--art-font); font-weight: bold; font-size: 0.85rem; color:#111; text-transform: uppercase; letter-spacing: 1px;">Single Piece</div>
+                            <div style="font-family: var(--body-font); font-size: 0.9rem; color: var(--accent-color); font-weight: bold; margin-top: 4px;">&#8377;${productData.price.toFixed(2)}</div>
+                        </button>
+                        <button class="variant-option" data-type="set" data-price="${productData.set_price || (productData.price * 3)}" style="flex: 1; padding: 16px; border-radius: 12px; border: 2px solid #e8e2db; background: #fff; text-align: left; cursor: pointer; transition: 0.3s; outline:none;">
+                            <div style="font-family: var(--art-font); font-weight: bold; font-size: 0.85rem; color:#555; text-transform: uppercase; letter-spacing: 1px;">Full Studio Set</div>
+                            <div style="font-family: var(--body-font); font-size: 0.9rem; color: #888; font-weight: bold; margin-top: 4px;">&#8377;${(productData.set_price || (productData.price * 3)).toFixed(2)}</div>
+                        </button>
+                    </div>
+                </div>
+            ` : '';
+
             const pdpHTML = `
                 <div class="pdp-gallery">
                     <div class="pdp-main-image-wrapper" id="img-trigger">
                         <button class="nav-arrow arrow-left" id="main-arrow-left" aria-label="Previous Product">&larr;</button>
-                        <img src="${productData.img}" onerror="this.onerror=null; this.src=this.src.replace('.png', '.jpg');" class="pdp-main-image" id="main-image" alt="${productData.title}">
+                        <div id="main-media-container" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
+                            <img src="${productData.img}" onerror="this.onerror=null; this.src=this.src.replace('.png', '.jpg');" class="pdp-main-image" id="main-image" alt="${productData.title}">
+                        </div>
                         <button class="nav-arrow arrow-right" id="main-arrow-right" aria-label="Next Product">&rarr;</button>
-                        <div class="zoom-hint">Click to Zoom</div>
+                        <div class="zoom-hint" id="zoom-hint-box">Click to Zoom</div>
                     </div>
+                    ${thumbnailsHTML}
                 </div>
 
                 <div class="pdp-details">
@@ -521,6 +572,8 @@
                     <div class="pdp-rating-row" id="pdp-rating-row"></div>
                     
                     <p class="pdp-desc" id="pdp-desc">${productData.desc}</p>
+                    
+                    ${variantPickerHTML}
 
                     <div class="buy-box">
                         <div class="qty-row">
@@ -585,13 +638,34 @@
             document.getElementById('qty-minus').addEventListener('click', () => { if(currentQty > 1) { currentQty--; document.getElementById('qty-val').innerText = currentQty; }});
             document.getElementById('qty-plus').addEventListener('click', () => { currentQty++; document.getElementById('qty-val').innerText = currentQty; });
 
+            // Active variant tracking
+            let activeOption = 'individual';
+            const variantOptions = document.querySelectorAll('.variant-option');
+            const pdpPrice = document.getElementById('pdp-price');
+
+            variantOptions.forEach(opt => {
+                opt.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    variantOptions.forEach(o => {
+                        o.style.borderColor = '#e8e2db';
+                        o.querySelector('div').style.color = '#555';
+                    });
+                    this.style.borderColor = 'var(--primary-color)';
+                    this.querySelector('div').style.color = '#111';
+                    
+                    activeOption = this.getAttribute('data-type');
+                    const selectedPrice = Number(this.getAttribute('data-price'));
+                    pdpPrice.innerHTML = `&#8377;${selectedPrice.toFixed(2)} <span class="price-badge">Pan-India Shipping Included</span>`;
+                });
+            });
+
             const addToBagBtn = document.getElementById('add-to-bag-btn');
             addToBagBtn.addEventListener('click', async function() {
                 this.classList.add('btn-pop');
                 setTimeout(() => this.classList.remove('btn-pop'), 300);
 
                 try {
-                    await window.UdaanAPI.addToCart(productData.id, currentQty);
+                    await window.UdaanAPI.addToCart(productData.id, currentQty, activeOption);
                     updateBadges();
                     this.innerText = 'Added';
                     showToast('Added to your bag.');
@@ -599,6 +673,35 @@
                     showToast(e.message || 'Could not add to bag.');
                 }
                 setTimeout(() => { this.innerText = 'Add to Bag'; }, 2000);
+            });
+
+            // Thumbnail Click Handler
+            let activeMediaSrc = productData.img;
+            let activeMediaType = 'image';
+
+            document.querySelectorAll('.pdp-thumb').forEach(thumb => {
+                thumb.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.pdp-thumb').forEach(t => t.style.borderColor = 'transparent');
+                    this.style.borderColor = 'var(--accent-color)';
+                    
+                    activeMediaType = this.getAttribute('data-type');
+                    activeMediaSrc = this.getAttribute('data-src');
+                    const container = document.getElementById('main-media-container');
+                    const zoomHint = document.getElementById('zoom-hint-box');
+                    
+                    if (activeMediaType === 'video') {
+                        container.innerHTML = `
+                            <video src="${activeMediaSrc}" controls autoplay style="width:100%; height:100%; object-fit:cover; border-radius:30px;"></video>
+                        `;
+                        if (zoomHint) zoomHint.style.display = 'none';
+                    } else {
+                        container.innerHTML = `
+                            <img src="${activeMediaSrc}" class="pdp-main-image" id="main-image" alt="${productData.title}">
+                        `;
+                        if (zoomHint) zoomHint.style.display = 'block';
+                    }
+                });
             });
 
             document.querySelectorAll('.accordion-header').forEach(button => {
@@ -609,9 +712,11 @@
             const viewerImg = document.getElementById('full-image-viewer');
             
             document.getElementById('img-trigger').addEventListener('click', () => { 
-                viewerImg.src = productData.img; 
-                overlay.classList.add('active'); 
-                lenis.stop(); 
+                if (activeMediaType === 'image') {
+                    viewerImg.src = activeMediaSrc; 
+                    overlay.classList.add('active'); 
+                    lenis.stop(); 
+                }
             });
 
             const pinBtn = document.getElementById('pin-btn');

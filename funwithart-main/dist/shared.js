@@ -432,10 +432,14 @@
     return request('/cart/');
   }
 
-  async function addToCart(productId, quantity = 1) {
+  async function addToCart(productId, quantity = 1, purchaseOption = 'individual') {
     const cart = await request('/cart/add/', {
       method: 'POST',
-      body: JSON.stringify({ product_id: Number(productId), quantity: Number(quantity) || 1 }),
+      body: JSON.stringify({
+        product_id: Number(productId),
+        quantity: Number(quantity) || 1,
+        purchase_option: purchaseOption
+      }),
     });
     _cachedCartCount = cart.item_count || 0;
     return cart;
@@ -484,12 +488,13 @@
     return {
       id: String(item.product_id),
       productId: item.product_id,
-      title: item.product_name,
+      title: item.product_name + (item.purchase_option === 'set' ? ' (Set)' : ''),
       basePrice: Number(item.price),
       qty: item.quantity,
       imgSrc: '', // will be enriched by caller if needed
       cartItemId: item.id,
       stock: item.stock,
+      purchaseOption: item.purchase_option,
     };
   }
 
