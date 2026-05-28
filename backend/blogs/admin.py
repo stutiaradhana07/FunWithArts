@@ -74,13 +74,16 @@ class PostAdmin(admin.ModelAdmin):
                 'title_is_bold',
                 'title_is_italic',
                 'title_font_size',
+                'title_font_family',
                 'title_color',
                 'slug',
                 'author',
                 'cover_image',
                 'cover_image_position',
                 'excerpt',
+                'excerpt_font_family',
                 'content',
+                'content_font_family',
                 'status',
                 'published_at',
                 'created_at',
@@ -91,10 +94,8 @@ class PostAdmin(admin.ModelAdmin):
 
     @property
     def media(self):
-        from django.conf import settings
-        api_key = getattr(settings, 'TINYMCE_API_KEY', 'no-api-key')
         return forms.Media(
-            js=[f'https://cdn.tiny.cloud/1/{api_key}/tinymce/6/tinymce.min.js']
+            js=['https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js']
         )
 
     def get_form(self, request, obj=None, **kwargs):

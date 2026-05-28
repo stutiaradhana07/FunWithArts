@@ -11,6 +11,18 @@ class NewsletterSubscriber(models.Model):
         return self.email
 
 
+FONT_FAMILY_CHOICES = [
+    ('', 'Default Font'),
+    ("'Playfair Display', serif", 'Playfair Display (Elegant Serif)'),
+    ("'Syne', sans-serif", 'Syne (Artistic / Modern)'),
+    ("'Lato', sans-serif", 'Lato (Clean Body)'),
+    ("'Inter', sans-serif", 'Inter (Contemporary Sans)'),
+    ("'Outfit', sans-serif", 'Outfit (Premium Display)'),
+    ("'Cormorant Garamond', serif", 'Cormorant Garamond (Classic Luxury Serif)'),
+    ("'Montserrat', sans-serif", 'Montserrat (Bold / Minimalist)'),
+]
+
+
 class Post(models.Model):
     STATUS_CHOICES = (
         ('draft', 'Draft'),
@@ -26,11 +38,32 @@ class Post(models.Model):
         default='',
         help_text='CSS font size for the title, e.g. 32px or 2rem',
     )
+    title_font_family = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        choices=FONT_FAMILY_CHOICES,
+        help_text='Select the font family for the title',
+    )
     title_color = models.CharField(
         max_length=20,
         blank=True,
         default='',
         help_text='CSS color code or name for the title',
+    )
+    excerpt_font_family = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        choices=FONT_FAMILY_CHOICES,
+        help_text='Select the font family for the excerpt',
+    )
+    content_font_family = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        choices=FONT_FAMILY_CHOICES,
+        help_text='Select the font family for the body content',
     )
     slug = models.SlugField(max_length=255, unique=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)

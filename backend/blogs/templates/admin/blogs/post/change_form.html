@@ -1,6 +1,7 @@
 {% extends "admin/change_form.html" %}
 {% block extrahead %}{{ block.super }}
-<script src="https://cdn.tiny.cloud/1/{{ tinymce_api_key|default:'no-api-key' }}/tinymce/6/tinymce.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof tinymce === 'undefined') return;
@@ -23,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
           const previewContent = document.getElementById('preview-content');
           if (previewContent) previewContent.innerHTML = content;
         }
+        // Apply current font styling inside editor on initialization
+        updateContentFont();
       });
       editor.on('change keyup undo redo', function () {
         const previewContent = document.getElementById('preview-content');
@@ -74,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const boldCheckbox = document.getElementById('id_title_is_bold');
   const italicCheckbox = document.getElementById('id_title_is_italic');
   const fontSizeSelect = document.getElementById('id_title_font_size');
+  const titleFontFamilySelect = document.getElementById('id_title_font_family');
+  const excerptFontFamilySelect = document.getElementById('id_excerpt_font_family');
+  const contentFontFamilySelect = document.getElementById('id_content_font_family');
   const excerptInput = document.getElementById('id_excerpt');
   const coverImageInput = document.getElementById('id_cover_image');
   const coverPositionInput = document.getElementById('id_cover_image_position');
@@ -95,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
     previewTitle.style.fontWeight = (boldCheckbox && boldCheckbox.checked) ? '700' : '400';
     previewTitle.style.fontStyle = (italicCheckbox && italicCheckbox.checked) ? 'italic' : 'normal';
     previewTitle.style.fontSize = (fontSizeSelect && fontSizeSelect.value) ? fontSizeSelect.value : '40px';
+    previewTitle.style.fontFamily = (titleFontFamilySelect && titleFontFamilySelect.value) ? titleFontFamilySelect.value : "'Outfit', 'Inter', system-ui, sans-serif";
     previewTitle.style.color = (colorInput && colorInput.value) ? colorInput.value : '#1e293b';
   }
 
@@ -103,9 +110,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const text = excerptInput ? excerptInput.value.trim() : '';
     if (text) {
       previewExcerpt.textContent = text;
+      previewExcerpt.style.fontFamily = (excerptFontFamilySelect && excerptFontFamilySelect.value) ? excerptFontFamilySelect.value : "system-ui, sans-serif";
       previewExcerptContainer.style.display = 'block';
     } else {
       previewExcerptContainer.style.display = 'none';
+    }
+  }
+
+  function updateContentFont() {
+    const previewContent = document.getElementById('preview-content');
+    if (!previewContent) return;
+    const selectedFont = (contentFontFamilySelect && contentFontFamilySelect.value) ? contentFontFamilySelect.value : "system-ui, sans-serif";
+    previewContent.style.fontFamily = selectedFont;
+
+    // Apply font styling inside the active TinyMCE editor iframe
+    if (typeof tinymce !== 'undefined') {
+      const editor = tinymce.get('id_content');
+      if (editor && editor.dom) {
+        editor.dom.setStyle(editor.getBody(), 'font-family', selectedFont);
+      }
     }
   }
 
@@ -150,6 +173,9 @@ document.addEventListener('DOMContentLoaded', function () {
   if (boldCheckbox) boldCheckbox.addEventListener('change', updateTitle);
   if (italicCheckbox) italicCheckbox.addEventListener('change', updateTitle);
   if (fontSizeSelect) fontSizeSelect.addEventListener('change', updateTitle);
+  if (titleFontFamilySelect) titleFontFamilySelect.addEventListener('change', updateTitle);
+  if (excerptFontFamilySelect) excerptFontFamilySelect.addEventListener('change', updateExcerpt);
+  if (contentFontFamilySelect) contentFontFamilySelect.addEventListener('change', updateContentFont);
   if (colorInput) {
     colorInput.addEventListener('input', updateTitle);
     colorInput.addEventListener('change', updateTitle);
@@ -163,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
   updateExcerpt();
   updateAuthor();
   updateCoverImage();
+  updateContentFont();
 
   const now = new Date();
   const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };

@@ -21,7 +21,8 @@ class PostListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'cover_image', 'cover_image_position',
             'excerpt', 'title_is_bold', 'title_is_italic', 'title_font_size',
-            'title_color', 'author_name', 'status', 'published_at',
+            'title_font_family', 'title_color', 'excerpt_font_family',
+            'author_name', 'status', 'published_at',
             'created_at', 'updated_at',
         ]
 
@@ -38,7 +39,8 @@ class PostDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'cover_image', 'cover_image_position',
             'excerpt', 'content', 'title_is_bold', 'title_is_italic',
-            'title_font_size', 'title_color', 'author_name', 'status',
+            'title_font_size', 'title_font_family', 'title_color',
+            'excerpt_font_family', 'content_font_family', 'author_name', 'status',
             'published_at', 'created_at', 'updated_at',
         ]
 
