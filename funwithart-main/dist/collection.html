@@ -335,6 +335,18 @@
         
         function renderGrid(data) {
             grid.innerHTML = '';
+            if (data.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 80px 0; font-family: var(--header-font); font-style: italic; color: #888;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 20px;">🏺</span>
+                        <p style="font-size: 1.5rem; margin-bottom: 10px;">The Archive is currently resting.</p>
+                        <p style="font-family: var(--body-font); font-style: normal; font-size: 0.95rem; color: #aaa;">We are crafting new pieces in the studio. Check back soon!</p>
+                    </div>
+                `;
+                attachEventListeners();
+                updateBadges();
+                return;
+            }
             data.forEach((item, index) => {
                 const delay = index * 0.05; 
                 const badgeHTML = item.badge ? `<div class="product-badge badge-new">${item.badge}</div>` : '';
@@ -377,14 +389,17 @@
             if (window.UdaanAPI) {
                 try {
                     const products = await window.UdaanAPI.fetchProducts();
-                    if (Array.isArray(products) && products.length) {
+                    if (Array.isArray(products)) {
                         catalogDB = products.map((product) => normalizeCatalogItem(window.UdaanAPI.mapApiProduct(product)));
                     }
                     wishlistData = await window.UdaanAPI.loadWishlistCache();
                     await loadCartItems();
                 } catch (error) {
                     console.warn('Using fallback catalog:', error);
+                    catalogDB = catalogFallback;
                 }
+            } else {
+                catalogDB = catalogFallback;
             }
             catalogDB = catalogDB.map(normalizeCatalogItem);
             renderGrid(getVisibleCatalog());

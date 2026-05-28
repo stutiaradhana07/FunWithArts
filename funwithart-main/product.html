@@ -481,7 +481,7 @@
 
             try {
                 const liveProducts = await window.UdaanAPI.fetchProducts();
-                if (Array.isArray(liveProducts) && liveProducts.length) {
+                if (Array.isArray(liveProducts)) {
                     catalogDB = liveProducts.map(product => ({
                         ...toProductShape(product),
                         slug: product.slug || '',
