@@ -54,6 +54,10 @@
         .breadcrumbs a { color: #111; text-decoration: none; transition: 0.3s; }
         .breadcrumbs a:hover { color: var(--accent-color); }
 
+        .back-to-archive-btn { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; font-family: var(--art-font); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #111; text-decoration: none; transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+        .back-to-archive-btn:hover { color: var(--accent-color); transform: translateX(-5px); }
+        .back-to-archive-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; }
+
         /* PDP CONTAINER */
         .pdp-container { max-width: 1500px; margin: 30px auto 100px; padding: 0 5%; display: flex; gap: 60px; align-items: flex-start; }
         
@@ -285,7 +289,15 @@
         </div>
     </nav>
 
-    <div class="breadcrumbs"><a href="/">Home</a> / <a href="/collection">The Archive</a> / <span id="bread-title">Loading...</span></div>
+    <div class="breadcrumbs">
+        <a href="javascript:void(0)" onclick="handleBackToArchive()" class="back-to-archive-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to Archive
+        </a>
+        <div class="breadcrumbs-path" style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #888;">
+            <a href="/">Home</a> / <a href="/collection">The Archive</a> / <span id="bread-title" style="color: #555;">Loading...</span>
+        </div>
+    </div>
 
     <div class="toast-container" id="toast-container"></div>
 
@@ -383,6 +395,14 @@
         const lenis = new Lenis({ duration: 1.2, smooth: true });
         function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
 
+        window.handleBackToArchive = function() {
+            if (document.referrer && document.referrer.includes('/collection')) {
+                window.history.back();
+            } else {
+                window.location.href = '/collection';
+            }
+        };
+
         setTimeout(() => { document.body.classList.add('loaded'); }, 300);
 
         function showToast(message, type) {
@@ -423,6 +443,9 @@
         ];
         let catalogDB = catalogFallback;
         let currentIndex = 0;
+        let currentProductData = null;
+        let activeMedia = [];
+        let activeMediaIndex = 0;
 
         function toProductShape(product) {
             return {
@@ -430,8 +453,11 @@
                 title: product.name,
                 price: Number(product.price),
                 img: product.image_url || product.image || '',
+                image_position: product.image_position || 'center center',
                 img2: product.image2_url || product.image2 || '',
+                image2_position: product.image2_position || 'center center',
                 img3: product.image3_url || product.image3 || '',
+                image3_position: product.image3_position || 'center center',
                 video: product.video_url || product.video || '',
                 has_set_option: Boolean(product.has_set_option),
                 set_price: product.set_price != null ? Number(product.set_price) : null,
@@ -508,23 +534,31 @@
         }
 
         function renderPage(productData) {
+            currentProductData = productData;
+            activeMedia = [];
+            if (productData.img) activeMedia.push({ type: 'image', src: productData.img, position: productData.image_position || 'center center' });
+            if (productData.img2) activeMedia.push({ type: 'image', src: productData.img2, position: productData.image2_position || 'center center' });
+            if (productData.img3) activeMedia.push({ type: 'image', src: productData.img3, position: productData.image3_position || 'center center' });
+            if (productData.video) activeMedia.push({ type: 'video', src: productData.video });
+            activeMediaIndex = 0;
+
             document.getElementById('bread-title').innerText = productData.title;
             
             // Build thumbnails HTML
             const hasExtraImages = productData.img2 || productData.img3 || productData.video;
             const thumbnailsHTML = hasExtraImages ? `
                 <div class="pdp-thumbnails" style="display:flex; gap:10px; margin-top:20px; justify-content:center; flex-wrap:wrap;">
-                    <div class="pdp-thumb active" data-type="image" data-src="${productData.img}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid var(--accent-color); cursor:pointer; background:#fff; transition: 0.2s;">
-                        <img src="${productData.img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Main'">
+                    <div class="pdp-thumb active" data-type="image" data-src="${productData.img}" data-position="${productData.image_position || 'center center'}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid var(--accent-color); cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img}" style="width:100%; height:100%; object-fit:cover; object-position:${productData.image_position || 'center center'};" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Main'">
                     </div>
                     ${productData.img2 ? `
-                    <div class="pdp-thumb" data-type="image" data-src="${productData.img2}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
-                        <img src="${productData.img2}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+2'">
+                    <div class="pdp-thumb" data-type="image" data-src="${productData.img2}" data-position="${productData.image2_position || 'center center'}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img2}" style="width:100%; height:100%; object-fit:cover; object-position:${productData.image2_position || 'center center'};" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+2'">
                     </div>
                     ` : ''}
                     ${productData.img3 ? `
-                    <div class="pdp-thumb" data-type="image" data-src="${productData.img3}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
-                        <img src="${productData.img3}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+3'">
+                    <div class="pdp-thumb" data-type="image" data-src="${productData.img3}" data-position="${productData.image3_position || 'center center'}" style="width:70px; height:70px; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:#fff; transition: 0.2s;">
+                        <img src="${productData.img3}" style="width:100%; height:100%; object-fit:cover; object-position:${productData.image3_position || 'center center'};" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EAE6DB/111111?text=Image+3'">
                     </div>
                     ` : ''}
                     ${productData.video ? `
@@ -535,7 +569,7 @@
                     ` : ''}
                 </div>
             ` : '';
-
+ 
             // Build Variant Picker HTML
             const variantPickerHTML = productData.has_set_option ? `
                 <div class="variant-picker" style="margin: 25px 0 30px;">
@@ -552,20 +586,20 @@
                     </div>
                 </div>
             ` : '';
-
+ 
             const pdpHTML = `
                 <div class="pdp-gallery">
                     <div class="pdp-main-image-wrapper" id="img-trigger">
-                        <button class="nav-arrow arrow-left" id="main-arrow-left" aria-label="Previous Product">&larr;</button>
+                        <button class="nav-arrow arrow-left" id="main-arrow-left" aria-label="Previous Image">&larr;</button>
                         <div id="main-media-container" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
-                            <img src="${productData.img}" onerror="this.onerror=null; this.src=this.src.replace('.png', '.jpg');" class="pdp-main-image" id="main-image" alt="${productData.title}">
+                            <img src="${productData.img}" onerror="this.onerror=null; this.src=this.src.replace('.png', '.jpg');" class="pdp-main-image" id="main-image" style="object-position: ${productData.image_position || 'center center'}" alt="${productData.title}">
                         </div>
-                        <button class="nav-arrow arrow-right" id="main-arrow-right" aria-label="Next Product">&rarr;</button>
+                        <button class="nav-arrow arrow-right" id="main-arrow-right" aria-label="Next Image">&rarr;</button>
                         <div class="zoom-hint" id="zoom-hint-box">Click to Zoom</div>
                     </div>
                     ${thumbnailsHTML}
                 </div>
-
+ 
                 <div class="pdp-details">
                     <h1 class="pdp-title" id="pdp-title">${productData.title}</h1>
                     <div class="pdp-price" id="pdp-price">&#8377;${productData.price.toFixed(2)} <span class="price-badge">Pan-India Shipping Included</span></div>
@@ -574,7 +608,7 @@
                     <p class="pdp-desc" id="pdp-desc">${productData.desc}</p>
                     
                     ${variantPickerHTML}
-
+ 
                     <div class="buy-box">
                         <div class="qty-row">
                             <div class="qty-selector">
@@ -586,7 +620,7 @@
                         </div>
                         <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin:0;">Secure checkout. Built in Delhi, India.</p>
                     </div>
-
+ 
                     <div class="accordion">
                         <div class="accordion-item">
                             <button class="accordion-header">Offers & promotions <span>+</span></button>
@@ -602,10 +636,10 @@
                                     <button class="pincode-btn" id="pin-btn">Check</button>
                                 </div>
                                 <p class="shipping-msg" id="pin-msg">Pan-India delivery takes 4-6 business days.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
             `;
             
             document.getElementById('pdp-content').innerHTML = pdpHTML;
@@ -613,6 +647,56 @@
             loadReviews(productData.id);
             renderQuestions(productData.id);
             setupQuestionForm(productData.id);
+        }
+
+        function navigateMedia(direction) {
+            if (activeMedia.length <= 1) return;
+            if (direction === 'next') {
+                activeMediaIndex = (activeMediaIndex + 1) % activeMedia.length;
+            } else {
+                activeMediaIndex = (activeMediaIndex - 1 + activeMedia.length) % activeMedia.length;
+            }
+            
+            const media = activeMedia[activeMediaIndex];
+            const container = document.getElementById('main-media-container');
+            const zoomHint = document.getElementById('zoom-hint-box');
+            
+            if (media.type === 'video') {
+                container.innerHTML = `
+                    <video src="${media.src}" controls autoplay style="width:100%; height:100%; object-fit:cover; border-radius:30px;"></video>
+                `;
+                if (zoomHint) zoomHint.style.display = 'none';
+            } else {
+                container.innerHTML = `
+                    <img src="${media.src}" class="pdp-main-image" id="main-image" style="object-position: ${media.position}" alt="${currentProductData ? currentProductData.title : ''}">
+                `;
+                if (zoomHint) zoomHint.style.display = 'block';
+            }
+            
+            // Sync with full screen overlay if active
+            const overlay = document.getElementById('full-image-overlay');
+            const viewerImg = document.getElementById('full-image-viewer');
+            if (overlay) {
+                if (media.type === 'image') {
+                    viewerImg.src = media.src;
+                    viewerImg.style.display = 'block';
+                } else {
+                    viewerImg.src = '';
+                    viewerImg.style.display = 'none';
+                }
+            }
+            
+            // Highlight the correct thumbnail
+            const thumbs = document.querySelectorAll('.pdp-thumb');
+            thumbs.forEach((thumb, idx) => {
+                if (idx === activeMediaIndex) {
+                    thumb.style.borderColor = 'var(--accent-color)';
+                    thumb.classList.add('active');
+                } else {
+                    thumb.style.borderColor = 'transparent';
+                    thumb.classList.remove('active');
+                }
+            });
         }
 
         function navigateProduct(direction) {
@@ -631,8 +715,22 @@
         }
 
         function bindEvents(productData) {
-            document.getElementById('main-arrow-left').addEventListener('click', (e) => { e.stopPropagation(); navigateProduct('prev'); });
-            document.getElementById('main-arrow-right').addEventListener('click', (e) => { e.stopPropagation(); navigateProduct('next'); });
+            const arrowLeft = document.getElementById('main-arrow-left');
+            const arrowRight = document.getElementById('main-arrow-right');
+            if (activeMedia.length <= 1) {
+                if (arrowLeft) arrowLeft.style.display = 'none';
+                if (arrowRight) arrowRight.style.display = 'none';
+            } else {
+                if (arrowLeft) arrowLeft.style.display = 'flex';
+                if (arrowRight) arrowRight.style.display = 'flex';
+            }
+
+            if (arrowLeft) {
+                arrowLeft.addEventListener('click', (e) => { e.stopPropagation(); navigateMedia('prev'); });
+            }
+            if (arrowRight) {
+                arrowRight.addEventListener('click', (e) => { e.stopPropagation(); navigateMedia('next'); });
+            }
 
             let currentQty = 1;
             document.getElementById('qty-minus').addEventListener('click', () => { if(currentQty > 1) { currentQty--; document.getElementById('qty-val').innerText = currentQty; }});
@@ -679,14 +777,20 @@
             let activeMediaSrc = productData.img;
             let activeMediaType = 'image';
 
-            document.querySelectorAll('.pdp-thumb').forEach(thumb => {
+            document.querySelectorAll('.pdp-thumb').forEach((thumb, index) => {
                 thumb.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    document.querySelectorAll('.pdp-thumb').forEach(t => t.style.borderColor = 'transparent');
+                    activeMediaIndex = index;
+                    document.querySelectorAll('.pdp-thumb').forEach(t => {
+                        t.style.borderColor = 'transparent';
+                        t.classList.remove('active');
+                    });
                     this.style.borderColor = 'var(--accent-color)';
+                    this.classList.add('active');
                     
                     activeMediaType = this.getAttribute('data-type');
                     activeMediaSrc = this.getAttribute('data-src');
+                    const activePosition = this.getAttribute('data-position') || 'center center';
                     const container = document.getElementById('main-media-container');
                     const zoomHint = document.getElementById('zoom-hint-box');
                     
@@ -697,7 +801,7 @@
                         if (zoomHint) zoomHint.style.display = 'none';
                     } else {
                         container.innerHTML = `
-                            <img src="${activeMediaSrc}" class="pdp-main-image" id="main-image" alt="${productData.title}">
+                            <img src="${activeMediaSrc}" class="pdp-main-image" id="main-image" style="object-position: ${activePosition}" alt="${productData.title}">
                         `;
                         if (zoomHint) zoomHint.style.display = 'block';
                     }
@@ -755,8 +859,8 @@
         fsClose.addEventListener('click', (e) => { e.stopPropagation(); fsOverlay.classList.remove('active'); lenis.start(); });
         fsOverlay.addEventListener('click', (e) => { if(e.target === fsOverlay) { fsOverlay.classList.remove('active'); lenis.start(); }});
         
-        document.getElementById('fs-arrow-left').addEventListener('click', (e) => { e.stopPropagation(); navigateProduct('prev'); });
-        document.getElementById('fs-arrow-right').addEventListener('click', (e) => { e.stopPropagation(); navigateProduct('next'); });
+        document.getElementById('fs-arrow-left').addEventListener('click', (e) => { e.stopPropagation(); navigateMedia('prev'); });
+        document.getElementById('fs-arrow-right').addEventListener('click', (e) => { e.stopPropagation(); navigateMedia('next'); });
 
         // Initialize Page
         loadProductData();
