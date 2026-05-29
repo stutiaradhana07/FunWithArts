@@ -56,14 +56,51 @@
     return JSON.stringify(payload);
   }
 
+  function getOrCreateGuestSessionId() {
+    let sessionId = localStorage.getItem('udaan_guest_session_id');
+    if (!sessionId) {
+      sessionId = 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('udaan_guest_session_id', sessionId);
+    }
+    return sessionId;
+  }
+
   async function request(path, options = {}) {
-    const response = await fetch(`${apiBase}${path}`, {
+    let finalPath = path;
+    const finalOptions = { ...options };
+
+    if (!isLoggedIn()) {
+      const sessionId = getOrCreateGuestSessionId();
+      const method = (options.method || 'GET').toUpperCase();
+
+      // 1. Inject into Query Params for GET, DELETE, or requests without body
+      if (method === 'GET' || method === 'DELETE' || !options.body) {
+        const urlSeparator = finalPath.includes('?') ? '&' : '?';
+        if (!finalPath.includes('session_id=')) {
+          finalPath = `${finalPath}${urlSeparator}session_id=${encodeURIComponent(sessionId)}`;
+        }
+      } 
+      // 2. Inject into request body for POST, PATCH, PUT requests with JSON body
+      else if (options.body && typeof options.body === 'string') {
+        try {
+          const parsedBody = JSON.parse(options.body);
+          if (parsedBody && typeof parsedBody === 'object' && !parsedBody.session_id) {
+            parsedBody.session_id = sessionId;
+            finalOptions.body = JSON.stringify(parsedBody);
+          }
+        } catch (e) {
+          // If body is not JSON or fails to parse, leave as is
+        }
+      }
+    }
+
+    const response = await fetch(`${apiBase}${finalPath}`, {
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeaders(),
-        ...(options.headers || {}),
+        ...(finalOptions.headers || {}),
       },
-      ...options,
+      ...finalOptions,
     });
 
     let payload = null;
@@ -116,13 +153,30 @@
     });
   }
 
+  async function syncGuestCartAndWishlist() {
+    try {
+      await syncGuestWishlistToServer();
+    } catch (err) {
+      console.warn('Could not sync guest wishlist:', err);
+    }
+    const sessionId = localStorage.getItem('udaan_guest_session_id');
+    if (sessionId) {
+      try {
+        await mergeGuestCart(sessionId);
+        localStorage.removeItem('udaan_guest_session_id');
+      } catch (err) {
+        console.warn('Could not merge guest cart:', err);
+      }
+    }
+  }
+
   async function registerUser({ username, email, password }) {
     const payload = await request('/auth/register/', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     });
     setAuth({ token: payload.token, user: payload.user });
-    await syncGuestWishlistToServer();
+    await syncGuestCartAndWishlist();
     return payload;
   }
 
@@ -132,7 +186,7 @@
      body: JSON.stringify({ username, password }),
    });
    setAuth({ token: payload.token, user: payload.user });
-   await syncGuestWishlistToServer();
+   await syncGuestCartAndWishlist();
    return payload;
  }
 
@@ -142,7 +196,7 @@
      body: JSON.stringify({ id_token: idToken }),
    });
    setAuth({ token: payload.token, user: payload.user });
-   await syncGuestWishlistToServer();
+   await syncGuestCartAndWishlist();
    return payload;
  }
 
