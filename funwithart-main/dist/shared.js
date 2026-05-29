@@ -305,10 +305,11 @@
     overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    requestAnimationFrame(() => {
-      overlay.style.opacity = '1';
-      card.style.transform = 'scale(1) translateY(0)';
-    });
+    // Force a synchronous layout reflow to guarantee the transition starts
+    overlay.offsetHeight;
+
+    overlay.style.opacity = '1';
+    card.style.transform = 'scale(1) translateY(0)';
 
     function closeModal() {
       overlay.style.opacity = '0';
