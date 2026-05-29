@@ -258,12 +258,12 @@
     registerBtn.addEventListener('mouseenter', () => {
       registerBtn.style.background = '#6b3f30';
       registerBtn.style.transform = 'translateY(-2px)';
-      registerBtn.style.box-shadow = '0 8px 24px rgba(107, 63, 48, 0.25)';
+      registerBtn.style.boxShadow = '0 8px 24px rgba(107, 63, 48, 0.25)';
     });
     registerBtn.addEventListener('mouseleave', () => {
       registerBtn.style.background = '#c47a5a';
       registerBtn.style.transform = 'translateY(0)';
-      registerBtn.style.box-shadow = '0 4px 15px rgba(196, 122, 90, 0.25)';
+      registerBtn.style.boxShadow = '0 4px 15px rgba(196, 122, 90, 0.25)';
     });
     registerBtn.onclick = () => navigateTo('/login?tab=register');
 
