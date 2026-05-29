@@ -51,7 +51,12 @@ function BlogCard({ post, featured }) {
     return (
       <Link to={`/blogs/${post.slug}`} className="blog-hero-card">
         <div className="blog-hero-card__image">
-          <img src={getPostCover(post)} alt={post.title} />
+          <img 
+            src={getPostCover(post)} 
+            alt={post.title} 
+            fetchPriority="high" 
+            decoding="async" 
+          />
           <div className="blog-hero-card__overlay" />
           <div className="blog-hero-card__content">
             <span className="blog-hero-card__label">Featured Story</span>
@@ -73,7 +78,13 @@ function BlogCard({ post, featured }) {
   return (
     <Link to={`/blogs/${post.slug}`} className="blog-card">
       <div className="blog-card__image-wrap">
-        <img src={getPostCover(post)} alt={post.title} className="blog-card__image" />
+        <img 
+          src={getPostCover(post)} 
+          alt={post.title} 
+          className="blog-card__image" 
+          loading="lazy" 
+          decoding="async" 
+        />
       </div>
       <div className="blog-card__body">
         <h3 className="blog-card__title" style={titleStyle}>{post.title}</h3>

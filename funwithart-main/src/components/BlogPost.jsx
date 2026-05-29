@@ -169,6 +169,8 @@ export default function BlogPost() {
             src={getPostCover(post)}
             alt={post.title}
             style={coverStyle}
+            fetchPriority="high"
+            decoding="async"
           />
           <div className="blog-header__gradient" />
         </div>
