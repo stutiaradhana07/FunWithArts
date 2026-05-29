@@ -5,7 +5,7 @@ from .models import Cart, CartItem
 class CartItemSerializer(serializers.ModelSerializer):
     product_id = serializers.IntegerField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
-    price = serializers.DecimalField(source='price', max_digits=10, decimal_places=2, read_only=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     stock = serializers.IntegerField(source='product.stock', read_only=True)
 
     class Meta:
