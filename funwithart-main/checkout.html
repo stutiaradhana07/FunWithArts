@@ -512,6 +512,21 @@
         };
 
         (async function init() {
+            if (!window.UdaanAPI.isLoggedIn()) {
+                window.UdaanAPI.showAuthModal("To complete checkout and purchase these handcrafted ceramics, please sign in or create an artisan account.");
+                const form = document.getElementById('checkout-form');
+                if (form) {
+                    form.style.opacity = '0.5';
+                    form.style.pointerEvents = 'none';
+                }
+                const placeBtn = document.getElementById('place-btn');
+                if (placeBtn) {
+                    placeBtn.style.opacity = '0.5';
+                    placeBtn.style.pointerEvents = 'none';
+                }
+                return;
+            }
+
             await buildProductImageMap();
             try {
                 cartItems = await window.UdaanAPI.getCartItemsLegacy();

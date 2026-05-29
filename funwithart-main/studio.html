@@ -437,10 +437,7 @@ form.addEventListener('submit', function(e) {
     e.preventDefault();
 
     if (!window.UdaanAPI.isLoggedIn()) {
-        showToast('Please sign in to book a workshop.');
-        setTimeout(function () {
-            window.location.href = 'login.html?next=studio.html';
-        }, 900);
+        window.UdaanAPI.showAuthModal("To reserve a seat in our pottery workshops and experience the wheel, please sign in or create an artisan account.");
         return;
     }
 
