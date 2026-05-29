@@ -112,7 +112,7 @@
         .buy-now-btn {
             width: 100%;
             padding: 20px;
-            background: var(--accent-color);
+            background: #111;
             color: #fff;
             border: none;
             border-radius: 50px;
@@ -126,13 +126,13 @@
             transition: all 0.3s ease;
             cursor: pointer !important;
             outline: none;
-            box-shadow: 0 4px 15px rgba(215, 168, 141, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
         .buy-now-btn:hover {
-            background: #111;
-            color: #fff;
+            background: var(--accent-color);
+            border-color: var(--accent-color);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 20px rgba(215, 168, 141, 0.2);
         }
 
         /* PDP WISHLIST BUTTON */
@@ -528,6 +528,7 @@
                 has_set_option: Boolean(product.has_set_option),
                 set_price: product.set_price != null ? Number(product.set_price) : null,
                 desc: product.description || '',
+                stock: product.stock !== undefined ? Number(product.stock) : 10,
             };
         }
 
@@ -612,6 +613,7 @@
 
         function renderPage(productData) {
             document.getElementById('bread-title').innerText = productData.title;
+            const isOutOfStock = productData.stock !== undefined && productData.stock <= 0;
             
             // Build active media array
             activeMedia = [];
@@ -692,6 +694,9 @@
                     ${variantPickerHTML}
 
                     <div class="buy-box">
+                        ${isOutOfStock ? `
+                        <button class="buy-now-btn out-of-stock" disabled style="width: 100%; padding: 20px; background: #ddd; color: #888; border: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; font-size: 1rem; cursor: not-allowed; pointer-events: none; margin-bottom: 0; box-shadow: none;">Out of Stock</button>
+                        ` : `
                         <div class="qty-row">
                             <div class="qty-selector">
                                 <button class="qty-btn" id="qty-minus">-</button>
@@ -701,7 +706,8 @@
                             <button class="add-to-bag-btn" id="add-to-bag-btn">Add to Bag</button>
                         </div>
                         <button class="buy-now-btn" id="buy-now-btn">Buy Now</button>
-                        <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin:0;">Secure checkout. Built in Delhi, India.</p>
+                        `}
+                        <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin: 10px 0 0;">Secure checkout. Built in Delhi, India.</p>
                     </div>
 
                     <div class="accordion">
@@ -793,8 +799,12 @@
             document.getElementById('main-arrow-right').addEventListener('click', (e) => { e.stopPropagation(); navigateMedia('next'); });
 
             let currentQty = 1;
-            document.getElementById('qty-minus').addEventListener('click', () => { if(currentQty > 1) { currentQty--; document.getElementById('qty-val').innerText = currentQty; }});
-            document.getElementById('qty-plus').addEventListener('click', () => { currentQty++; document.getElementById('qty-val').innerText = currentQty; });
+            const qtyMinusBtn = document.getElementById('qty-minus');
+            const qtyPlusBtn = document.getElementById('qty-plus');
+            if (qtyMinusBtn && qtyPlusBtn) {
+                qtyMinusBtn.addEventListener('click', () => { if(currentQty > 1) { currentQty--; document.getElementById('qty-val').innerText = currentQty; }});
+                qtyPlusBtn.addEventListener('click', () => { currentQty++; document.getElementById('qty-val').innerText = currentQty; });
+            }
 
             // Active variant tracking
             let activeOption = 'individual';
@@ -818,20 +828,22 @@
             });
 
             const addToBagBtn = document.getElementById('add-to-bag-btn');
-            addToBagBtn.addEventListener('click', async function() {
-                this.classList.add('btn-pop');
-                setTimeout(() => this.classList.remove('btn-pop'), 300);
+            if (addToBagBtn) {
+                addToBagBtn.addEventListener('click', async function() {
+                    this.classList.add('btn-pop');
+                    setTimeout(() => this.classList.remove('btn-pop'), 300);
 
-                try {
-                    await window.UdaanAPI.addToCart(productData.id, currentQty, activeOption);
-                    updateBadges();
-                    this.innerText = 'Added';
-                    showToast('Added to your bag.');
-                } catch (e) {
-                    showToast(e.message || 'Could not add to bag.');
-                }
-                setTimeout(() => { this.innerText = 'Add to Bag'; }, 2000);
-            });
+                    try {
+                        await window.UdaanAPI.addToCart(productData.id, currentQty, activeOption);
+                        updateBadges();
+                        this.innerText = 'Added';
+                        showToast('Added to your bag.');
+                    } catch (e) {
+                        showToast(e.message || 'Could not add to bag.');
+                    }
+                    setTimeout(() => { this.innerText = 'Add to Bag'; }, 2000);
+                });
+            }
 
             // BUY NOW DIRECT ORDER FLOW
             const buyNowBtn = document.getElementById('buy-now-btn');
