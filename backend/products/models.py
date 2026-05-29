@@ -27,12 +27,16 @@ class Product(models.Model):
     image3 = models.ImageField(upload_to='products/', null=True, blank=True)
     video = models.FileField(upload_to='products/videos/', null=True, blank=True)
     
-    # Custom main image focal positioning
+    # Custom main image focal positioning and zoom
     image_position = models.CharField(
         max_length=30,
         blank=True,
         default='50% 50%',
         help_text='CSS object-position for the main image, e.g. "50% 50%". Use the visual picker grid above.'
+    )
+    image_zoom = models.FloatField(
+        default=1.0,
+        help_text='CSS transform scale level for the collection page card, e.g. 1.0 to 3.0.'
     )
     
     # Set vs. Individual options

@@ -1012,7 +1012,7 @@
                     <div class="product-card exploded" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" data-desc="${item.desc || ''}">
                         <div class="product-badge badge-hot">${item.badge || 'Latest Drop'}</div>
                         <div class="image-wrapper view-link">
-                            <img src="${item.img}" class="product-image" alt="${item.title}" style="object-position: ${item.image_position || '50% 50%'}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Product'">
+                            <img src="${item.img}" class="product-image" alt="${item.title}" style="object-position: ${item.image_position || '50% 50%'}; transform: scale(${item.image_zoom || 1.0});" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Product'">
                             <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
                             <div class="action-layer">
                                 <button class="quick-add-btn">Add to Bag</button>
@@ -1048,6 +1048,7 @@
                     price: Number(product.price),
                     img: product.image_url || product.image || '',
                     image_position: product.image_position || '50% 50%',
+                    image_zoom: Number(product.image_zoom || 1.0),
                     category: (product.category || 'decor').toLowerCase(),
                     desc: product.description || '',
                     badge: 'Latest Drop',

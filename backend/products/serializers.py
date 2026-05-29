@@ -94,6 +94,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'image',
             'image_url',
             'image_position',
+            'image_zoom',
             'image2',
             'image2_url',
             'image3',
