@@ -153,7 +153,10 @@
     overlay.id = 'udaan-auth-modal';
     overlay.style.cssText = `
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: rgba(42, 31, 26, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -304,7 +307,7 @@
     card.appendChild(desc);
     card.appendChild(btnContainer);
     overlay.appendChild(card);
-    document.body.appendChild(overlay);
+    document.documentElement.appendChild(overlay);
 
     // Force a synchronous layout reflow to guarantee the transition starts
     overlay.offsetHeight;
