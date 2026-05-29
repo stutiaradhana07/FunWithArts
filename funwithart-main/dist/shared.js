@@ -56,14 +56,51 @@
     return JSON.stringify(payload);
   }
 
+  function getOrCreateGuestSessionId() {
+    let sessionId = localStorage.getItem('udaan_guest_session_id');
+    if (!sessionId) {
+      sessionId = 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('udaan_guest_session_id', sessionId);
+    }
+    return sessionId;
+  }
+
   async function request(path, options = {}) {
-    const response = await fetch(`${apiBase}${path}`, {
+    let finalPath = path;
+    const finalOptions = { ...options };
+
+    if (!isLoggedIn() && !finalPath.includes('/auth/')) {
+      const sessionId = getOrCreateGuestSessionId();
+      const method = (options.method || 'GET').toUpperCase();
+
+      // 1. Inject into Query Params for GET, DELETE, or requests without body
+      if (method === 'GET' || method === 'DELETE' || !options.body) {
+        const urlSeparator = finalPath.includes('?') ? '&' : '?';
+        if (!finalPath.includes('session_id=')) {
+          finalPath = `${finalPath}${urlSeparator}session_id=${encodeURIComponent(sessionId)}`;
+        }
+      } 
+      // 2. Inject into request body for POST, PATCH, PUT requests with JSON body
+      else if (options.body && typeof options.body === 'string') {
+        try {
+          const parsedBody = JSON.parse(options.body);
+          if (parsedBody && typeof parsedBody === 'object' && !parsedBody.session_id) {
+            parsedBody.session_id = sessionId;
+            finalOptions.body = JSON.stringify(parsedBody);
+          }
+        } catch (e) {
+          // If body is not JSON or fails to parse, leave as is
+        }
+      }
+    }
+
+    const response = await fetch(`${apiBase}${finalPath}`, {
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeaders(),
-        ...(options.headers || {}),
+        ...(finalOptions.headers || {}),
       },
-      ...options,
+      ...finalOptions,
     });
 
     let payload = null;
@@ -109,11 +146,214 @@
     });
   }
 
+  function showAuthModal(message = "An account is required to perform this action.") {
+    if (document.getElementById('udaan-auth-modal')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'udaan-auth-modal';
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(42, 31, 26, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      padding: 20px;
+    `;
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background: #FAF6F0;
+      border: 1px solid rgba(215, 168, 141, 0.35);
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(42, 31, 26, 0.15);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position: relative;
+    `;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      color: #8a776c;
+      cursor: pointer;
+      transition: color 0.3s;
+      outline: none;
+    `;
+    closeBtn.addEventListener('mouseenter', () => closeBtn.style.color = '#c47a5a');
+    closeBtn.addEventListener('mouseleave', () => closeBtn.style.color = '#8a776c');
+    closeBtn.onclick = closeModal;
+
+    const iconContainer = document.createElement('div');
+    iconContainer.innerHTML = `
+      <svg width="60" height="60" viewBox="0 0 80 100" fill="none" stroke="#c47a5a" stroke-width="2" style="margin-bottom: 1.5rem; display: inline-block;">
+        <path d="M25 35 Q40 20 55 35 L58 70 Q40 88 22 70 Z" stroke-linecap="round" stroke-linejoin="round" />
+        <ellipse cx="40" cy="32" rx="18" ry="6" />
+        <path d="M32 50 Q40 58 48 50" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    `;
+
+    const title = document.createElement('h2');
+    title.innerText = 'Join the Studio';
+    title.style.cssText = `
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 2.2rem;
+      color: #1f1410;
+      margin-bottom: 0.85rem;
+      font-weight: 700;
+    `;
+
+    const desc = document.createElement('p');
+    desc.innerText = message;
+    desc.style.cssText = `
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      color: #6b5e56;
+      line-height: 1.6;
+      margin-bottom: 2.25rem;
+      letter-spacing: 0.2px;
+    `;
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+    `;
+
+    const registerBtn = document.createElement('button');
+    registerBtn.innerText = 'Create an Account';
+    registerBtn.style.cssText = `
+      background: #c47a5a;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(196, 122, 90, 0.25);
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    `;
+    registerBtn.addEventListener('mouseenter', () => {
+      registerBtn.style.background = '#6b3f30';
+      registerBtn.style.transform = 'translateY(-2px)';
+      registerBtn.style.box-shadow = '0 8px 24px rgba(107, 63, 48, 0.25)';
+    });
+    registerBtn.addEventListener('mouseleave', () => {
+      registerBtn.style.background = '#c47a5a';
+      registerBtn.style.transform = 'translateY(0)';
+      registerBtn.style.box-shadow = '0 4px 15px rgba(196, 122, 90, 0.25)';
+    });
+    registerBtn.onclick = () => navigateTo('/login?tab=register');
+
+    const loginBtn = document.createElement('button');
+    loginBtn.innerText = 'Sign In';
+    loginBtn.style.cssText = `
+      background: transparent;
+      color: #c47a5a;
+      border: 1px solid rgba(196, 122, 90, 0.4);
+      padding: 0.9rem 2rem;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    `;
+    loginBtn.addEventListener('mouseenter', () => {
+      loginBtn.style.background = 'rgba(196, 122, 90, 0.05)';
+      loginBtn.style.borderColor = '#c47a5a';
+      loginBtn.style.transform = 'translateY(-1px)';
+    });
+    loginBtn.addEventListener('mouseleave', () => {
+      loginBtn.style.background = 'transparent';
+      loginBtn.style.borderColor = 'rgba(196, 122, 90, 0.4)';
+      loginBtn.style.transform = 'translateY(0)';
+    });
+    loginBtn.onclick = () => navigateTo('/login');
+
+    btnContainer.appendChild(registerBtn);
+    btnContainer.appendChild(loginBtn);
+    card.appendChild(closeBtn);
+    card.appendChild(iconContainer);
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.appendChild(btnContainer);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      card.style.transform = 'scale(1) translateY(0)';
+    });
+
+    function closeModal() {
+      overlay.style.opacity = '0';
+      card.style.transform = 'scale(0.9) translateY(20px)';
+      setTimeout(() => overlay.remove(), 400);
+    }
+
+    function navigateTo(path) {
+      closeModal();
+      setTimeout(() => {
+        window.location.href = path;
+      }, 300);
+    }
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+  }
+
   async function submitOrder(payload) {
+    if (!isLoggedIn()) {
+      showAuthModal("To place your order and secure these handcrafted ceramics, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     return request('/orders/', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  }
+
+  async function syncGuestCartAndWishlist() {
+    try {
+      await syncGuestWishlistToServer();
+    } catch (err) {
+      console.warn('Could not sync guest wishlist:', err);
+    }
+    const sessionId = localStorage.getItem('udaan_guest_session_id');
+    if (sessionId) {
+      try {
+        await mergeGuestCart(sessionId);
+        localStorage.removeItem('udaan_guest_session_id');
+      } catch (err) {
+        console.warn('Could not merge guest cart:', err);
+      }
+    }
   }
 
   async function registerUser({ username, email, password }) {
@@ -122,7 +362,7 @@
       body: JSON.stringify({ username, email, password }),
     });
     setAuth({ token: payload.token, user: payload.user });
-    await syncGuestWishlistToServer();
+    await syncGuestCartAndWishlist();
     return payload;
   }
 
@@ -132,7 +372,7 @@
      body: JSON.stringify({ username, password }),
    });
    setAuth({ token: payload.token, user: payload.user });
-   await syncGuestWishlistToServer();
+   await syncGuestCartAndWishlist();
    return payload;
  }
 
@@ -142,7 +382,7 @@
      body: JSON.stringify({ id_token: idToken }),
    });
    setAuth({ token: payload.token, user: payload.user });
-   await syncGuestWishlistToServer();
+   await syncGuestCartAndWishlist();
    return payload;
  }
 
@@ -260,6 +500,10 @@
   }
 
   async function initiateWorkshopPayment(workshopId, seats = 1) {
+    if (!isLoggedIn()) {
+      showAuthModal("To reserve a seat in our pottery workshops and experience the wheel, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     return request('/workshops/initiate-payment/', {
       method: 'POST',
       body: JSON.stringify({ workshop_id: workshopId, seats }),
@@ -296,6 +540,10 @@
   }
 
   async function addToWishlist(productId) {
+    if (!isLoggedIn()) {
+      showAuthModal("To save these curated clay pieces to your wishlist, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     return request('/users/wishlist/', {
       method: 'POST',
       body: JSON.stringify({ product_id: productId }),
@@ -303,6 +551,10 @@
   }
 
   async function removeFromWishlist(productId) {
+    if (!isLoggedIn()) {
+      showAuthModal("To manage your saved wishlist, please sign in or register.");
+      throw new Error("Authentication required");
+    }
     return request(`/users/wishlist/${productId}/`, { method: 'DELETE' });
   }
 
@@ -369,6 +621,10 @@
   }
 
   async function toggleWishlist(product) {
+    if (!isLoggedIn()) {
+      showAuthModal("To save these curated clay pieces to your wishlist, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     const productId = Number(product.productId || product.id);
     if (!productId) {
       throw new Error('This item is not linked to a live product yet.');
@@ -435,6 +691,10 @@
   }
 
   async function addToCart(productId, quantity = 1, purchaseOption = 'individual') {
+    if (!isLoggedIn()) {
+      showAuthModal("To add beautiful handcrafted pieces to your bag, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     const cart = await request('/cart/add/', {
       method: 'POST',
       body: JSON.stringify({
@@ -448,6 +708,10 @@
   }
 
   async function updateCartItem(itemId, quantity) {
+    if (!isLoggedIn()) {
+      showAuthModal("To manage your bag, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     if (quantity <= 0) {
       return removeCartItem(itemId);
     }
@@ -462,6 +726,10 @@
   }
 
   async function removeCartItem(itemId) {
+    if (!isLoggedIn()) {
+      showAuthModal("To manage your bag, please sign in or create an artisan account.");
+      throw new Error("Authentication required");
+    }
     await request(`/cart/items/${itemId}/delete/`, { method: 'DELETE' });
     const cart = await fetchCart();
     _cachedCartCount = cart.item_count || 0;
@@ -1027,5 +1295,6 @@ window.addEventListener('load', updateNavLinks);
     formatMoney,
     formatOrderStatus,
     formatWorkshopDate,
+    showAuthModal,
   };
 })();

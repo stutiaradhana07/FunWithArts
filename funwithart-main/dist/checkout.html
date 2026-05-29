@@ -409,6 +409,12 @@
 
         document.getElementById('checkout-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            if (!window.UdaanAPI.isLoggedIn()) {
+                window.UdaanAPI.showAuthModal("To complete checkout and purchase these handcrafted ceramics, please sign in or create an artisan account.");
+                return;
+            }
+
             var btn = document.getElementById('place-btn');
             var form = document.getElementById('checkout-form');
 

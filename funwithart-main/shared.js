@@ -69,7 +69,7 @@
     let finalPath = path;
     const finalOptions = { ...options };
 
-    if (!isLoggedIn()) {
+    if (!isLoggedIn() && !finalPath.includes('/auth/')) {
       const sessionId = getOrCreateGuestSessionId();
       const method = (options.method || 'GET').toUpperCase();
 

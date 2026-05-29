@@ -196,25 +196,71 @@
         }
 
         /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
         .empty-state h2 { 
             font-family: var(--header-font); 
             font-style: italic; 
             font-size: clamp(2rem, 5vw, 3.5rem); 
-            margin-bottom: 30px; 
+            margin-bottom: 25px; 
+            color: var(--primary-color);
         }
 
-        /* Toast */
+        .empty-state .btn-bag {
+            display: inline-block;
+            text-decoration: none;
+            padding: 14px 36px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
         .toast {
             background: rgba(17, 17, 17, 0.95);
             backdrop-filter: blur(10px);
+            color: #fff;
             font-family: var(--art-font);
             text-transform: uppercase;
             font-size: 0.7rem;
             letter-spacing: 1px;
-            padding: 18px 40px;
+            padding: 14px 30px;
             border-radius: 50px;
             border: 1px solid rgba(215, 168, 141, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-icon.active { color: var(--accent-color); }
+        .nav-icon.active svg { fill: var(--accent-color); stroke: var(--accent-color); }
 
         @media (max-width: 768px) { .nav-links { display: none; } }
 
@@ -235,7 +281,7 @@
         <div class="nav-actions">
             <a href="javascript:void(0)" class="nav-account-link nav-route" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In" data-account-label-logged-in="Account">Sign In</a>
             <a href="search.html" class="nav-icon" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg></a>
-            <a href="wishlist.html" class="nav-icon nav-route" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
+            <a href="wishlist.html" class="nav-icon nav-route active" data-target="wishlist.html"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="badge-count" id="wishlist-count">0</span></a>
             <a href="cart.html" class="nav-icon nav-route" data-target="cart.html"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="badge-count" id="cart-count">0</span></a>
         </div>
     </nav>
