@@ -391,6 +391,38 @@
             }
         }
 
+        async function loadSelectedCartItems() {
+            try {
+                var allCartItems = await window.UdaanAPI.getCartItemsLegacy();
+                var unselectedIds = JSON.parse(localStorage.getItem('unselectedCartItemIds') || '[]');
+                cartItems = allCartItems.filter(function(item) {
+                    return !unselectedIds.includes(item.cartItemId);
+                });
+            } catch (e) {
+                cartItems = [];
+            }
+        }
+
+        async function cleanupOrderedItems() {
+            var unselectedIds = JSON.parse(localStorage.getItem('unselectedCartItemIds') || '[]');
+            var orderedItemIds = cartItems.map(function(item) { return item.cartItemId; });
+            
+            // Delete from backend cart
+            for (var i = 0; i < cartItems.length; i++) {
+                try {
+                    await window.UdaanAPI.removeCartItem(cartItems[i].cartItemId);
+                } catch (err) {
+                    console.warn("Could not remove ordered item:", cartItems[i].cartItemId, err);
+                }
+            }
+            
+            // Clean up unselected storage
+            var remainingUnselected = unselectedIds.filter(function(id) {
+                return !orderedItemIds.includes(id);
+            });
+            localStorage.setItem('unselectedCartItemIds', JSON.stringify(remainingUnselected));
+        }
+
         window.updateQty = async function (cartItemId, newQty) {
             try {
                 if (newQty <= 0) {
@@ -398,7 +430,7 @@
                 } else {
                     await window.UdaanAPI.updateCartItem(cartItemId, newQty);
                 }
-                cartItems = await window.UdaanAPI.getCartItemsLegacy();
+                await loadSelectedCartItems();
                 renderCheckout();
             } catch (e) {
                 if (typeof window.showToast === 'function') {
@@ -444,7 +476,7 @@
                     var confirmation = buildOrderConfirmationPayload(order, form, cartItems);
                     localStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmation));
                     showToast('Order #' + (confirmation.orderNumber || order.id) + ' confirmed!');
-                    await window.UdaanAPI.clearCart();
+                    await cleanupOrderedItems();
                     cartItems = [];
                     setTimeout(function () {
                         window.location.href = 'success.html';
@@ -475,7 +507,7 @@
                             var confirmation = buildOrderConfirmationPayload(order, form, cartItems);
                             localStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmation));
                             showToast('Order #' + (confirmation.orderNumber || order.id) + ' confirmed!');
-                            await window.UdaanAPI.clearCart();
+                            await cleanupOrderedItems();
                             cartItems = [];
                             setTimeout(function () {
                                 window.location.href = 'success.html';
@@ -519,11 +551,7 @@
 
         (async function init() {
             await buildProductImageMap();
-            try {
-                cartItems = await window.UdaanAPI.getCartItemsLegacy();
-            } catch (e) {
-                cartItems = [];
-            }
+            await loadSelectedCartItems();
             renderCheckout();
             if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
                 window.UdaanAPI.updateBadges();
