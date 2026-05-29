@@ -108,6 +108,70 @@
         .add-to-bag-btn { flex: 1; padding: 20px; background: #111; color: #fff; border: none; border-radius: 50px; font-family: var(--art-font); text-transform: uppercase; letter-spacing: 2px; font-weight: bold; font-size: 1rem; border: 1px solid transparent; }
         .add-to-bag-btn:hover { background: var(--accent-color); border-color: var(--accent-color); }
 
+        /* BUY NOW BUTTON */
+        .buy-now-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-family: var(--art-font);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 1rem;
+            border: 1px solid transparent;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer !important;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(215, 168, 141, 0.2);
+        }
+        .buy-now-btn:hover {
+            background: #111;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        /* PDP WISHLIST BUTTON */
+        .pdp-wishlist-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            width: 46px;
+            height: 46px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
+        }
+        .pdp-wishlist-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(215, 168, 141, 0.2);
+            border-color: var(--accent-color);
+        }
+        .pdp-wishlist-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: var(--primary-color);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+        .pdp-wishlist-btn.in-wishlist svg {
+            fill: #e63946;
+            stroke: #e63946;
+        }
+
         /* ACCORDIONS */
         .accordion { border-top: 1px solid rgba(0,0,0,0.1); }
         .accordion-item { border-bottom: 1px solid rgba(0,0,0,0.1); }
@@ -603,6 +667,11 @@
             const pdpHTML = `
                 <div class="pdp-gallery">
                     <div class="pdp-main-image-wrapper" id="img-trigger">
+                        <button class="pdp-wishlist-btn" id="pdp-wishlist-btn" aria-label="Add to Wishlist" onclick="togglePDPWishlist(event)">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
                         <button class="nav-arrow arrow-left" id="main-arrow-left" aria-label="Previous Image" style="${activeMedia.length <= 1 ? 'display: none !important;' : ''}">&larr;</button>
                         <div id="main-media-container" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
                             <img src="${productData.img}" onerror="this.onerror=null; this.src=this.src.replace('.png', '.jpg');" class="pdp-main-image" id="main-image" style="object-position: ${productData.image_position || '50% 50%'};" alt="${productData.title}">
@@ -631,6 +700,7 @@
                             </div>
                             <button class="add-to-bag-btn" id="add-to-bag-btn">Add to Bag</button>
                         </div>
+                        <button class="buy-now-btn" id="buy-now-btn">Buy Now</button>
                         <p style="font-family: var(--body-font); font-size: 0.85rem; color: #888; text-align: center; margin:0;">Secure checkout. Built in Delhi, India.</p>
                     </div>
 
@@ -762,6 +832,107 @@
                 }
                 setTimeout(() => { this.innerText = 'Add to Bag'; }, 2000);
             });
+
+            // BUY NOW DIRECT ORDER FLOW
+            const buyNowBtn = document.getElementById('buy-now-btn');
+            if (buyNowBtn) {
+                buyNowBtn.addEventListener('click', async function() {
+                    this.classList.add('btn-pop');
+                    setTimeout(() => this.classList.remove('btn-pop'), 300);
+
+                    try {
+                        // 1. Add item to cart
+                        await window.UdaanAPI.addToCart(productData.id, currentQty, activeOption);
+                        
+                        // 2. Fetch cart to find its cartItemId
+                        const cartItems = await window.UdaanAPI.getCartItemsLegacy();
+                        const matchedItem = cartItems.find(function(item) {
+                            return String(item.productId) === String(productData.id);
+                        });
+                        
+                        if (matchedItem) {
+                            var unselectedIds = JSON.parse(localStorage.getItem('unselectedCartItemIds') || '[]');
+                            var idx = unselectedIds.indexOf(matchedItem.cartItemId);
+                            if (idx !== -1) {
+                                unselectedIds.splice(idx, 1);
+                                localStorage.setItem('unselectedCartItemIds', JSON.stringify(unselectedIds));
+                            }
+                        }
+                        
+                        // 3. Immediately go to checkout
+                        window.location.href = 'checkout.html';
+                    } catch (e) {
+                        showToast(e.message || 'Could not initiate Direct Order.');
+                    }
+                });
+            }
+
+            // Sync PDP Wishlist heart button status on load/render
+            const pdpWishlistBtn = document.getElementById('pdp-wishlist-btn');
+            if (pdpWishlistBtn) {
+                try {
+                    let wishlistItems = [];
+                    if (window.UdaanAPI.isLoggedIn()) {
+                        wishlistItems = await window.UdaanAPI.loadWishlistCache();
+                    } else {
+                        wishlistItems = window.UdaanAPI.getLocalWishlist();
+                    }
+                    const isWish = window.UdaanAPI.isProductWishlisted(productData.id, wishlistItems);
+                    if (isWish) {
+                        pdpWishlistBtn.classList.add('in-wishlist');
+                    } else {
+                        pdpWishlistBtn.classList.remove('in-wishlist');
+                    }
+                } catch (e) {
+                    console.warn("Could not sync wishlist heart button state on load:", e);
+                }
+            }
+
+            // Global togglePDPWishlist handler
+            window.togglePDPWishlist = async function(event) {
+                if (event) event.stopPropagation();
+                
+                if (!window.UdaanAPI.isLoggedIn()) {
+                    window.UdaanAPI.showAuthModal("To save these curated clay pieces to your wishlist, please sign in or create an artisan account.");
+                    return;
+                }
+
+                const wishlistBtn = document.getElementById('pdp-wishlist-btn');
+                if (!wishlistBtn) return;
+
+                const activeProduct = catalogDB[currentIndex];
+                if (!activeProduct) return;
+
+                // Simple heart bump animation
+                wishlistBtn.style.transform = 'scale(0.8)';
+                setTimeout(() => wishlistBtn.style.transform = 'scale(1.1)', 150);
+                setTimeout(() => wishlistBtn.style.transform = 'scale(1)', 300);
+
+                try {
+                    const isAdded = await window.UdaanAPI.toggleWishlist({
+                        id: activeProduct.id,
+                        productId: activeProduct.id,
+                        title: activeProduct.title,
+                        price: activeProduct.price,
+                        img: activeProduct.img
+                    });
+
+                    if (isAdded) {
+                        wishlistBtn.classList.add('in-wishlist');
+                        showToast("Saved to your wishlist!");
+                    } else {
+                        wishlistBtn.classList.remove('in-wishlist');
+                        showToast("Removed from your wishlist.");
+                    }
+                    
+                    // Update badges
+                    if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
+                        window.UdaanAPI.updateBadges();
+                    }
+                } catch (err) {
+                    showToast(err.message || "Could not update wishlist.");
+                }
+            };
 
             // Thumbnail Click Handler
             let activeMediaSrc = productData.img;
