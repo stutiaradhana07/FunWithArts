@@ -35,12 +35,14 @@ if _railway_domain:
 
 # --- APPS ---
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -235,39 +237,40 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 
 # --- CLOUDINARY ---
 CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', 'cloudinary://116638983442739:e8-k5e_wBQbFZulkSnBsbcSrKgc@drclxydp1')
-if CLOUDINARY_URL:
-    if 'cloudinary' not in INSTALLED_APPS:
-        INSTALLED_APPS.append('cloudinary')
-    if 'cloudinary_storage' not in INSTALLED_APPS:
-        INSTALLED_APPS.append('cloudinary_storage')
-    # Django 4.2+ replaced DEFAULT_FILE_STORAGE with the STORAGES dict.
-    # Set both for maximum compatibility.
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    STORAGES = {
-        'default': {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'},
-        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+
+# Parse CLOUDINARY_URL into the CLOUDINARY_STORAGE dict that
+# django-cloudinary-storage expects, and also initialize the cloudinary SDK.
+import urllib.parse as _urlparse
+try:
+    _cld = _urlparse.urlparse(CLOUDINARY_URL)
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': _cld.hostname,
+        'API_KEY': _cld.username,
+        'API_SECRET': _cld.password,
     }
-    # Parse CLOUDINARY_URL into the CLOUDINARY_STORAGE dict that
-    # django-cloudinary-storage expects, and also initialize the cloudinary SDK.
-    try:
-        import urllib.parse as _urlparse
-        _cld = _urlparse.urlparse(CLOUDINARY_URL)
-        CLOUDINARY_STORAGE = {
-            'CLOUD_NAME': _cld.hostname,
-            'API_KEY': _cld.username,
-            'API_SECRET': _cld.password,
-        }
-        # Set the env var so the cloudinary SDK picks up credentials.
-        os.environ.setdefault('CLOUDINARY_URL', CLOUDINARY_URL)
-        import cloudinary
-        cloudinary.config(
-            cloud_name=_cld.hostname,
-            api_key=_cld.username,
-            api_secret=_cld.password,
-            secure=True,
-        )
-    except Exception:
-        pass
+except Exception:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': 'drclxydp1',
+        'API_KEY': '116638983442739',
+        'API_SECRET': 'e8-k5e_wBQbFZulkSnBsbcSrKgc',
+    }
+
+# Set the env var so the cloudinary SDK picks up credentials.
+os.environ.setdefault('CLOUDINARY_URL', CLOUDINARY_URL)
+
+import cloudinary
+cloudinary.config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+    secure=True,
+)
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STORAGES = {
+    'default': {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
 # --- PRODUCTION SECURITY ---
 if not DEBUG:
