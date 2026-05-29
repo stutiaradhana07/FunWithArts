@@ -1,0 +1,110 @@
+.focal-point-picker-wrapper {
+    margin-top: 15px;
+    padding: 20px;
+    background: #fdfbf9;
+    border: 1px solid #e8e2db;
+    border-radius: 12px;
+    max-width: 450px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.focal-point-picker-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.focal-point-picker-subtitle {
+    font-size: 11px;
+    color: #777;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.focal-point-container {
+    position: relative;
+    display: inline-block;
+    cursor: crosshair;
+    user-select: none;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid #ddd;
+    background: #eae6db;
+}
+
+.focal-point-preview {
+    max-width: 100%;
+    max-height: 300px;
+    display: block;
+}
+
+.focal-point-grid-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.grid-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.grid-line.vertical {
+    width: 1px;
+    top: 0;
+    bottom: 0;
+}
+
+.grid-line.vertical.line-1 {
+    left: 33.33%;
+}
+
+.grid-line.vertical.line-2 {
+    left: 66.66%;
+}
+
+.grid-line.horizontal {
+    height: 1px;
+    left: 0;
+    right: 0;
+}
+
+.grid-line.horizontal.line-1 {
+    top: 33.33%;
+}
+
+.grid-line.horizontal.line-2 {
+    top: 66.66%;
+}
+
+.focal-point-reticle {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #D7A88D;
+    background: rgba(215, 168, 141, 0.35);
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.7);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    will-change: left, top;
+}
+
+.focal-point-value-display {
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #111;
+}
+
+.focal-point-value-display .coordinate-val {
+    color: #D7A88D;
+    padding: 2px 8px;
+    background: rgba(215, 168, 141, 0.12);
+    border-radius: 4px;
+    margin-left: 5px;
+}

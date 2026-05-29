@@ -307,7 +307,7 @@
                 title: item.title || item.name || '',
                 price: Number(item.price || 0),
                 img: item.img || item.image_url || item.image || '',
-                image_position: item.image_position || 'center center',
+                image_position: item.image_position || '50% 50%',
                 category: normalizeCategory(item.category),
                 desc: item.desc || item.description || '',
                 isLatest: Boolean(item.isLatest || item.is_new || item.isNew),
@@ -352,12 +352,11 @@
                 const delay = index * 0.05; 
                 const badgeHTML = item.badge ? `<div class="product-badge badge-new">${item.badge}</div>` : '';
                 
-                // NEW: Action Layer with BOTH Add button and Qty Controls
                 const card = `
                     <div class="product-card" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
                         ${badgeHTML}
                         <div class="image-wrapper view-link">
-                            <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" style="object-position: ${item.image_position || 'center center'}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
+                            <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" style="object-position: ${item.image_position || '50% 50%'}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
                             <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
                             
                             <div class="action-layer">

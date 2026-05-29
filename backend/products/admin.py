@@ -9,6 +9,12 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category', 'is_available', 'is_new', 'created_at')
     search_fields = ('name', 'category__name', 'description')
 
+    class Media:
+        js = ('admin/js/focal_point_picker.js',)
+        css = {
+            'all': ('admin/css/focal_point_picker.css',)
+        }
+
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):

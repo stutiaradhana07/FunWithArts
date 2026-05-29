@@ -11,15 +11,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         products = [
-            ('The Guardians',    'Decor',     Decimal('7800.00'),  12, True,  'Handmade wall decor inspired by studio expressions.'),
-            ('Emerald Duo',      'Pots',      Decimal('4500.00'),  15, False, 'A clean two-piece pot pairing in rich green glaze.'),
-            ('Artisan Bowl',     'Tableware', Decimal('3200.00'),  20, True,  'Textured serving bowl crafted in natural clay tones.'),
-            ('Terracotta Holder','Office',    Decimal('2800.00'),  25, False, 'Desk accessory holder for everyday studio utility.'),
-            ('Earth Vessel',     'Vase',      Decimal('8900.00'),   8, False, 'Statement vase with earthy glaze and organic silhouette.'),
-            ('Geometric Trio',   'Sets',      Decimal('12500.00'),  6, True,  'Three-piece geometric decor set for premium interiors.'),
+            ('The Guardians',    'Decor',     Decimal('7800.00'),  12, True,  'Handmade wall decor inspired by studio expressions.', 'products/wall-faces.jpg'),
+            ('Emerald Duo',      'Pots',      Decimal('4500.00'),  15, False, 'A clean two-piece pot pairing in rich green glaze.', 'products/wall-green-pots.jpg'),
+            ('Artisan Bowl',     'Tableware', Decimal('3200.00'),  20, True,  'Textured serving bowl crafted in natural clay tones.', 'products/rosee.jpg'),
+            ('Terracotta Holder','Office',    Decimal('2800.00'),  25, False, 'Desk accessory holder for everyday studio utility.', 'products/wall-pen-holder.png'),
+            ('Earth Vessel',     'Vase',      Decimal('8900.00'),   8, False, 'Statement vase with earthy glaze and organic silhouette.', 'products/tall-vases.jpg'),
+            ('Geometric Trio',   'Sets',      Decimal('12500.00'),  6, True,  'Three-piece geometric decor set for premium interiors.', 'products/geometric-trio.jpg'),
         ]
 
-        for name, category_name, price, stock, is_new, description in products:
+        for name, category_name, price, stock, is_new, description, image_path in products:
             category, _ = Category.objects.get_or_create(
                 name=category_name,
                 defaults={'slug': slugify(category_name)}
@@ -32,6 +32,7 @@ class Command(BaseCommand):
                     'stock': stock,
                     'is_new': is_new,
                     'description': description,
+                    'image': image_path,
                     'is_available': True,
                 },
             )

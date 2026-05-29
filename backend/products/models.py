@@ -23,27 +23,17 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/', null=True, blank=True)
+    image2 = models.ImageField(upload_to='products/', null=True, blank=True)
+    image3 = models.ImageField(upload_to='products/', null=True, blank=True)
+    video = models.FileField(upload_to='products/videos/', null=True, blank=True)
+    
+    # Custom main image focal positioning
     image_position = models.CharField(
         max_length=30,
         blank=True,
-        default='center center',
-        help_text='CSS object-position for the main image, e.g. "top center" or "50% 25%".'
+        default='50% 50%',
+        help_text='CSS object-position for the main image, e.g. "50% 50%". Use the visual picker grid above.'
     )
-    image2 = models.ImageField(upload_to='products/', null=True, blank=True)
-    image2_position = models.CharField(
-        max_length=30,
-        blank=True,
-        default='center center',
-        help_text='CSS object-position for the second image, e.g. "top center" or "50% 25%".'
-    )
-    image3 = models.ImageField(upload_to='products/', null=True, blank=True)
-    image3_position = models.CharField(
-        max_length=30,
-        blank=True,
-        default='center center',
-        help_text='CSS object-position for the third image, e.g. "top center" or "50% 25%".'
-    )
-    video = models.FileField(upload_to='products/videos/', null=True, blank=True)
     
     # Set vs. Individual options
     has_set_option = models.BooleanField(default=False, help_text="Allow buying as a set")
