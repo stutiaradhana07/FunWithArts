@@ -196,7 +196,7 @@ export default function BlogIndex() {
   const [featured, ...grid] = posts;
 
   return (
-    <div className="blog-index" style={{ position: 'relative', overflow: 'hidden' }}>
+    <div className="blog-index">
       <div className="blog-bg-shape blog-bg-shape--1" />
       <div className="blog-bg-shape blog-bg-shape--2" />
       <div className="blog-bg-shape blog-bg-shape--3" />
