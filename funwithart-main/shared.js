@@ -177,6 +177,7 @@
       text-align: center;
       box-shadow: 0 24px 64px rgba(42, 31, 26, 0.15);
       transform: scale(0.9) translateY(20px);
+      opacity: 0;
       transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
       position: relative;
     `;
@@ -309,10 +310,12 @@
     overlay.offsetHeight;
 
     overlay.style.opacity = '1';
+    card.style.opacity = '1';
     card.style.transform = 'scale(1) translateY(0)';
 
     function closeModal() {
       overlay.style.opacity = '0';
+      card.style.opacity = '0';
       card.style.transform = 'scale(0.9) translateY(20px)';
       setTimeout(() => overlay.remove(), 400);
     }
