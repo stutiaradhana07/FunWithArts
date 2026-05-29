@@ -41,9 +41,71 @@
         .desktop-links a:hover { color: var(--accent-color); }
         .nav-actions { display: flex; gap: 15px; align-items: center; margin-left: 30px;}
 
-        /* PAGE HEADER */
-        .page-header { padding: 150px 5% 40px; text-align: center; position: relative; z-index: 5; }
-        .page-header h1 { font-family: var(--header-font); font-size: clamp(3rem, 5vw, 4rem); font-style: italic; margin-bottom: 10px; color: #111; }
+        /* PAGE HEADER with responsive back button */
+        .page-header { 
+            padding: 130px 5% 30px; 
+            text-align: center; 
+            position: relative; 
+            z-index: 5; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .page-header h1 { 
+            font-family: var(--header-font); 
+            font-size: clamp(3rem, 5vw, 4rem); 
+            font-style: italic; 
+            margin: 0; 
+            color: #111; 
+        }
+        
+        .back-to-cart-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #111;
+            font-family: var(--art-font);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .back-to-cart-btn:hover {
+            border-color: var(--accent-color);
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(215, 168, 141, 0.15);
+        }
+        .back-to-cart-btn svg {
+            transition: transform 0.3s ease;
+        }
+        .back-to-cart-btn:hover svg {
+            transform: translateX(-4px);
+            color: var(--accent-color);
+        }
+
+        @media (min-width: 768px) {
+            .page-header {
+                flex-direction: row;
+                padding: 140px 3% 40px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .back-to-cart-btn {
+                position: absolute;
+                left: 3%;
+                margin-bottom: 0;
+            }
+        }
 
         /* =========================================
            THE ULTIMATE 50/50 FULL SCREEN LAYOUT
@@ -147,6 +209,10 @@
     </nav>
 
     <header class="page-header">
+        <a href="cart.html" class="back-to-cart-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Cart
+        </a>
         <h1>Secure Checkout</h1>
     </header>
 
