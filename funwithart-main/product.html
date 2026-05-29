@@ -868,25 +868,27 @@
             }
 
             // Sync PDP Wishlist heart button status on load/render
-            const pdpWishlistBtn = document.getElementById('pdp-wishlist-btn');
-            if (pdpWishlistBtn) {
-                try {
-                    let wishlistItems = [];
-                    if (window.UdaanAPI.isLoggedIn()) {
-                        wishlistItems = await window.UdaanAPI.loadWishlistCache();
-                    } else {
-                        wishlistItems = window.UdaanAPI.getLocalWishlist();
+            (async function syncWishlist() {
+                const pdpWishlistBtn = document.getElementById('pdp-wishlist-btn');
+                if (pdpWishlistBtn) {
+                    try {
+                        let wishlistItems = [];
+                        if (window.UdaanAPI.isLoggedIn()) {
+                            wishlistItems = await window.UdaanAPI.loadWishlistCache();
+                        } else {
+                            wishlistItems = window.UdaanAPI.getLocalWishlist();
+                        }
+                        const isWish = window.UdaanAPI.isProductWishlisted(productData.id, wishlistItems);
+                        if (isWish) {
+                            pdpWishlistBtn.classList.add('in-wishlist');
+                        } else {
+                            pdpWishlistBtn.classList.remove('in-wishlist');
+                        }
+                    } catch (e) {
+                        console.warn("Could not sync wishlist heart button state on load:", e);
                     }
-                    const isWish = window.UdaanAPI.isProductWishlisted(productData.id, wishlistItems);
-                    if (isWish) {
-                        pdpWishlistBtn.classList.add('in-wishlist');
-                    } else {
-                        pdpWishlistBtn.classList.remove('in-wishlist');
-                    }
-                } catch (e) {
-                    console.warn("Could not sync wishlist heart button state on load:", e);
                 }
-            }
+            })();
 
             // Global togglePDPWishlist handler
             window.togglePDPWishlist = async function(event) {
