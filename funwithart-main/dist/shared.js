@@ -313,6 +313,8 @@
       title: product.name,
       price: Number(product.price),
       img: product.image_url || product.image || '',
+      image_position: product.image_position || '50% 50%',
+      image_zoom: product.image_zoom != null ? Number(product.image_zoom) : 1.0,
       category: (product.category || 'decor').toLowerCase(),
       desc: product.description || '',
       badge: product.is_new || product.isNew ? 'New' : '',

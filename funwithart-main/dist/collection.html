@@ -94,8 +94,8 @@
         .image-wrapper { overflow: hidden; margin-bottom: 15px; width: 100%; aspect-ratio: 4 / 3; position: relative; border-radius: 20px; transition: border-radius 0.8s cubic-bezier(0.19, 1, 0.22, 1), background 1.5s ease, box-shadow 0.4s; background: var(--card-bg); will-change: transform, border-radius; display: block; border: 1px solid rgba(0,0,0,0.03); }
         .product-card:hover .image-wrapper { box-shadow: 0 20px 50px rgba(0,0,0,0.08); transform: translateY(-5px); }
 
-        .product-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s ease; will-change: transform, object-position; }
-        .product-card:hover .product-image { transform: scale(1.05); }
+        .product-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s ease; will-change: transform, object-position; transform: scale(var(--image-zoom, 1.0)); transform-origin: center center; }
+        .product-card:hover .product-image { transform: scale(calc(var(--image-zoom, 1.0) * 1.05)); }
 
         /* QUICK SAVE HEART */
         .quick-save-btn { position: absolute; top: 15px; right: 15px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 10; opacity: 0; transform: translateY(-10px); transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1); border: none; color: #111;}
@@ -307,7 +307,8 @@
                 title: item.title || item.name || '',
                 price: Number(item.price || 0),
                 img: item.img || item.image_url || item.image || '',
-                image_position: item.image_position || 'center center',
+                image_position: item.image_position || '50% 50%',
+                image_zoom: Number(item.image_zoom || 1.0),
                 category: normalizeCategory(item.category),
                 desc: item.desc || item.description || '',
                 isLatest: Boolean(item.isLatest || item.is_new || item.isNew),
@@ -352,12 +353,11 @@
                 const delay = index * 0.05; 
                 const badgeHTML = item.badge ? `<div class="product-badge badge-new">${item.badge}</div>` : '';
                 
-                // NEW: Action Layer with BOTH Add button and Qty Controls
                 const card = `
                     <div class="product-card" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
                         ${badgeHTML}
                         <div class="image-wrapper view-link">
-                            <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" style="object-position: ${item.image_position || 'center center'}" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
+                            <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" style="object-position: ${item.image_position || '50% 50%'}; --image-zoom: ${item.image_zoom || 1.0};" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
                             <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
                             
                             <div class="action-layer">
@@ -617,7 +617,10 @@
                 if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
                 const skew = Math.max(-15, Math.min(15, speed * 0.6));
                 const scale = 1 - Math.min(0.1, Math.abs(speed * 0.01));
-                document.querySelectorAll('.liquid-img').forEach(img => { img.style.transform = `skewY(${skew}deg) scale(${scale})`; });
+                document.querySelectorAll('.liquid-img').forEach(img => { 
+                    const customZoom = parseFloat(img.style.getPropertyValue('--image-zoom') || 1.0);
+                    img.style.transform = `skewY(${skew}deg) scale(${scale * customZoom})`; 
+                });
             });
             function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
         } catch(e) { console.log("Smooth scroll disabled for safety."); }

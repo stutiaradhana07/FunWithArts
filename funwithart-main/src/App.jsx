@@ -45,9 +45,11 @@ export default function App() {
   }, [location.pathname]);
 
   // ── Shell class composition ──
+  const isBlogRoute = location.pathname.startsWith('/blogs');
   const shellClass = [
     'legacy-page-shell',
     showIntro && !homeRevealed ? 'legacy-page-shell--intro-pending' : '',
+    isBlogRoute ? 'legacy-page-shell--blog' : '',
   ]
     .filter(Boolean)
     .join(' ');
