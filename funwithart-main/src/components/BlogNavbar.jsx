@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function BlogNavbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     const syncAuth = () => {
@@ -15,12 +16,19 @@ export default function BlogNavbar() {
 
     return () => {
       document.removeEventListener('udaan:auth-change', syncAuth);
+      document.body.classList.remove('drawer-open');
     };
   }, []);
 
   useEffect(() => {
     window.UdaanAPI?.updateBadges?.();
-  }, []);
+  }, [isDrawerOpen]); // Re-sync badges on drawer opening
+
+  const toggleDrawer = () => {
+    const nextState = !isDrawerOpen;
+    setIsDrawerOpen(nextState);
+    document.body.classList.toggle('drawer-open', nextState);
+  };
 
   const desktopAccountClass = isLoggedIn ? 'is-logged-in' : '';
   const primaryAccountClass = isLoggedIn ? 'nav-account-link is-logged-in' : 'nav-account-link';
@@ -66,6 +74,64 @@ export default function BlogNavbar() {
           </svg>
           <span className="badge-count" id="cart-count">0</span>
         </Link>
+        
+        {/* Responsive Mobile Hamburger Button */}
+        <button
+          className={`mobile-hamburger-btn ${isDrawerOpen ? 'active' : ''}`}
+          onClick={toggleDrawer}
+          aria-label="Toggle Navigation"
+        >
+          <span className="hamburger-line line-1"></span>
+          <span className="hamburger-line line-2"></span>
+          <span className="hamburger-line line-3"></span>
+        </button>
+      </div>
+
+      {/* Responsive Mobile Menu Drawer */}
+      <div
+        className={`mobile-drawer-overlay ${isDrawerOpen ? 'active' : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) toggleDrawer();
+        }}
+      >
+        <div className="mobile-drawer">
+          <div className="mobile-drawer-header">
+            <Link to="/" className="logo-fusion mobile-logo" onClick={toggleDrawer}>
+              <span className="english-part">FUN WITH </span>
+              <span className="hindi-char">Art</span>
+            </Link>
+            <button className="mobile-drawer-close" onClick={toggleDrawer} aria-label="Close menu">
+              ✕
+            </button>
+          </div>
+          <div className="mobile-drawer-links">
+            <Link to="/" className="mobile-nav-link" onClick={toggleDrawer}>
+              Home
+            </Link>
+            <Link to="/collection" className="mobile-nav-link" onClick={toggleDrawer}>
+              Collection
+            </Link>
+            <Link to="/studio" className="mobile-nav-link" onClick={toggleDrawer}>
+              Studio
+            </Link>
+            <Link to="/blogs" className="mobile-nav-link active" onClick={toggleDrawer}>
+              Blogs
+            </Link>
+            <hr className="mobile-drawer-divider" />
+            <Link to="/wishlist" className="mobile-nav-link mobile-wishlist-link" onClick={toggleDrawer}>
+              <span>Saved Items</span>
+              <span className="mobile-badge-count wishlist-count-badge">0</span>
+            </Link>
+            <Link to="/cart" className="mobile-nav-link mobile-cart-link" onClick={toggleDrawer}>
+              <span>Your Bag</span>
+              <span className="mobile-badge-count cart-count-badge">0</span>
+            </Link>
+            <hr className="mobile-drawer-divider" />
+            <Link to={isLoggedIn ? '/account' : '/login'} className="mobile-nav-link mobile-auth-link" onClick={toggleDrawer}>
+              {isLoggedIn ? 'My Account' : 'Sign In'}
+            </Link>
+          </div>
+        </div>
       </div>
     </nav>
   );

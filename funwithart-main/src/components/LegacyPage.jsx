@@ -320,6 +320,7 @@ export default function LegacyPage({ source, title }) {
         window.UdaanAPI.wireNewsletterForms(ref.current);
         window.UdaanAPI.wireAccountNav(ref.current);
         window.UdaanAPI.wireSiteSearchForms(ref.current);
+        window.UdaanAPI.wireMobileNavigation?.(ref.current);
         window.UdaanAPI.updateBadges();
       }
 

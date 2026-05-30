@@ -1617,3 +1617,294 @@ nav#main-nav.hide { transform: translateY(-100%); }
   text-decoration: none;
   font-weight: 600;
 }
+
+/* ──────────────── Mobile Navigation Menu and Drawer ──────────────── */
+
+/* Hamburger Button */
+.mobile-hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 100001;
+  position: relative;
+  outline: none;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 2px;
+  background-color: #111;
+  border-radius: 2px;
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease;
+}
+
+.mobile-hamburger-btn.active .line-1 {
+  transform: translateY(7px) rotate(45deg);
+  background-color: #111;
+}
+
+.mobile-hamburger-btn.active .line-2 {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mobile-hamburger-btn.active .line-3 {
+  transform: translateY(-7px) rotate(-45deg);
+  background-color: #111;
+}
+
+/* Drawer Overlay Styles */
+.mobile-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(42, 31, 26, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.mobile-drawer-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Drawer Panel */
+.mobile-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80%;
+  max-width: 360px;
+  height: 100vh;
+  background: #FAF6F0;
+  box-shadow: -10px 0 40px rgba(42, 31, 26, 0.15);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.mobile-drawer-overlay.active .mobile-drawer {
+  transform: translateX(0);
+}
+
+/* Close & Header */
+.mobile-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3.5rem;
+}
+
+.mobile-drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #1f1410;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.mobile-drawer-close:hover {
+  color: #c47a5a;
+  transform: rotate(90deg);
+}
+
+/* Links inside mobile menu */
+.mobile-drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mobile-nav-link {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  color: #1f1410;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.mobile-nav-link:hover, .mobile-nav-link.active {
+  color: #c47a5a;
+  padding-left: 8px;
+}
+
+.mobile-drawer-divider {
+  border: none;
+  border-top: 1px solid rgba(215, 168, 141, 0.25);
+  margin: 1rem 0;
+}
+
+.mobile-badge-count {
+  background: #c47a5a;
+  color: #fff;
+  font-size: 0.65rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.3s ease;
+  line-height: 1;
+}
+
+/* Scroll Lock */
+body.drawer-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Responsive Overrides (max-width: 768px) */
+@media (max-width: 768px) {
+  /* Show hamburger */
+  .mobile-hamburger-btn {
+    display: flex;
+    margin-left: 15px;
+  }
+
+  /* Make sure header doesn't overflow */
+  nav#main-nav {
+    padding: 1rem 5% !important;
+  }
+
+  /* Hide wide pill button and Wishlist in nav on mobile */
+  .nav-account-link,
+  nav#main-nav .nav-icon[href="wishlist.html"],
+  nav#main-nav .nav-icon[href="/wishlist"] {
+    display: none !important;
+  }
+
+  .nav-actions {
+    margin-left: auto !important;
+    gap: 12px !important;
+  }
+
+  /* Flipkart & Amazon 2x2 Grid Display */
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px 12px !important;
+  }
+
+  /* Compact Product Details for Grid */
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .product-card h3 {
+    font-size: 1rem !important;
+    line-height: 1.2;
+    margin-top: 5px;
+  }
+
+  .product-card .price {
+    font-size: 0.9rem !important;
+  }
+
+  .product-card .stars-row {
+    font-size: 0.75rem !important;
+  }
+
+  .product-card .image-wrapper {
+    aspect-ratio: 1 / 1 !important; /* Premium square format on mobile */
+    border-radius: 12px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Mobile Touch-Friendly Add-to-Bag Actions */
+  .product-card .action-layer {
+    position: relative !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    margin-top: auto !important;
+    padding-top: 10px;
+    opacity: 1 !important;
+    display: block !important;
+  }
+
+  .quick-add-btn {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    font-size: 0.7rem !important;
+    text-align: center !important;
+    border-radius: 30px !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(215, 168, 141, 0.3) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .grid-qty-controls {
+    width: 100% !important;
+    padding: 6px 12px !important;
+    border-radius: 30px !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(215, 168, 141, 0.3) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .product-card.in-cart .grid-qty-controls {
+    display: flex !important;
+  }
+
+  /* Wishlist Heart Always Visible on Mobile */
+  .quick-save-btn {
+    opacity: 1 !important;
+    transform: none !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+  }
+
+  /* Force Floating Dreamscape background elements to remain visible on mobile */
+  .floating-dreamscape,
+  #dreamscape {
+    display: block !important;
+    opacity: 0.5 !important;
+  }
+
+  .bg-text {
+    display: block !important;
+    font-size: 6rem !important;
+  }
+
+  .cutu-shape {
+    transform: scale(0.65) !important;
+  }
+}
+

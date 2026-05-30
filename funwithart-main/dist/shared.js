@@ -803,6 +803,8 @@
   async function updateBadges() {
     const cartCountEl = document.getElementById('cart-count');
     const wishCountEl = document.getElementById('wishlist-count');
+    const mobileCartBadge = document.querySelector('.cart-count-badge');
+    const mobileWishBadge = document.querySelector('.wishlist-count-badge');
 
     // Fire-and-forget cart count refresh (don't block rendering)
     _cartRefreshPromise = getCartCount();
@@ -811,6 +813,10 @@
     if (cartCountEl) {
       cartCountEl.innerText = cartTotal;
       cartCountEl.style.opacity = cartTotal > 0 ? '1' : '0';
+    }
+    if (mobileCartBadge) {
+      mobileCartBadge.innerText = cartTotal;
+      mobileCartBadge.style.opacity = cartTotal > 0 ? '1' : '0';
     }
 
     let wishlistItems = [];
@@ -823,6 +829,10 @@
     if (wishCountEl) {
       wishCountEl.innerText = wishlistItems.length;
       wishCountEl.style.opacity = wishlistItems.length > 0 ? '1' : '0';
+    }
+    if (mobileWishBadge) {
+      mobileWishBadge.innerText = wishlistItems.length;
+      mobileWishBadge.style.opacity = wishlistItems.length > 0 ? '1' : '0';
     }
 
     document.querySelectorAll('.product-card').forEach((card) => {
@@ -844,6 +854,10 @@
       if (cartCountEl) {
         cartCountEl.innerText = _cachedCartCount;
         cartCountEl.style.opacity = _cachedCartCount > 0 ? '1' : '0';
+      }
+      if (mobileCartBadge) {
+        mobileCartBadge.innerText = _cachedCartCount;
+        mobileCartBadge.style.opacity = _cachedCartCount > 0 ? '1' : '0';
       }
     }
 
@@ -1214,14 +1228,117 @@ window.addEventListener('load', updateNavLinks);
 
   // ── End Google Sign-In ──────────────────────────────────────────────────
 
+  // ── Mobile Navigation Drawer Implementation ─────────────────────────────────
+  function wireMobileNavigation(root = document) {
+    const nav = root.querySelector('nav#main-nav') || root.querySelector('nav');
+    if (!nav) return;
+
+    // Check if hamburger button is already there to prevent duplicate icons
+    if (nav.querySelector('.mobile-hamburger-btn')) return;
+
+    // 1. Create mobile hamburger button
+    const hamburger = document.createElement('button');
+    hamburger.className = 'mobile-hamburger-btn';
+    hamburger.setAttribute('aria-label', 'Toggle Navigation');
+    hamburger.innerHTML = `
+      <span class="hamburger-line line-1"></span>
+      <span class="hamburger-line line-2"></span>
+      <span class="hamburger-line line-3"></span>
+    `;
+
+    // Insert hamburger into .nav-actions
+    const navActions = nav.querySelector('.nav-actions');
+    if (navActions) {
+      navActions.appendChild(hamburger);
+    } else {
+      nav.appendChild(hamburger);
+    }
+
+    // 2. Create mobile drawer overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-drawer-overlay';
+    overlay.innerHTML = `
+      <div class="mobile-drawer">
+        <div class="mobile-drawer-header">
+          <a href="/" class="logo-fusion mobile-logo nav-route" data-target="/"><span class="english-part">FUN WITH </span><span class="hindi-char">Art</span></a>
+          <button class="mobile-drawer-close" aria-label="Close menu">✕</button>
+        </div>
+        <div class="mobile-drawer-links">
+          <a href="/" class="mobile-nav-link nav-route" data-target="/">Home</a>
+          <a href="/collection" class="mobile-nav-link nav-route" data-target="/collection">Collection</a>
+          <a href="/studio" class="mobile-nav-link nav-route" data-target="/studio">Studio</a>
+          <a href="/blogs" class="mobile-nav-link nav-route" data-target="/blogs">Blogs</a>
+          <hr class="mobile-drawer-divider" />
+          <a href="/wishlist" class="mobile-nav-link nav-route mobile-wishlist-link" data-target="/wishlist">
+            <span>Saved Items</span>
+            <span class="mobile-badge-count wishlist-count-badge">0</span>
+          </a>
+          <a href="/cart" class="mobile-nav-link nav-route mobile-cart-link" data-target="/cart">
+            <span>Your Bag</span>
+            <span class="mobile-badge-count cart-count-badge">0</span>
+          </a>
+          <hr class="mobile-drawer-divider" />
+          <a href="/login" class="mobile-nav-link nav-route mobile-auth-link" data-account-link data-target="/login" data-account-href-logged-out="/login" data-account-href-logged-in="/account" data-account-label-logged-out="Sign In / Register" data-account-label-logged-in="My Account">Sign In</a>
+        </div>
+      </div>
+    `;
+
+    // Append overlay to nav (keeps it inside .legacy-page-content for dynamic link intercept)
+    nav.appendChild(overlay);
+
+    const closeBtn = overlay.querySelector('.mobile-drawer-close');
+    const drawerLinks = overlay.querySelectorAll('.mobile-nav-link');
+
+    function toggleMenu(e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      const isOpen = overlay.classList.toggle('active');
+      hamburger.classList.toggle('active', isOpen);
+      document.body.classList.toggle('drawer-open', isOpen);
+    }
+
+    function closeMenu() {
+      overlay.classList.remove('active');
+      hamburger.classList.remove('active');
+      document.body.classList.remove('drawer-open');
+    }
+
+    hamburger.addEventListener('click', toggleMenu);
+    closeBtn.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        closeMenu();
+      }
+    });
+
+    drawerLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu();
+      });
+    });
+
+    // Wire auth link inside overlay
+    wireAccountNav(overlay);
+    
+    // Sync badges
+    updateBadges();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     wireAccountNav();
     wireSiteSearchForms();
+    wireMobileNavigation();
     updateBadges();
   });
 
   document.addEventListener('udaan:auth-change', () => {
     wireAccountNav(document);
+    const mobileOverlay = document.querySelector('.mobile-drawer-overlay');
+    if (mobileOverlay) {
+      wireAccountNav(mobileOverlay);
+    }
     updateBadges();
   });
 
@@ -1299,6 +1416,7 @@ window.addEventListener('load', updateNavLinks);
     updateBadges,
     wireAccountNav,
     wireSiteSearchForms,
+    wireMobileNavigation,
     formatMoney,
     formatOrderStatus,
     formatWorkshopDate,
