@@ -504,7 +504,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   background-size: 24px 24px;
   font-family: 'Lato', sans-serif;
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
   isolation: isolate;
 }
 .blog-index__main {
