@@ -403,7 +403,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
   margin-left: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   .nav-links { display: none; }
   .blog-nav-links {
     position: static;
@@ -1798,8 +1798,8 @@ body.drawer-open {
   width: 100% !important;
 }
 
-/* Responsive Overrides (max-width: 768px) */
-@media (max-width: 768px) {
+/* Responsive Overrides (max-width: 991px) */
+@media (max-width: 991px) {
   /* Show hamburger */
   .mobile-hamburger-btn {
     display: flex !important;

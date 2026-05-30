@@ -6,6 +6,26 @@
     font-family: 'Lato', sans-serif;
   }
 
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #D7A88D;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    margin-bottom: 25px;
+  }
+
+  .back-btn:hover {
+    color: #111111;
+    transform: translateX(-4px);
+  }
+
   .settings-header h1 {
     font-family: 'Playfair Display', serif;
     font-style: italic;
@@ -30,7 +50,7 @@
     font-family: 'Syne', sans-serif;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.95rem; /* Increased from 0.8rem */
     letter-spacing: 1px;
     margin-bottom: 8px;
     color: #555555;
@@ -38,11 +58,11 @@
 
   .form-group input {
     width: 100%;
-    padding: 15px 25px;
+    padding: 18px 28px; /* Increased from 15px 25px */
     border-radius: 50px;
     border: 1px solid #EDE5D8;
     background: #FDFBF9;
-    font-size: 1rem;
+    font-size: 1.1rem; /* Increased from 1rem */
     transition: all 0.3s ease;
   }
 
@@ -112,6 +132,9 @@
 </style>
 
 <div class="settings-container">
+  <a href="/account" class="back-btn nav-route" data-target="/account">
+    &larr; Back to Dashboard
+  </a>
   <div class="settings-header">
     <h1>Your Studio Profile.</h1>
   </div>

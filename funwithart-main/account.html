@@ -459,6 +459,42 @@
             .quick-actions-grid { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr; }
             .nav-links { display: none; }
+            
+            /* Ensure mobile nav displays hamburger correctly on account dashboard */
+            .nav-account-link,
+            nav#main-nav .nav-icon[href*="wishlist"] {
+                display: none !important;
+            }
+            .mobile-hamburger-btn {
+                display: flex !important;
+                margin-left: 15px !important;
+            }
+            .nav-actions {
+                display: flex !important;
+                margin-left: auto !important;
+                gap: 12px !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-card { padding: 22px 20px !important; }
+            .mini-order {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 10px !important;
+                padding: 18px 0 !important;
+            }
+            .mini-order > * {
+                width: 100% !important;
+            }
+            .mini-order .status-badge {
+                align-self: flex-start !important;
+                margin-top: 4px !important;
+                width: max-content !important;
+            }
+            .mini-order .mo-total {
+                margin-top: 4px !important;
+            }
         }
     </style>
 </head>

@@ -1283,8 +1283,10 @@ window.addEventListener('load', updateNavLinks);
       </div>
     `;
 
-    // Append overlay to nav (keeps it inside .legacy-page-content for dynamic link intercept)
-    nav.appendChild(overlay);
+    // Append overlay outside of the nav bar (prevents fixed positioning containing block bugs caused by backdrop-filter on nav),
+    // but still inside root (e.g. .legacy-page-content) so dynamic click intercept works!
+    const appendTarget = root === document ? document.body : root;
+    appendTarget.appendChild(overlay);
 
     const closeBtn = overlay.querySelector('.mobile-drawer-close');
     const drawerLinks = overlay.querySelectorAll('.mobile-nav-link');

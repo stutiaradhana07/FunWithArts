@@ -128,8 +128,8 @@
         .custom-select-arrow { font-size: 0.65rem; color: var(--accent-color); transition: transform 0.3s; margin-left: 12px; }
         .custom-select-wrap.open .custom-select-arrow { transform: rotate(180deg); }
 
-        .custom-select-dropdown { position: absolute; top: calc(100% + 6px); left: 0; width: 100%; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; z-index: 200; max-height: 0; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease; pointer-events: none; }
-        .custom-select-wrap.open .custom-select-dropdown { max-height: 400px; opacity: 1; pointer-events: auto; }
+        .custom-select-dropdown { position: absolute; top: calc(100% + 6px); left: 0; width: 100%; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 200; max-height: 0; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease; pointer-events: none; }
+        .custom-select-wrap.open .custom-select-dropdown { max-height: 250px; opacity: 1; pointer-events: auto; }
 
         .custom-select-optgroup-label { padding: 12px 16px 6px; font-family: var(--art-font); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-color); opacity: 0.9; }
         .custom-select-option { padding: 12px 16px; font-family: var(--art-font); font-size: 1rem; color: #ccc; cursor: pointer; transition: background 0.2s, color 0.2s; display: flex; align-items: center; gap: 10px; }
@@ -243,7 +243,7 @@
                         <span class="trigger-label">Choose a Class</span>
                         <span class="custom-select-arrow">▼</span>
                     </div>
-                    <div class="custom-select-dropdown" id="workshop-dropdown">
+                    <div class="custom-select-dropdown" id="workshop-dropdown" data-lenis-prevent>
                         <!-- Dynamically populated by loadWorkshops() -->
                         <div class="custom-select-option" style="color:#888;pointer-events:none;">Loading workshops…</div>
                     </div>
