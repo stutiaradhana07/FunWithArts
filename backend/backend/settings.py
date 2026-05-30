@@ -222,15 +222,15 @@ if 'test' in sys.argv or os.environ.get('DJANGO_TEST'):
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
 # --- EXTERNAL SERVICES (Razorpay, Email, Google) ---
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_Svf9ZzQwWcvrNi')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'iwEKj57zpnyNjhqrvb8mhDNM')
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_live_Svg2fjfD0uZaet')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'Cj7SfKSl2jh6bfHmDyvt4SYj')
 
 # Automatically override if the old/invalid credentials are still present in environment
-if RAZORPAY_KEY_ID in ('rzp_test_StI82O7Jm3heNM', 'rzp_test_SvcAHOM6mQQ4HB', ''):
-    RAZORPAY_KEY_ID = 'rzp_test_Svf9ZzQwWcvrNi'
-    RAZORPAY_KEY_SECRET = 'iwEKj57zpnyNjhqrvb8mhDNM'
+if RAZORPAY_KEY_ID in ('rzp_test_StI82O7Jm3heNM', 'rzp_test_SvcAHOM6mQQ4HB', 'rzp_test_Svf9ZzQwWcvrNi', ''):
+    RAZORPAY_KEY_ID = 'rzp_live_Svg2fjfD0uZaet'
+    RAZORPAY_KEY_SECRET = 'Cj7SfKSl2jh6bfHmDyvt4SYj'
 
-RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
+RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', 'FwA_WebHo0k_Secr3t_2026')
 
 # Defaulting to console for now as requested
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
