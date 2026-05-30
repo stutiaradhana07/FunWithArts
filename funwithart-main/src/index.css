@@ -393,7 +393,7 @@ nav#main-nav.hide { transform: translateY(-100%); }
 .desktop-links a:hover, .desktop-links a.active { color: var(--accent-color, #D7A88D); }
 .blog-nav-links {
   position: absolute;
-  left: 60%;
+  left: 55%;
   transform: translateX(-50%);
   justify-content: center;
   margin: 0;
