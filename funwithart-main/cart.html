@@ -241,7 +241,7 @@
             <div class="summary-row"><span>Subtotal</span><span id="subtotal-val">₹0</span></div>
             <div class="summary-row"><span>Shipping</span><span id="shipping-val">Calculated at checkout</span></div>
             <div class="summary-total"><span>Total</span><span id="total-val">₹0</span></div>
-            <a href="checkout.html" class="checkout-btn">Proceed to Checkout</a>
+            <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
         </div>
     </div>
 
@@ -499,7 +499,7 @@
                 return;
             }
 
-            window.location.href = 'checkout.html';
+            window.location.href = '/checkout';
         };
 
         window.updateQty = async function (cartItemId, newQty) {
