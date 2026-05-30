@@ -444,8 +444,18 @@
         /* ── RESPONSIVE ── */
         @media (max-width: 800px) {
             .dashboard-grid { grid-template-columns: 1fr; }
-            .welcome-banner { flex-direction: column; align-items: flex-start; }
-            .welcome-text h1 { font-size: 2rem; }
+            .welcome-banner { flex-direction: column; align-items: flex-start; padding: 24px !important; }
+            .welcome-text h1 { font-size: 2rem; word-break: break-word; }
+            .welcome-actions {
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 10px !important;
+                margin-top: 15px !important;
+            }
+            .welcome-actions .btn {
+                width: 100% !important;
+                text-align: center !important;
+            }
             .quick-actions-grid { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr; }
             .nav-links { display: none; }
