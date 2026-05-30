@@ -217,8 +217,14 @@ if 'test' in sys.argv or os.environ.get('DJANGO_TEST'):
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
 # --- EXTERNAL SERVICES (Razorpay, Email, Google) ---
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_StI82O7Jm3heNM')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'JumGS1K0sp0CmSLBkXo9suHV')
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_SvcAHOM6mQQ4HB')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'JP46wvEypnMrPdG3ybYhriaY')
+
+# Automatically override if the old/invalid credentials are still present in environment
+if RAZORPAY_KEY_ID in ('rzp_test_StI82O7Jm3heNM', ''):
+    RAZORPAY_KEY_ID = 'rzp_test_SvcAHOM6mQQ4HB'
+    RAZORPAY_KEY_SECRET = 'JP46wvEypnMrPdG3ybYhriaY'
+
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
 # Defaulting to console for now as requested
