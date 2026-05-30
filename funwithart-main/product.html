@@ -863,12 +863,16 @@
                         });
                         
                         if (matchedItem) {
-                            var unselectedIds = JSON.parse(localStorage.getItem('unselectedCartItemIds') || '[]');
-                            var idx = unselectedIds.indexOf(matchedItem.cartItemId);
-                            if (idx !== -1) {
-                                unselectedIds.splice(idx, 1);
-                                localStorage.setItem('unselectedCartItemIds', JSON.stringify(unselectedIds));
-                            }
+                            // Find all other items in the cart and make them unselected
+                            var otherCartItemIds = cartItems
+                                .filter(function(item) {
+                                    return String(item.cartItemId) !== String(matchedItem.cartItemId);
+                                })
+                                .map(function(item) {
+                                    return item.cartItemId;
+                                });
+                            
+                            localStorage.setItem('unselectedCartItemIds', JSON.stringify(otherCartItemIds));
                         }
                         
                         // 3. Immediately go to checkout
