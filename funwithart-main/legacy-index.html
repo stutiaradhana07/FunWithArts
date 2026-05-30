@@ -890,16 +890,19 @@
             else { mainNav.classList.remove('hide'); }
             lastScrollY = scrollY;
 
-            if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
+            // Only perform animations on desktop viewports to avoid mobile scroll lag!
+            if (window.innerWidth > 768) {
+                if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
 
-            if(rubberMarquee) {
-                const skewAmount = Math.max(-15, Math.min(15, speed * 0.5));
-                rubberMarquee.style.transform = `skewX(${skewAmount}deg) translateZ(0)`;
-            }
+                if(rubberMarquee) {
+                    const skewAmount = Math.max(-15, Math.min(15, speed * 0.5));
+                    rubberMarquee.style.transform = `skewX(${skewAmount}deg) translateZ(0)`;
+                }
 
-            if (amb1 && amb2) {
-                amb1.style.transform = `translate3d(${scrollY * 0.2}px, 0, 0)`;
-                amb2.style.transform = `translate3d(${-scrollY * 0.2}px, 0, 0)`;
+                if (amb1 && amb2) {
+                    amb1.style.transform = `translate3d(${scrollY * 0.2}px, 0, 0)`;
+                    amb2.style.transform = `translate3d(${-scrollY * 0.2}px, 0, 0)`;
+                }
             }
         });
 

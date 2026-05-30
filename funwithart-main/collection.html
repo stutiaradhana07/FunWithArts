@@ -614,13 +614,17 @@
                 if (scrollY > lastScrollY && scrollY > 150) { mainNav.classList.add('hide'); } 
                 else { mainNav.classList.remove('hide'); }
                 lastScrollY = scrollY;
-                if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
-                const skew = Math.max(-15, Math.min(15, speed * 0.6));
-                const scale = 1 - Math.min(0.1, Math.abs(speed * 0.01));
-                document.querySelectorAll('.liquid-img').forEach(img => { 
-                    const customZoom = parseFloat(img.style.getPropertyValue('--image-zoom') || 1.0);
-                    img.style.transform = `skewY(${skew}deg) scale(${scale * customZoom})`; 
-                });
+                
+                // Only perform visual skew/parallax transformations on desktop to prevent mobile scroll lag!
+                if (window.innerWidth > 768) {
+                    if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
+                    const skew = Math.max(-15, Math.min(15, speed * 0.6));
+                    const scale = 1 - Math.min(0.1, Math.abs(speed * 0.01));
+                    document.querySelectorAll('.liquid-img').forEach(img => { 
+                        const customZoom = parseFloat(img.style.getPropertyValue('--image-zoom') || 1.0);
+                        img.style.transform = `skewY(${skew}deg) scale(${scale * customZoom})`; 
+                    });
+                }
             });
             function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
         } catch(e) { console.log("Smooth scroll disabled for safety."); }

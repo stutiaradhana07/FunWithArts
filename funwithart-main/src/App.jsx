@@ -35,6 +35,9 @@ export default function App() {
   const [homeRevealed, setHomeRevealed] = useState(false);
 
   useEffect(() => {
+    // Clear scroll locks on any page transition
+    document.body.classList.remove('drawer-open');
+
     const onHome = shouldShowIntro(location.pathname);
     if (onHome) {
       // Mark as seen IMMEDIATELY so navigating away and back never re-triggers the splash
