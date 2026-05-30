@@ -22,13 +22,14 @@
       rel="stylesheet"
     />
     <script>
-      window.__UDAAN_API_BASE__ = 'https://funwitharts-production.up.railway.app/api';
+      var rawApiUrl = 'https://funwitharts-production.up.railway.app/api';
+      window.__UDAAN_API_BASE__ = rawApiUrl.startsWith('%') ? 'http://127.0.0.1:8000/api' : rawApiUrl;
     </script>
     <script src="/shared.js"></script>
     <script src="https://accounts.google.com/gsi/client?onload=onGoogleLibraryLoad" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
-    <script type="module" crossorigin src="/assets/index-BtJR_mV_.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Cj6fiF_G.css">
+    <script type="module" crossorigin src="/assets/index-CjJCR_Le.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B-ijlTXS.css">
   </head>
   <body>
     <div id="root"></div>

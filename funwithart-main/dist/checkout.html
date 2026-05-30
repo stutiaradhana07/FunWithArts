@@ -390,7 +390,7 @@
             var subtotal = items.reduce(function (sum, item) {
                 return sum + ((Number(item.basePrice) || 0) * (Number(item.qty) || 1));
             }, 0);
-            var shippingFee = subtotal >= 10000 ? 0 : 500;
+            var shippingFee = 99;
 
             return {
                 id: order?.id || '',
@@ -447,10 +447,10 @@
                         '  <div class="checkout-item-price">₹' + itemTotal + '</div>' +
                         '</div>';
                 });
-                var shippingFee = subtotal >= 10000 ? 0 : 500;
+                var shippingFee = 99;
                 var total = subtotal + shippingFee;
                 document.getElementById('sum-subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
-                document.getElementById('sum-shipping').innerText = shippingFee === 0 ? 'Complimentary' : '₹' + shippingFee.toLocaleString('en-IN');
+                document.getElementById('sum-shipping').innerText = '₹' + shippingFee.toLocaleString('en-IN');
                 document.getElementById('sum-total').innerText = '₹' + total.toLocaleString('en-IN');
                 document.getElementById('place-btn').style.opacity = '1';
                 document.getElementById('place-btn').style.pointerEvents = 'all';

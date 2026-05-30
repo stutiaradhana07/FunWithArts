@@ -417,21 +417,21 @@
                         '</div>';
                 });
 
+                var shippingFee = 99;
+                var total = subtotal + shippingFee;
                 document.getElementById('subtotal-val').innerText = '₹' + subtotal.toLocaleString('en-IN');
-                document.getElementById('total-val').innerText = '₹' + subtotal.toLocaleString('en-IN');
+                document.getElementById('shipping-val').innerText = '₹' + shippingFee.toLocaleString('en-IN');
+                document.getElementById('total-val').innerText = '₹' + total.toLocaleString('en-IN');
 
                 var progressFill = document.getElementById('progress-fill');
                 var progressText = document.getElementById('progress-text');
-                var percentage = Math.min((subtotal / freeShippingThreshold) * 100, 100);
 
-                if (subtotal >= freeShippingThreshold) {
-                    progressFill.style.width = '100%';
-                    progressFill.style.background = '#2a9d8f';
-                    progressText.innerHTML = '<strong>Congratulations!</strong> You get free Pan-India shipping. ✨';
-                } else {
-                    progressFill.style.width = percentage + '%';
-                    progressFill.style.background = 'var(--accent-color)';
-                    progressText.innerHTML = 'Add <strong>₹' + (freeShippingThreshold - subtotal).toLocaleString('en-IN') + '</strong> more for free shipping!';
+                if (progressFill) {
+                    var barBg = progressFill.closest('.progress-bar-bg');
+                    if (barBg) barBg.style.display = 'none';
+                }
+                if (progressText) {
+                    progressText.innerHTML = '✨ <strong>Flat Pan-India shipping of ₹99</strong> applies to all orders.';
                 }
 
                 var checkoutBtn = document.querySelector('.checkout-btn');
