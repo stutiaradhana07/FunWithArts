@@ -1,8 +1,22 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
-from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+
+
+def _video_storage():
+    """Deferred storage: only imports cloudinary_storage when actually writing a file.
+    In local dev (DEBUG=True) this falls back to regular FileSystemStorage."""
+    if getattr(settings, 'DEBUG', False):
+        from django.core.files.storage import FileSystemStorage
+        return FileSystemStorage()
+    try:
+        from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+        return VideoMediaCloudinaryStorage()
+    except ImportError:
+        from django.core.files.storage import FileSystemStorage
+        return FileSystemStorage()
 
 
 class Category(models.Model):
@@ -26,7 +40,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     image2 = models.ImageField(upload_to='products/', null=True, blank=True)
     image3 = models.ImageField(upload_to='products/', null=True, blank=True)
-    video = models.FileField(upload_to='products/videos/', null=True, blank=True, storage=VideoMediaCloudinaryStorage())
+    video = models.FileField(upload_to='products/videos/', null=True, blank=True, storage=_video_storage)
     
     # Custom main image focal positioning and zoom
     image_position = models.CharField(

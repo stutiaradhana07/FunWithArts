@@ -34,15 +34,15 @@ if _railway_domain:
     ALLOWED_HOSTS.append(f".{_railway_domain}")
 
 # --- APPS ---
+_CLOUDINARY_APPS = [] if DEBUG else ['cloudinary_storage', 'cloudinary']
 INSTALLED_APPS = [
-    'cloudinary_storage',
+    *_CLOUDINARY_APPS,
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'cloudinary',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -150,7 +150,12 @@ USE_TZ = True
 # --- STATIC & MEDIA FILES ---
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# In local dev, skip the manifest-based storage (requires collectstatic to have run).
+# In production, use compressed manifest for optimal static file serving.
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -217,13 +222,13 @@ if 'test' in sys.argv or os.environ.get('DJANGO_TEST'):
     REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
 
 # --- EXTERNAL SERVICES (Razorpay, Email, Google) ---
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_SvcAHOM6mQQ4HB')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'JP46wvEypnMrPdG3ybYhriaY')
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_Svf9ZzQwWcvrNi')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'iwEKj57zpnyNjhqrvb8mhDNM')
 
 # Automatically override if the old/invalid credentials are still present in environment
-if RAZORPAY_KEY_ID in ('rzp_test_StI82O7Jm3heNM', ''):
-    RAZORPAY_KEY_ID = 'rzp_test_SvcAHOM6mQQ4HB'
-    RAZORPAY_KEY_SECRET = 'JP46wvEypnMrPdG3ybYhriaY'
+if RAZORPAY_KEY_ID in ('rzp_test_StI82O7Jm3heNM', 'rzp_test_SvcAHOM6mQQ4HB', ''):
+    RAZORPAY_KEY_ID = 'rzp_test_Svf9ZzQwWcvrNi'
+    RAZORPAY_KEY_SECRET = 'iwEKj57zpnyNjhqrvb8mhDNM'
 
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
@@ -244,8 +249,6 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 # --- CLOUDINARY ---
 CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', 'cloudinary://116638983442739:e8-k5e_wBQbFZulkSnBsbcSrKgc@drclxydp1')
 
-# Parse CLOUDINARY_URL into the CLOUDINARY_STORAGE dict that
-# django-cloudinary-storage expects, and also initialize the cloudinary SDK.
 import urllib.parse as _urlparse
 try:
     _cld = _urlparse.urlparse(CLOUDINARY_URL)
@@ -261,22 +264,29 @@ except Exception:
         'API_SECRET': 'e8-k5e_wBQbFZulkSnBsbcSrKgc',
     }
 
-# Set the env var so the cloudinary SDK picks up credentials.
 os.environ.setdefault('CLOUDINARY_URL', CLOUDINARY_URL)
 
-import cloudinary
-cloudinary.config(
-    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
-    api_key=CLOUDINARY_STORAGE['API_KEY'],
-    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
-    secure=True,
-)
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STORAGES = {
-    'default': {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'},
-    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
-}
+if DEBUG:
+    # In local dev: use local filesystem — no Cloudinary network calls at all.
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
+else:
+    # In production: initialize Cloudinary SDK and use cloud storage.
+    import cloudinary
+    cloudinary.config(
+        cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+        api_key=CLOUDINARY_STORAGE['API_KEY'],
+        api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+        secure=True,
+    )
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    STORAGES = {
+        'default': {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
 WHITENOISE_MANIFEST_STRICT = False
 
 # --- PRODUCTION SECURITY ---
