@@ -1270,7 +1270,7 @@ window.addEventListener('load', updateNavLinks);
           <a href="/blogs" class="mobile-nav-link nav-route" data-target="/blogs">Blogs</a>
           <hr class="mobile-drawer-divider" />
           <a href="/wishlist" class="mobile-nav-link nav-route mobile-wishlist-link" data-target="/wishlist">
-            <span>Saved Items</span>
+            <span>Wishlist</span>
             <span class="mobile-badge-count wishlist-count-badge">0</span>
           </a>
           <a href="/cart" class="mobile-nav-link nav-route mobile-cart-link" data-target="/cart">

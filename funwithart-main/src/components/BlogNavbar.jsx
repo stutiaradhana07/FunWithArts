@@ -119,7 +119,7 @@ export default function BlogNavbar() {
             </Link>
             <hr className="mobile-drawer-divider" />
             <Link to="/wishlist" className="mobile-nav-link mobile-wishlist-link" onClick={toggleDrawer}>
-              <span>Saved Items</span>
+              <span>Wishlist</span>
               <span className="mobile-badge-count wishlist-count-badge">0</span>
             </Link>
             <Link to="/cart" className="mobile-nav-link mobile-cart-link" onClick={toggleDrawer}>
