@@ -1328,11 +1328,244 @@ window.addEventListener('load', updateNavLinks);
     updateBadges();
   }
 
+  function showFirstOrderFreebieModal() {
+    if (sessionStorage.getItem('fwa_welcome_freebie_seen')) return;
+
+    // Create the overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'fwa-welcome-gift-modal';
+    
+    // Style with beautiful glassmorphism backdrop blur
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(42, 31, 26, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+      padding: 20px;
+    `;
+
+    // Create card container
+    const card = document.createElement('div');
+    card.id = 'fwa-welcome-gift-card';
+    
+    // Add custom responsiveness styles for mobile phone users inside the style injection
+    card.style.cssText = `
+      background: #FAF6F0;
+      border: 1px solid rgba(215, 168, 141, 0.35);
+      border-radius: 32px;
+      padding: 3.5rem 2.5rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 30px 70px rgba(42, 31, 26, 0.18);
+      transform: scale(0.9) translateY(30px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    `;
+
+    // Create a style element to handle custom media queries for mobile/tablet responsive layout without glitches
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      @media (max-width: 480px) {
+        #fwa-welcome-gift-card {
+          padding: 2.5rem 1.5rem !important;
+          border-radius: 24px !important;
+          max-width: 92% !important;
+        }
+        #fwa-welcome-gift-title {
+          font-size: 1.8rem !important;
+          margin-bottom: 0.75rem !important;
+        }
+        #fwa-welcome-gift-desc {
+          font-size: 0.9rem !important;
+          line-height: 1.6 !important;
+          margin-bottom: 2rem !important;
+        }
+        #fwa-welcome-gift-btn {
+          padding: 0.9rem 2rem !important;
+          font-size: 0.78rem !important;
+        }
+        #fwa-welcome-gift-close {
+          top: 15px !important;
+          right: 18px !important;
+          font-size: 1.2rem !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.id = 'fwa-welcome-gift-close';
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: #8a776c;
+      cursor: pointer;
+      transition: color 0.3s;
+      outline: none;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    `;
+    closeBtn.addEventListener('mouseenter', () => closeBtn.style.color = '#c47a5a');
+    closeBtn.addEventListener('mouseleave', () => closeBtn.style.color = '#8a776c');
+    closeBtn.onclick = closeModal;
+
+    // Organic icon decoration
+    const iconContainer = document.createElement('div');
+    iconContainer.innerHTML = `
+      <svg width="60" height="60" viewBox="0 0 80 100" fill="none" stroke="#c47a5a" stroke-width="2" style="margin-bottom: 1.25rem; display: inline-block;">
+        <path d="M25 35 Q40 20 55 35 L58 70 Q40 88 22 70 Z" stroke-linecap="round" stroke-linejoin="round" />
+        <ellipse cx="40" cy="32" rx="18" ry="6" />
+        <path d="M32 50 Q40 58 48 50" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    `;
+
+    // Title
+    const title = document.createElement('h2');
+    title.id = 'fwa-welcome-gift-title';
+    title.innerText = 'A Gift for Your First Piece';
+    title.style.cssText = `
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 2.3rem;
+      color: #1f1410;
+      margin-bottom: 0.85rem;
+      font-weight: 700;
+    `;
+
+    // Description
+    const desc = document.createElement('p');
+    desc.id = 'fwa-welcome-gift-desc';
+    desc.innerHTML = `Welcome to <strong>Fun With Art</strong>!<br><br>We craft minimalist, sustainable terracotta ceramics slow and by hand in our New Delhi studio.<br><br>To celebrate your first purchase, we will lovingly pack a <strong>complimentary handcrafted mini-pot or artisan welcome gift</strong> into your box. No coupon required!`;
+    desc.style.cssText = `
+      font-family: 'Lato', sans-serif;
+      font-size: 0.98rem;
+      color: #6b5e56;
+      line-height: 1.65;
+      margin-bottom: 2.25rem;
+      letter-spacing: 0.2px;
+    `;
+
+    // CTA Button
+    const btn = document.createElement('button');
+    btn.id = 'fwa-welcome-gift-btn';
+    btn.innerText = 'Explore the Collection';
+    btn.style.cssText = `
+      background: #c47a5a;
+      color: #fff;
+      border: none;
+      padding: 1.05rem 2.25rem;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(196, 122, 90, 0.25);
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+    `;
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = '#6b3f30';
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.boxShadow = '0 8px 24px rgba(107, 63, 48, 0.25)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = '#c47a5a';
+      btn.style.transform = 'translateY(0)';
+      btn.style.boxShadow = '0 4px 15px rgba(196, 122, 90, 0.25)';
+    });
+    btn.onclick = () => {
+      closeModal();
+      // Ensure we navigate gracefully within the SPA or fallback
+      setTimeout(() => {
+        const navEl = document.querySelector('[data-target="collection.html"]');
+        if (navEl) {
+          navEl.click();
+        } else {
+          window.location.href = '/collection';
+        }
+      }, 300);
+    };
+
+    // Assemble modal card
+    card.appendChild(closeBtn);
+    card.appendChild(iconContainer);
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.appendChild(btn);
+    overlay.appendChild(card);
+    document.documentElement.appendChild(overlay);
+
+    // Force reflow
+    overlay.offsetHeight;
+
+    // Fade in modal
+    overlay.style.opacity = '1';
+    card.style.opacity = '1';
+    card.style.transform = 'scale(1) translateY(0)';
+    
+    // Prevent background scrolling/bouncing on mobile devices
+    document.body.style.overflow = 'hidden';
+
+    function closeModal() {
+      // Mark as seen so they won't see it again during the session
+      sessionStorage.setItem('fwa_welcome_freebie_seen', 'true');
+      
+      overlay.style.opacity = '0';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.9) translateY(30px)';
+      
+      // Restore scrolling
+      document.body.style.overflow = '';
+      
+      setTimeout(() => {
+        overlay.remove();
+      }, 500);
+    }
+
+    // Dismiss overlay by clicking outside the card
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     wireAccountNav();
     wireSiteSearchForms();
     wireMobileNavigation();
     updateBadges();
+
+    // Trigger the beautiful welcome gift modal if not seen in session
+    setTimeout(() => {
+      showFirstOrderFreebieModal();
+    }, window.location.pathname === '/' || window.location.pathname.endsWith('index.html') ? 6500 : 1500);
   });
 
   document.addEventListener('udaan:auth-change', () => {

@@ -131,7 +131,7 @@ class OrderCreateSerializer(serializers.Serializer):
                 subtotal += line_total
                 order_items.append((product, qty, line_total, unit_price, product_name, purchase_option))
 
-            shipping_fee = Decimal('0.00') if subtotal >= Decimal('10000.00') else Decimal('500.00')
+            shipping_fee = Decimal('99.00')
             total_amount = subtotal + shipping_fee
 
             # Set initial order status based on payment method

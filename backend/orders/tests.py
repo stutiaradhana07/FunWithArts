@@ -49,8 +49,8 @@ class OrderAPITests(TestCase):
         self.assertEqual(response.status_code, 201)
         body = response.json()
         self.assertEqual(body['subtotal'], 8900.0)
-        self.assertEqual(body['shipping_fee'], 500.0)
-        self.assertEqual(body['total_amount'], 9400.0)
+        self.assertEqual(body['shipping_fee'], 99.0)
+        self.assertEqual(body['total_amount'], 8999.0)
 
     def test_create_order_attaches_user_when_authenticated(self):
         response = self.client.post(
