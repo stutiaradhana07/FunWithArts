@@ -1,3 +1,25 @@
+// ── GOOGLE ANALYTICS INTEGRATION ──────────────────────────────────────────
+(function() {
+    var MEASUREMENT_ID = 'G-VTEFQG4PX3';
+
+    // 1. Dynamically load the Google Analytics script
+    var gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + MEASUREMENT_ID;
+    document.head.appendChild(gaScript);
+
+    // 2. Initialize the global dataLayer and gtag function
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function() {
+        window.dataLayer.push(arguments);
+    };
+
+    // 3. Configure Google Analytics
+    window.gtag('js', new Date());
+    window.gtag('config', MEASUREMENT_ID);
+})();
+// ─────────────────────────────────────────────────────────────────────────
+
 (function () {
   const apiBase = window.__UDAAN_API_BASE__ || 'http://127.0.0.1:8000/api';
 
