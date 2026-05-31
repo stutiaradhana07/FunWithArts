@@ -23,6 +23,8 @@
     { "source": "/support", "destination": "/index.html" },
     { "source": "/wishlist", "destination": "/index.html" },
     { "source": "/workshop-confirmation", "destination": "/index.html" },
+    { "source": "/blogs", "destination": "/index.html" },
+    { "source": "/blogs/(.*)", "destination": "/index.html" },
     { "source": "/legacy", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

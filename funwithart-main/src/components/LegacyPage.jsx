@@ -26,6 +26,7 @@ const APP_ROUTES = [
   '/settings',
   '/addresses',
   '/order-history',
+  '/blogs',
 ];
 
 function isInternalAppLink(href) {

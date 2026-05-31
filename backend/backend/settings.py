@@ -33,6 +33,17 @@ if _railway_domain:
     ALLOWED_HOSTS.append(_railway_domain)
     ALLOWED_HOSTS.append(f".{_railway_domain}")
 
+# Support custom domains in ALLOWED_HOSTS
+for _host in [
+    'funwithartstudio.com',
+    'www.funwithartstudio.com',
+    'api.funwithartstudio.com',
+    'backend.funwithartstudio.com',
+    'fun-with-arts.vercel.app',
+]:
+    if _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+
 # --- APPS ---
 _CLOUDINARY_APPS = [] if DEBUG else ['cloudinary_storage', 'cloudinary']
 INSTALLED_APPS = [
