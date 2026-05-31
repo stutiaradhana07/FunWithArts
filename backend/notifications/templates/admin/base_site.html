@@ -226,7 +226,7 @@
         box-sizing: border-box !important;
     }
 
-    .login #container {
+    body.login div#container {
         position: relative !important;
         top: auto !important;
         left: auto !important;
@@ -242,17 +242,24 @@
         margin: 0 auto !important;
     }
 
-    /* Beautiful Charcoal Branding Font on Login White Card */
-    .login #branding h1 a span {
+    /* Perfect Logo Styling & Text Visibility on White Card */
+    body.login #site-name a span,
+    body.login #branding a span,
+    body.login #site-name span,
+    body.login #branding span {
         color: #2a1f1a !important; /* Deep charcoal clay */
         font-family: 'Playfair Display', serif !important;
         font-weight: bold !important;
         font-style: italic !important;
         letter-spacing: 0.5px !important;
         font-size: 2.1rem !important;
+        text-decoration: none !important;
+        border-bottom: none !important;
+        display: inline-block !important;
     }
     
-    .login #branding h1 a span:last-child {
+    body.login #site-name a span:last-child,
+    body.login #branding a span:last-child {
         color: #8c7d74 !important; /* Muted sand gray */
         font-family: 'Lato', sans-serif !important;
         font-size: 0.75rem !important;
@@ -260,11 +267,22 @@
         text-transform: uppercase !important;
         letter-spacing: 1.5px !important;
         margin-left: 8px !important;
-        border-bottom: none !important;
         text-decoration: none !important;
+        border-bottom: none !important;
+        display: inline-block !important;
+        font-style: normal !important;
     }
 
-    .login #header {
+    body.login #site-name a,
+    body.login #branding a {
+        text-decoration: none !important;
+        border-bottom: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    body.login #header {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -273,32 +291,26 @@
         margin-bottom: 35px !important;
     }
 
-    .login #branding h1 {
+    body.login #branding h1 {
         font-size: 2.1rem !important;
         margin: 0 !important;
+        display: block !important;
     }
 
-    .login #branding h1 a {
-        justify-content: center !important;
-        text-decoration: none !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-
-    .login #content {
+    body.login #content {
         padding: 0 !important;
         background: transparent !important;
         min-height: auto !important;
     }
 
-    .login .form-row {
+    body.login .form-row {
         padding: 12px 0 !important;
         border: none !important;
         display: flex !important;
         flex-direction: column !important;
     }
 
-    .login .form-row label {
+    body.login .form-row label {
         font-weight: 700 !important;
         color: #6b5e56 !important;
         font-size: 0.82rem !important;
@@ -311,7 +323,7 @@
         letter-spacing: 1px !important;
     }
 
-    .login .form-row input[type=text], .login .form-row input[type=password] {
+    body.login .form-row input[type=text], body.login .form-row input[type=password] {
         width: 100% !important;
         box-sizing: border-box !important;
         border: 1.5px solid #eadecf !important;
@@ -323,7 +335,7 @@
         transition: all 0.25s ease !important;
     }
 
-    .login .form-row input[type=text]:focus, .login .form-row input[type=password]:focus {
+    body.login .form-row input[type=text]:focus, body.login .form-row input[type=password]:focus {
         border-color: #c4896a !important;
         background: #ffffff !important;
         outline: none !important;
@@ -331,7 +343,7 @@
     }
 
     /* Premium Solid Black Submit Pill */
-    .login .submit-row {
+    body.login .submit-row {
         background: transparent !important;
         border: none !important;
         padding: 24px 0 0 0 !important;
@@ -339,7 +351,7 @@
         text-align: center !important;
     }
 
-    .login .submit-row input[type=submit] {
+    body.login .submit-row input[type=submit] {
         width: 100% !important;
         background: #111111 !important;
         color: #ffffff !important;
@@ -356,7 +368,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .login .submit-row input[type=submit]:hover {
+    body.login .submit-row input[type=submit]:hover {
         background: #c4896a !important;
         box-shadow: 0 6px 16px rgba(196, 137, 106, 0.25) !important;
         transform: translateY(-1.5px) !important;
@@ -403,7 +415,7 @@
     }
 
     /* Hide skip to content link */
-    .login a.skip-to-content, .login a[href^="#"] {
+    body.login a.skip-to-content, body.login a[href^="#"] {
         display: none !important;
     }
 </style>
