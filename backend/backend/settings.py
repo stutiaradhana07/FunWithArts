@@ -173,6 +173,16 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# Always allow all known production frontend origins (custom domain + Vercel)
+_PRODUCTION_ORIGINS = [
+    'https://www.funwithartstudio.com',
+    'https://funwithartstudio.com',
+    'https://fun-with-arts.vercel.app',
+]
+for _origin in _PRODUCTION_ORIGINS:
+    if _origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_origin)
+
 # --- CSRF ---
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
@@ -190,8 +200,15 @@ if _railway_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
     CSRF_TRUSTED_ORIGINS.append(f"http://{_railway_domain}")
 
-# Hardcode the known production domain as a fallback
-CSRF_TRUSTED_ORIGINS.append("https://funwitharts-production.up.railway.app")
+# Hardcode all known production origins (Railway backend + custom domain + Vercel)
+for _origin in [
+    'https://funwitharts-production.up.railway.app',
+    'https://www.funwithartstudio.com',
+    'https://funwithartstudio.com',
+    'https://fun-with-arts.vercel.app',
+]:
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
 
 
 # --- REST FRAMEWORK ---
@@ -303,4 +320,11 @@ if not DEBUG:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- TINYMCE CONFIGURATION ---
-TINYMCE_API_KEY = os.getenv('TINYMCE_API_KEY', 'no-api-key')
+TINYMCE_API_KEY = os.getenv('TINYMCE_API_KEY', 'no-api-key')
+
+# --- WHATSAPP CONFIGURATION ---
+WHATSAPP_PROVIDER = os.getenv('WHATSAPP_PROVIDER', 'console')
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
+TWILIO_WHATSAPP_FROM = os.getenv('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+
