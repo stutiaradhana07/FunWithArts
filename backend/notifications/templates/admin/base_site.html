@@ -5,8 +5,8 @@
 {% block branding %}
 <div id="site-name">
   <a href="{% url 'admin:index' %}">
-    <span style="font-family: 'Playfair Display', serif; font-weight: bold; font-style: italic; letter-spacing: 0.5px; color: #fdfbf9;">Fun With Art</span> 
-    <span style="font-family: 'Lato', sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #d7a88d; margin-left: 8px;">Studio Admin</span>
+    <span style="font-family: 'Playfair Display', serif; font-weight: bold; font-style: italic; letter-spacing: 0.5px; color: var(--primary-fg);">Fun With Art</span> 
+    <span style="font-family: 'Lato', sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--link-hover-color); margin-left: 8px; opacity: 0.9;">Studio Admin</span>
   </a>
 </div>
 {% endblock %}
@@ -15,43 +15,65 @@
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@300;400;700&family=Syne:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    /* Clean, Professional Terracotta & Cream Theme for Django Admin */
+    /* Clean, Professional Terracotta & Cream Theme using native Django CSS variables */
     :root {
         --primary: #2a1f1a;
         --primary-fg: #fdfbf9;
-        --secondary: #c4896a;
+        --secondary: #3d302a;
         --secondary-fg: #fdfbf9;
-        --accent: #d7a88d;
-        --accent-fg: #2a1f1a;
+        --accent: #c4896a;
+        --accent-fg: #ffffff;
         --body-bg: #fdfbf9;
         --body-fg: #3d302a;
         --body-quiet-color: #8c7d74;
         --border-color: #eadecf;
-        
-        --header-bg: #2a1f1a;
-        --header-fg: #fdfbf9;
-        --header-link-color: #d7a88d;
         
         --breadcrumbs-bg: #f8f4ef;
         --breadcrumbs-fg: #7a6e67;
         --breadcrumbs-link-fg: #c4896a;
         
         --link-color: #c4896a;
-        --link-hover-color: #2a1f1a;
+        --link-hover-color: #d7a88d;
         --link-selected-color: #c4896a;
         
         --button-bg: #2a1f1a;
-        --button-fg: #ffffff;
         --button-hover-bg: #c4896a;
         
         --default-button-bg: #c4896a;
         --default-button-hover-bg: #2a1f1a;
-        
-        --delete-button-bg: #bf5345;
-        --delete-button-hover-bg: #a63f33;
     }
 
-    /* Base Font Override */
+    /* Native dark mode overrides */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --primary: #1c1411;
+            --primary-fg: #fdfbf9;
+            --secondary: #2a1f1a;
+            --secondary-fg: #fdfbf9;
+            --accent: #d7a88d;
+            --accent-fg: #1c1411;
+            --body-bg: #1c1411;
+            --body-fg: #fdfbf9;
+            --body-quiet-color: #8c7d74;
+            --border-color: #3d302a;
+            
+            --breadcrumbs-bg: #2a1f1a;
+            --breadcrumbs-fg: #8c7d74;
+            --breadcrumbs-link-fg: #d7a88d;
+            
+            --link-color: #d7a88d;
+            --link-hover-color: #fdfbf9;
+            --link-selected-color: #d7a88d;
+            
+            --button-bg: #d7a88d;
+            --button-hover-bg: #c4896a;
+            
+            --default-button-bg: #c4896a;
+            --default-button-hover-bg: #d7a88d;
+        }
+    }
+
+    /* Base Font & Typography Override */
     body, input, select, textarea, button {
         font-family: 'Lato', sans-serif !important;
     }
@@ -62,161 +84,31 @@
         color: var(--primary) !important;
     }
 
-    /* Header Spacing */
-    #header {
-        padding: 15px 30px !important;
-    }
-
-    /* Clean Borders & Shadows for Modules */
+    /* Smooth styling for modules, buttons, and tables */
     .module, #changelist, #changelist-filter, .aligned, .inline-group, #content-related {
         border: 1px solid var(--border-color) !important;
-        border-radius: 12px !important;
+        border-radius: 8px !important;
         box-shadow: 0 4px 12px rgba(107, 63, 48, 0.02) !important;
         overflow: hidden !important;
-        background: #ffffff !important;
-        margin-bottom: 24px !important;
     }
 
-    /* Sidebar Navigation styling */
-    #nav-sidebar {
-        background: #2a1f1a !important;
-        border-right: 1px solid var(--border-color) !important;
-    }
-    
-    #nav-sidebar th, #nav-sidebar td, #nav-sidebar caption {
-        background: transparent !important;
-        border: none !important;
-    }
-
-    #nav-sidebar a {
-        color: rgba(255, 255, 255, 0.8) !important;
-        font-size: 0.88rem !important;
-        transition: all 0.2s ease !important;
-    }
-
-    #nav-sidebar a:hover {
-        color: var(--secondary) !important;
-        padding-left: 4px;
-    }
-
-    #nav-sidebar tr.model-selected {
-        background: rgba(215, 168, 141, 0.15) !important;
-        border-left: 3px solid var(--secondary) !important;
-    }
-
-    #nav-sidebar tr.model-selected a {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-    }
-
-    /* Action bar / Search bar / Table headers */
-    #changelist #searchbar {
-        border: 1.5px solid var(--border-color) !important;
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        background: #fdfbf9 !important;
-        transition: all 0.2s ease !important;
-    }
-
-    #changelist #searchbar:focus {
-        border-color: var(--secondary) !important;
-        background: #ffffff !important;
-        outline: none !important;
-    }
-
-    #changelist .actions {
-        padding: 12px 20px !important;
-        border-bottom: 1px solid var(--border-color) !important;
-        background: #ffffff !important;
-    }
-
-    #changelist .actions select {
-        border: 1.5px solid var(--border-color) !important;
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
         border-radius: 6px !important;
-        padding: 4px 8px !important;
-        background-color: #fdfbf9 !important;
-    }
-
-    #changelist th {
         font-family: 'Syne', sans-serif !important;
-        font-size: 0.82rem !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.5px !important;
-        background: #fbf8f4 !important;
-        border-bottom: 1.5px solid var(--border-color) !important;
-        padding: 14px 20px !important;
     }
 
-    #changelist td {
-        padding: 14px 20px !important;
-        font-size: 0.9rem !important;
-    }
-
-    /* Clean Input Fields & Forms */
     input[type=text], input[type=password], input[type=email], input[type=number], textarea, select {
         border: 1.5px solid var(--border-color) !important;
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        background-color: #fdfbf9 !important;
-        transition: all 0.2s ease !important;
+        border-radius: 6px !important;
+        padding: 6px 10px !important;
     }
 
-    input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus {
-        border-color: var(--secondary) !important;
-        background-color: #ffffff !important;
-        outline: none !important;
-        box-shadow: 0 0 0 3px rgba(196, 137, 106, 0.1) !important;
-    }
-
-    .form-row {
-        padding: 18px 0 !important;
-        border-bottom: 1px solid var(--border-color) !important;
-    }
-
-    /* Button Refinements */
-    .button, input[type=submit], input[type=button], .submit-row input, a.button {
-        border-radius: 8px !important;
-        font-family: 'Syne', sans-serif !important;
-        font-weight: 700 !important;
-        padding: 10px 20px !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        cursor: pointer !important;
-        transition: all 0.2s ease !important;
-    }
-
-    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(196, 137, 106, 0.2) !important;
-    }
-
-    .deletelink {
-        border-radius: 8px !important;
-        padding: 10px 20px !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        transition: all 0.2s ease !important;
-        text-decoration: none !important;
-        display: inline-block !important;
-    }
-
-    .deletelink:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(191, 83, 69, 0.2) !important;
-    }
-
-    /* Toast alert banners */
-    .messagelist li {
-        margin-bottom: 10px !important;
-        border-radius: 8px !important;
-        padding: 12px 18px !important;
-        font-weight: 700 !important;
-    }
-
-    /* Centered Premium Center Card Login page (Matching API Landing Page) */
+    /* Custom Centered Premium Card for Login page */
     body.login {
-        background: radial-gradient(circle at top left, #fffcf9 0%, #f7f2eb 100%) !important;
+        background: radial-gradient(circle at top left, var(--body-bg) 0%, var(--breadcrumbs-bg) 100%) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -232,54 +124,14 @@
         left: auto !important;
         transform: none !important;
         width: 100% !important;
-        max-width: 480px !important;
-        background: #ffffff !important;
-        border: 1px solid rgba(215, 168, 141, 0.15) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 20px 50px rgba(42, 31, 26, 0.05) !important;
-        padding: 50px 40px !important;
+        max-width: 440px !important;
+        background: var(--body-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 12px 36px rgba(42, 31, 26, 0.08) !important;
+        padding: 40px 30px !important;
         box-sizing: border-box !important;
         margin: 0 auto !important;
-    }
-
-    /* Perfect Logo Styling & Text Visibility on White Card */
-    body.login #site-name a span,
-    body.login #branding a span,
-    body.login #site-name span,
-    body.login #branding span {
-        color: #2a1f1a !important; /* Deep charcoal clay */
-        font-family: 'Playfair Display', serif !important;
-        font-weight: bold !important;
-        font-style: italic !important;
-        letter-spacing: 0.5px !important;
-        font-size: 2.1rem !important;
-        text-decoration: none !important;
-        border-bottom: none !important;
-        display: inline-block !important;
-    }
-    
-    body.login #site-name a span:last-child,
-    body.login #branding a span:last-child {
-        color: #8c7d74 !important; /* Muted sand gray */
-        font-family: 'Lato', sans-serif !important;
-        font-size: 0.75rem !important;
-        font-weight: bold !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1.5px !important;
-        margin-left: 8px !important;
-        text-decoration: none !important;
-        border-bottom: none !important;
-        display: inline-block !important;
-        font-style: normal !important;
-    }
-
-    body.login #site-name a,
-    body.login #branding a {
-        text-decoration: none !important;
-        border-bottom: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
     }
 
     body.login #header {
@@ -288,13 +140,17 @@
         box-shadow: none !important;
         padding: 0 !important;
         text-align: center !important;
-        margin-bottom: 35px !important;
+        margin-bottom: 24px !important;
     }
 
-    body.login #branding h1 {
-        font-size: 2.1rem !important;
-        margin: 0 !important;
-        display: block !important;
+    body.login #site-name a span {
+        color: var(--primary) !important;
+        font-size: 1.8rem !important;
+    }
+
+    body.login #site-name a span:last-child {
+        color: var(--body-quiet-color) !important;
+        font-size: 0.7rem !important;
     }
 
     body.login #content {
@@ -304,7 +160,7 @@
     }
 
     body.login .form-row {
-        padding: 12px 0 !important;
+        padding: 8px 0 !important;
         border: none !important;
         display: flex !important;
         flex-direction: column !important;
@@ -312,111 +168,35 @@
 
     body.login .form-row label {
         font-weight: 700 !important;
-        color: #6b5e56 !important;
-        font-size: 0.82rem !important;
-        margin-bottom: 8px !important;
-        display: block !important;
-        float: none !important;
-        width: auto !important;
-        text-align: left !important;
+        font-size: 0.8rem !important;
+        margin-bottom: 6px !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 0.5px;
     }
 
     body.login .form-row input[type=text], body.login .form-row input[type=password] {
         width: 100% !important;
         box-sizing: border-box !important;
-        border: 1.5px solid #eadecf !important;
-        border-radius: 12px !important;
-        padding: 12px 16px !important;
-        font-size: 0.95rem !important;
-        background: #fdfbf9 !important;
-        color: #2a1f1a !important;
-        transition: all 0.25s ease !important;
     }
 
-    body.login .form-row input[type=text]:focus, body.login .form-row input[type=password]:focus {
-        border-color: #c4896a !important;
-        background: #ffffff !important;
-        outline: none !important;
-        box-shadow: 0 0 0 4px rgba(196, 137, 106, 0.12) !important;
-    }
-
-    /* Premium Solid Black Submit Pill */
     body.login .submit-row {
         background: transparent !important;
         border: none !important;
-        padding: 24px 0 0 0 !important;
+        padding: 16px 0 0 0 !important;
         margin: 0 !important;
-        text-align: center !important;
     }
 
     body.login .submit-row input[type=submit] {
         width: 100% !important;
-        background: #111111 !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
-        font-family: 'Syne', sans-serif !important;
-        font-weight: 700 !important;
-        font-size: 0.88rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        cursor: pointer !important;
-        transition: all 0.25s ease !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        background: var(--primary) !important;
+        color: var(--primary-fg) !important;
+        padding: 12px !important;
     }
 
     body.login .submit-row input[type=submit]:hover {
-        background: #c4896a !important;
-        box-shadow: 0 6px 16px rgba(196, 137, 106, 0.25) !important;
-        transform: translateY(-1.5px) !important;
-    }
-
-    .errornote {
-        background: #fdf2f2 !important;
-        color: #de350b !important;
-        border: 1px solid #fbd5d5 !important;
-        border-radius: 8px !important;
-        padding: 12px !important;
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
-        text-align: center !important;
-        margin-bottom: 20px !important;
-        box-shadow: 0 2px 6px rgba(222, 53, 11, 0.05) !important;
-    }
-
-    /* Paginator styling */
-    .paginator {
-        border-top: 1px solid var(--border-color) !important;
-        padding: 12px 20px !important;
-        font-size: 0.88rem !important;
-        background: #ffffff !important;
-    }
-
-    .paginator a, .paginator .this-page {
-        padding: 6px 12px !important;
-        border-radius: 6px !important;
-        text-decoration: none !important;
-        display: inline-block !important;
-        font-weight: 700 !important;
-    }
-
-    .paginator a {
-        background: #fdfbf9 !important;
-        color: var(--secondary) !important;
-        border: 1px solid var(--border-color) !important;
-    }
-
-    .paginator .this-page {
-        background: var(--primary) !important;
-        color: #ffffff !important;
-    }
-
-    /* Hide skip to content link */
-    body.login a.skip-to-content, body.login a[href^="#"] {
-        display: none !important;
+        background: var(--accent) !important;
+        color: var(--accent-fg) !important;
     }
 </style>
 {% endblock %}
+
