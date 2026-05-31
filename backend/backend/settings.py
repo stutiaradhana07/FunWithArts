@@ -47,13 +47,13 @@ for _host in [
 # --- APPS ---
 _CLOUDINARY_APPS = [] if DEBUG else ['cloudinary_storage', 'cloudinary']
 INSTALLED_APPS = [
-    *_CLOUDINARY_APPS,
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    *_CLOUDINARY_APPS,
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
