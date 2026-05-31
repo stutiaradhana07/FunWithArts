@@ -217,24 +217,29 @@
     /* Centered Clean Minimalist Login page overrides */
     body.login {
         background: #fdfbf9 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-height: 100vh !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
     .login #container {
-        width: 100% !important;
-        max-width: 440px !important;
         background: #ffffff !important;
         border: 1px solid var(--border-color) !important;
         border-radius: 16px !important;
         box-shadow: 0 10px 30px rgba(42, 31, 26, 0.06) !important;
         padding: 40px 35px !important;
         box-sizing: border-box !important;
-        margin: 20px auto !important;
+        /* Let Django's absolute positioning center it perfectly */
+    }
+
+    /* Logo Text Visibility on Login White Card */
+    .login #branding h1 a span {
+        color: #2a1f1a !important; /* Deep charcoal clay */
+    }
+    
+    .login #branding h1 a span:last-child {
+        color: #c4896a !important; /* Soft terracotta */
+        border-bottom: none !important;
+        text-decoration: none !important;
     }
 
     .login #header {
@@ -248,15 +253,14 @@
 
     .login #branding h1 {
         font-size: 1.9rem !important;
-        color: #2a1f1a !important;
         font-weight: 700 !important;
         margin: 0 !important;
     }
 
     .login #branding h1 a {
-        color: #2a1f1a !important;
         justify-content: center !important;
         text-decoration: none !important;
+        display: flex !important;
     }
 
     .login #content {
@@ -344,16 +348,8 @@
         color: #ffffff !important;
     }
 
-    /* Hide ugly standard skip links */
-    .skip-to-content {
-        display: none !important;
-    }
-    
-    a.skip-to-content {
-        display: none !important;
-    }
-    
-    #skip-to-content {
+    /* Hide ugly standard skip links globally on login */
+    .login a.skip-to-content, .login a[href^="#"] {
         display: none !important;
     }
 </style>
