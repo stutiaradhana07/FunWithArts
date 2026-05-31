@@ -159,7 +159,7 @@ USE_I18N = True
 USE_TZ = True
 
 # --- STATIC & MEDIA FILES ---
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # In local dev, skip the manifest-based storage (requires collectstatic to have run).
 # In production, use compressed manifest for optimal static file serving.
@@ -313,7 +313,7 @@ else:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     STORAGES = {
         'default': {'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'},
-        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
     }
 WHITENOISE_MANIFEST_STRICT = False
 
