@@ -4,4 +4,4 @@
 # Migrate is handled via railway.json `preDeployCommand` instead.
 
 [phases.build]
-cmds = ["python manage.py collectstatic --noinput --clear"]
+cmds = ["python manage.py collectstatic --noinput --clear --ignore cloudinary"]
