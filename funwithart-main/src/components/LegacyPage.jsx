@@ -297,6 +297,51 @@ export default function LegacyPage({ source, title }) {
         document.head.appendChild(style);
       });
 
+      // Load all external scripts with src in order BEFORE mounting body or running inline scripts
+      const externalScripts = Array.from(doc.querySelectorAll('script[src]'));
+      for (const scriptTag of externalScripts) {
+        if (cancelled) return;
+        await new Promise((resolve) => {
+          const src = scriptTag.getAttribute('src');
+          if (!src) {
+            resolve();
+            return;
+          }
+
+          try {
+            const resolvedSrc = new URL(src, window.location.origin).href;
+            const alreadyExists = Array.from(document.querySelectorAll('script[src]')).some(
+              (s) => {
+                const sSrc = s.getAttribute('src');
+                if (!sSrc) return false;
+                try {
+                  return new URL(sSrc, window.location.origin).href === resolvedSrc;
+                } catch (_) {
+                  return false;
+                }
+              }
+            );
+            if (alreadyExists) {
+              resolve();
+              return;
+            }
+          } catch (_) {}
+
+          const script = document.createElement('script');
+          script.src = src;
+          script.dataset.legacyScript = source;
+          if (scriptTag.async) script.async = true;
+          if (scriptTag.defer) script.defer = true;
+          
+          script.onload = () => resolve();
+          script.onerror = () => {
+            console.error(`Failed to load external script: ${src}`);
+            resolve();
+          };
+          document.body.appendChild(script);
+        });
+      }
+
       const bodyClone = doc.body.cloneNode(true);
       bodyClone.querySelectorAll('script[src]').forEach((script) => script.remove());
       bodyClone.querySelectorAll('script').forEach((script) => script.remove());
