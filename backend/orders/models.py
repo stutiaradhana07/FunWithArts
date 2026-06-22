@@ -1,3 +1,4 @@
+import uuid
 from django.db import models, transaction
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
@@ -147,3 +148,126 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.product_name} x {self.quantity}'
+
+
+def _generate_reference_id():
+    """Generate a unique EXC-XXXXXX reference ID for exchange requests."""
+    return f'EXC-{uuid.uuid4().hex[:6].upper()}'
+
+
+class ExchangeRequest(models.Model):
+    """
+    Represents a customer's request to exchange a delivered product.
+
+    Eligibility:
+        - Must be submitted within 48 hours of order creation.
+        - One active exchange per order item (enforced via unique constraint).
+        - An unboxing video is always required.
+
+    Workflow:
+        pending_review → approved  → completed
+                       → rejected
+    """
+
+    class ExchangeType(models.TextChoices):
+        SAME = 'same', 'Same Item'
+        OTHER = 'other', 'Another Item'
+
+    class ExchangeStatus(models.TextChoices):
+        PENDING_REVIEW = 'pending_review', 'Pending Review'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected'
+        COMPLETED = 'completed', 'Completed'
+
+    # ── Relationships ──────────────────────────────────────────────────────
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='exchange_requests',
+    )
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exchange_requests',
+        help_text='The specific item being exchanged (leave blank for whole-order exchanges).',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exchange_requests',
+    )
+    alt_product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exchange_alternatives',
+        help_text='Only set when exchange_type is "other".',
+    )
+
+    # ── Request details ────────────────────────────────────────────────────
+    exchange_type = models.CharField(
+        max_length=10,
+        choices=ExchangeType.choices,
+        default=ExchangeType.SAME,
+    )
+    reason = models.TextField(
+        help_text='Customer-provided description of the issue (min 20 chars).',
+    )
+    unboxing_video = models.FileField(
+        upload_to='exchange_videos/%Y/%m/',
+        help_text='Continuous unedited unboxing video (MP4/MOV/WEBM, max 500 MB).',
+    )
+
+    # ── Status & admin ─────────────────────────────────────────────────────
+    status = models.CharField(
+        max_length=20,
+        choices=ExchangeStatus.choices,
+        default=ExchangeStatus.PENDING_REVIEW,
+        db_index=True,
+    )
+    admin_notes = models.TextField(
+        blank=True,
+        help_text='Internal admin notes explaining the approval or rejection decision.',
+    )
+    reference_id = models.CharField(
+        max_length=12,
+        unique=True,
+        default=_generate_reference_id,
+        editable=False,
+        db_index=True,
+    )
+
+    # ── Timestamps ─────────────────────────────────────────────────────────
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            # Prevent multiple active (non-rejected) exchanges for the same item
+            models.UniqueConstraint(
+                fields=['order_item'],
+                condition=models.Q(status__in=['pending_review', 'approved', 'completed']),
+                name='orders_exchange_one_active_per_item',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.reference_id} — Order #{self.order_id} ({self.status})'
+
+    @property
+    def is_pending(self):
+        return self.status == self.ExchangeStatus.PENDING_REVIEW
+
+    @property
+    def is_resolved(self):
+        return self.status in (
+            self.ExchangeStatus.APPROVED,
+            self.ExchangeStatus.REJECTED,
+            self.ExchangeStatus.COMPLETED,
+        )

@@ -1,0 +1,42 @@
+Fun with Art — Exchange Request: {{ exchange.get_status_display }}
+==================================================================
+
+Reference ID: {{ exchange.reference_id }}
+
+{% if is_approved %}
+GREAT NEWS — YOUR EXCHANGE HAS BEEN APPROVED
+---------------------------------------------
+After reviewing your unboxing video and request, our team has approved your exchange.
+Your replacement will be prepared and dispatched soon.
+
+You'll receive another email with tracking details once it has been dispatched.
+There's nothing further you need to do right now.
+
+{% else %}
+UPDATE ON YOUR EXCHANGE REQUEST
+--------------------------------
+After carefully reviewing your submission, our team was unable to approve
+this exchange request. We appreciate your patience.
+
+If you believe this decision was made in error or have additional information
+to share, please contact our support team quoting your reference ID.
+
+Support: {{ support_email }}
+{% endif %}
+
+REQUEST DETAILS
+---------------
+Reference ID : {{ exchange.reference_id }}
+Order        : #{{ order.id }}
+{% if exchange.order_item %}Item         : {{ exchange.order_item.product_name }}{% endif %}
+Decision     : {{ exchange.get_status_display }}
+Updated      : {{ exchange.updated_at|date:"j M Y, g:i A" }}
+{% if exchange.admin_notes %}
+Note from our team:
+{{ exchange.admin_notes }}
+{% endif %}
+
+Questions? Write to us at {{ support_email }}.
+
+— The Fun with Art Team
+  www.funwithartstudio.com

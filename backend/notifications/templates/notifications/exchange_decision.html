@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exchange Request Decision — Fun with Art</title>
+<style>
+  body { margin:0; padding:0; background:#f9f6f3; font-family:'Lato',Arial,sans-serif; color:#333; }
+  .wrapper { max-width:580px; margin:40px auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.06); }
+  .header { background:#111; padding:32px 40px; text-align:center; }
+  .header h1 { margin:0; font-family:Georgia,serif; font-style:italic; color:#fff; font-size:1.6rem; font-weight:400; letter-spacing:0.5px; }
+  .header .accent { color:#D7A88D; }
+  .body { padding:36px 40px; }
+  .ref-badge { display:inline-block; background:#fdf6f2; border:1.5px solid rgba(215,168,141,0.4); border-radius:50px; padding:10px 24px; font-family:Arial,sans-serif; font-size:0.85rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#c4957a; margin-bottom:28px; }
+  h2 { font-family:Georgia,serif; font-style:italic; font-size:1.5rem; color:#111; margin:0 0 12px; }
+  p { font-size:0.95rem; line-height:1.7; color:#555; margin:0 0 16px; }
+  .decision-banner { border-radius:12px; padding:20px 24px; margin:24px 0; text-align:center; }
+  .decision-banner.approved { background:#f0fdf4; border:1.5px solid rgba(34,197,94,0.3); }
+  .decision-banner.rejected { background:#fff5f5; border:1.5px solid rgba(239,68,68,0.3); }
+  .decision-icon { font-size:2.5rem; display:block; margin-bottom:8px; }
+  .decision-title { font-family:Georgia,serif; font-style:italic; font-size:1.3rem; font-weight:600; }
+  .decision-banner.approved .decision-title { color:#15803d; }
+  .decision-banner.rejected .decision-title { color:#b91c1c; }
+  .detail-box { background:#fafaf8; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:20px 24px; margin:24px 0; }
+  .detail-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:0.9rem; }
+  .detail-row:last-child { border-bottom:none; }
+  .detail-label { color:#888; font-weight:600; }
+  .detail-value { color:#111; font-weight:600; text-align:right; }
+  .admin-notes-box { background:#fffbf0; border:1px solid rgba(215,168,141,0.4); border-radius:10px; padding:16px 20px; margin:20px 0; }
+  .admin-notes-box strong { display:block; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:#c4957a; margin-bottom:6px; }
+  .admin-notes-box p { font-size:0.92rem; color:#555; margin:0; line-height:1.6; }
+  .cta-btn { display:inline-block; margin-top:8px; padding:14px 32px; background:#111; color:#fff; text-decoration:none; border-radius:50px; font-size:0.82rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+  .footer { background:#f4f1ee; padding:24px 40px; text-align:center; }
+  .footer p { font-size:0.8rem; color:#999; margin:0; line-height:1.6; }
+  .footer a { color:#D7A88D; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1>Fun<span class="accent"> With </span>Art</h1>
+  </div>
+  <div class="body">
+    <div class="ref-badge">{{ exchange.reference_id }}</div>
+
+    {% if is_approved %}
+    <div class="decision-banner approved">
+      <span class="decision-icon">✅</span>
+      <div class="decision-title">Your exchange has been approved!</div>
+    </div>
+    <h2>Great news — we're making it right.</h2>
+    <p>
+      After reviewing your unboxing video and exchange request, our team has <strong>approved</strong> your
+      exchange. Your replacement will be prepared and dispatched as soon as possible.
+    </p>
+    {% else %}
+    <div class="decision-banner rejected">
+      <span class="decision-icon">ℹ️</span>
+      <div class="decision-title">Exchange request outcome</div>
+    </div>
+    <h2>Update on your exchange request.</h2>
+    <p>
+      After carefully reviewing your submission, our team was unable to approve this exchange request.
+      We understand this may be disappointing, and we appreciate your patience.
+    </p>
+    {% endif %}
+
+    <div class="detail-box">
+      <div class="detail-row">
+        <span class="detail-label">Reference ID</span>
+        <span class="detail-value">{{ exchange.reference_id }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Order</span>
+        <span class="detail-value">#{{ order.id }}</span>
+      </div>
+      {% if exchange.order_item %}
+      <div class="detail-row">
+        <span class="detail-label">Item</span>
+        <span class="detail-value">{{ exchange.order_item.product_name }}</span>
+      </div>
+      {% endif %}
+      <div class="detail-row">
+        <span class="detail-label">Decision</span>
+        <span class="detail-value">{{ exchange.get_status_display }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Updated</span>
+        <span class="detail-value">{{ exchange.updated_at|date:"j M Y, g:i A" }}</span>
+      </div>
+    </div>
+
+    {% if exchange.admin_notes %}
+    <div class="admin-notes-box">
+      <strong>Note from our team</strong>
+      <p>{{ exchange.admin_notes }}</p>
+    </div>
+    {% endif %}
+
+    {% if is_approved %}
+    <p>
+      We'll send you another email with tracking details once your replacement has been dispatched.
+      There's nothing further you need to do at this stage.
+    </p>
+    {% else %}
+    <p>
+      If you believe this decision was made in error, or if you have additional information to share,
+      please don't hesitate to contact our support team and quote your reference ID.
+    </p>
+    <p style="text-align:center;margin-top:24px;">
+      <a href="mailto:{{ support_email }}" class="cta-btn">Contact Support</a>
+    </p>
+    {% endif %}
+
+    <p style="font-size:0.88rem;color:#888;margin-top:28px;">
+      Questions? Write to us at
+      <a href="mailto:{{ support_email }}" style="color:#D7A88D;">{{ support_email }}</a>.
+    </p>
+  </div>
+  <div class="footer">
+    <p>
+      {{ studio_name }} &bull; Handcrafted Ceramics, New Delhi<br>
+      <a href="https://www.funwithartstudio.com">www.funwithartstudio.com</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>

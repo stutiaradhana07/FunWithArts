@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request an Exchange | Fun With Art</title>
+    <meta name="description" content="Submit an exchange request for your Fun With Art ceramics order. Upload your unboxing video and describe the issue.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Syne:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="/api-config.js"></script>
+    <script src="shared.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        a, button, input, select, textarea { cursor: pointer; }
+        :root {
+            --accent: #D7A88D; --accent-dark: #c4957a;
+            --accent-light: rgba(215,168,141,0.12); --accent-glow: rgba(215,168,141,0.25);
+            --bg: #Fdfbf9; --card-bg: #fff; --text: #222;
+            --text-muted: #777; --text-light: #aaa;
+            --border: rgba(0,0,0,0.06); --border-strong: rgba(0,0,0,0.1);
+            --header-font: 'Playfair Display', serif;
+            --art-font: 'Syne', sans-serif; --body-font: 'Lato', sans-serif;
+            --shadow: 0 10px 30px rgba(0,0,0,0.04);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.07);
+            --radius: 20px; --radius-sm: 14px; --radius-xs: 10px;
+            --warn-bg: #fffbf0; --warn-border: rgba(215,168,141,0.4);
+            --info-bg: #f0f7ff; --info-border: rgba(59,130,246,0.25);
+            --success-bg: #f0fdf4; --success-border: rgba(34,197,94,0.3);
+            --error-bg: #fff5f5; --error-border: rgba(239,68,68,0.3);
+        }
+        body { font-family: var(--body-font); color: var(--text); background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        /* FLOATING SHAPES */
+        .floating-dreamscape { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; }
+        .cutu-shape { position: absolute; fill: var(--accent); opacity: 0.18; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.04)); }
+        @keyframes floatA { 0%,100%{transform:translateY(0) rotate(0deg) scale(1);}50%{transform:translateY(-20px) rotate(8deg) scale(1.05);} }
+        @keyframes floatB { 0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-25px) rotate(-10deg);} }
+        .shape-1 { top:15%;left:6%;width:90px;animation:floatA 9s ease-in-out infinite; }
+        .shape-2 { top:65%;right:8%;width:65px;animation:floatB 11s ease-in-out infinite; }
+        .shape-3 { top:85%;left:22%;width:75px;animation:floatA 8s ease-in-out infinite;animation-delay:2s; }
+
+        /* NAV */
+        nav { background:rgba(253,251,249,0.95);backdrop-filter:blur(15px);padding:1.2rem 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border); }
+        .logo-fusion { display:flex;align-items:baseline;text-decoration:none;color:#111;transition:transform 0.3s cubic-bezier(0.19,1,0.22,1); }
+        .logo-fusion:hover { transform:scale(1.05) rotate(-2deg); }
+        .english-part { font-family:var(--art-font);font-weight:700;font-size:clamp(1.2rem,2vw,1.5rem);letter-spacing:1px;text-transform:uppercase;margin-right:5px; }
+        .hindi-char { font-family:var(--header-font);color:var(--accent);font-size:clamp(2rem,4vw,2.8rem);font-style:italic;position:relative;top:3px; }
+        .nav-links { display:flex;align-items:center; }
+        .desktop-links a { text-decoration:none;color:#111;font-family:var(--art-font);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-left:30px;font-weight:bold;transition:0.3s; }
+        .desktop-links a:hover { color:var(--accent); }
+        .nav-actions { display:flex;gap:15px;align-items:center;margin-left:30px; }
+        .nav-icon { position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;color:#111;transition:0.3s; }
+        .nav-icon:hover { background:rgba(0,0,0,0.05);transform:scale(1.1); }
+        .nav-icon svg { width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5; }
+        .badge-count { position:absolute;top:0;right:0;background:var(--accent);color:#fff;font-size:0.62rem;width:16px;height:16px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-family:var(--art-font);font-weight:bold;opacity:0;transition:0.3s; }
+        .badge-count.visible { opacity:1; }
+        .nav-account-link { font-family:var(--art-font);font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:#111;font-weight:bold;padding:10px 18px;border:1px solid #111;border-radius:50px;white-space:nowrap;transition:0.3s;line-height:1; }
+        .nav-account-link:hover { background:#111;color:#fff; }
+        .nav-account-link.is-logged-in { border-color:var(--accent);color:var(--accent); }
+        @media (max-width:768px) { .desktop-links{display:none;} }
+
+        /* PAGE */
+        .page-wrapper { flex:1;max-width:820px;width:100%;margin:0 auto 80px;padding:36px 5% 0;position:relative;z-index:5; }
+
+        /* BREADCRUMB */
+        .breadcrumb { display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:28px; }
+        .breadcrumb a { font-family:var(--art-font);font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:var(--text-muted);text-decoration:none;transition:color 0.2s; }
+        .breadcrumb a:hover { color:var(--accent-dark); }
+        .breadcrumb-sep { font-size:0.7rem;color:var(--text-light); }
+        .breadcrumb-current { font-family:var(--art-font);font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:var(--accent-dark); }
+
+        /* PAGE TITLE */
+        .page-title-block { margin-bottom:32px; }
+        .page-title-block h1 { font-family:var(--header-font);font-size:clamp(2.2rem,5vw,3.2rem);font-style:italic;color:#111;line-height:1.15;margin-bottom:6px; }
+        .page-title-block p { color:var(--text-muted);font-size:1rem;line-height:1.6; }
+
+        /* CARD */
+        .card { background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden; }
+        .card-header { padding:22px 28px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px; }
+        .card-header-icon { width:36px;height:36px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0; }
+        .card-header h2 { font-family:var(--art-font);font-size:0.82rem;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#111; }
+        .card-header .step-num { margin-left:auto;font-family:var(--art-font);font-size:0.7rem;letter-spacing:1px;color:var(--text-light);font-weight:700; }
+        .card-body { padding:28px; }
+
+        /* CALLOUTS */
+        .callout { border-radius:var(--radius-xs);padding:14px 18px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;font-size:0.9rem;line-height:1.6; }
+        .callout-icon { font-size:1.1rem;flex-shrink:0;margin-top:1px; }
+        .callout-warn { background:var(--warn-bg);border:1px solid var(--warn-border);color:#7a5c3f; }
+        .callout-info { background:var(--info-bg);border:1px solid var(--info-border);color:#1e4b8a; }
+        .callout strong { font-weight:700; }
+        .callout-text { flex:1; }
+
+        /* ELIGIBILITY BANNER */
+        .eligibility-banner { border-radius:var(--radius-sm);padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:24px;font-family:var(--art-font);font-size:0.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase; }
+        .eligibility-banner.eligible { background:#f0fdf4;border:1.5px solid rgba(34,197,94,0.3);color:#166534; }
+        .eligibility-banner.expired { background:#fff5f5;border:1.5px solid rgba(239,68,68,0.3);color:#991b1b; }
+        .eligibility-icon { font-size:1.3rem; }
+        .eligibility-timer { margin-left:auto;font-size:0.75rem;opacity:0.8;font-weight:400;letter-spacing:0;font-family:var(--body-font); }
+        .eligibility-timer strong { font-family:var(--art-font);font-weight:700;color:#d97706; }
+
+        /* ORDER SUMMARY */
+        .order-summary-product { display:flex;gap:20px;align-items:flex-start; }
+        .order-product-img { width:100px;height:100px;object-fit:cover;border-radius:var(--radius-sm);background:#faf8f5;border:1px solid var(--border);flex-shrink:0; }
+        .order-product-details { flex:1; }
+        .order-product-name { font-family:var(--header-font);font-size:1.4rem;font-style:italic;font-weight:600;color:#111;margin-bottom:4px; }
+        .order-product-variant { font-family:var(--art-font);font-size:0.72rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px; }
+        .order-meta-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:4px; }
+        .order-meta-cell { display:flex;flex-direction:column;gap:2px; }
+        .meta-label { font-family:var(--art-font);font-size:0.62rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);font-weight:700; }
+        .meta-value { font-size:0.9rem;font-weight:600;color:var(--text); }
+        .meta-value.accent { color:var(--accent-dark);font-family:var(--header-font);font-style:italic;font-size:1rem; }
+
+        /* EXCHANGE TYPE CARDS */
+        .exchange-type-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+        .exchange-type-option { position:relative; }
+        .exchange-type-option input[type="radio"] { position:absolute;opacity:0;width:0;height:0; }
+        .exchange-type-label { display:flex;flex-direction:column;gap:8px;padding:22px 20px;border:2px solid var(--border-strong);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.25s ease;background:#fafaf8;height:100%; }
+        .exchange-type-label:hover { border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px);box-shadow:0 8px 24px var(--accent-glow); }
+        .exchange-type-option input[type="radio"]:checked + .exchange-type-label { border-color:var(--accent-dark);background:var(--accent-light);box-shadow:0 8px 24px var(--accent-glow); }
+        .exchange-type-option input[type="radio"]:checked + .exchange-type-label .type-radio-dot { background:var(--accent-dark);box-shadow:0 0 0 3px var(--accent-glow); }
+        .type-header { display:flex;align-items:center;gap:10px; }
+        .type-radio-dot { width:18px;height:18px;border:2px solid var(--border-strong);border-radius:50%;background:#fff;flex-shrink:0;transition:all 0.2s; }
+        .type-title { font-family:var(--art-font);font-size:0.85rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#111; }
+        .type-icon { font-size:1.4rem;margin-bottom:2px; }
+        .type-desc { font-size:0.88rem;color:var(--text-muted);line-height:1.5; }
+        .type-note { font-size:0.78rem;color:#c4957a;font-style:italic;margin-top:4px; }
+        @media (max-width:540px) { .exchange-type-grid{grid-template-columns:1fr;} }
+
+        /* ALT PRODUCT */
+        .alt-product-section { margin-top:20px;display:none;animation:fadeSlideDown 0.3s ease; }
+        .alt-product-section.visible { display:block; }
+        @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);} }
+        .alt-product-note { font-size:0.85rem;line-height:1.6;margin-bottom:14px;padding:12px 16px;background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--radius-xs);color:#1e4b8a; }
+        .form-select { width:100%;padding:14px 18px;border:1.5px solid var(--border-strong);border-radius:var(--radius-xs);font-family:var(--body-font);font-size:0.95rem;color:var(--text);background:#fafaf8;outline:none;transition:border-color 0.2s,box-shadow 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px; }
+        .form-select:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background-color:#fff; }
+
+        /* FORM FIELDS */
+        .form-label { display:block;font-family:var(--art-font);font-size:0.72rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:#444;margin-bottom:10px; }
+        .form-label .required { color:var(--accent-dark);margin-left:2px; }
+        .form-textarea { width:100%;padding:16px 18px;border:1.5px solid var(--border-strong);border-radius:var(--radius-xs);font-family:var(--body-font);font-size:0.95rem;color:var(--text);background:#fafaf8;resize:vertical;min-height:130px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;line-height:1.6; }
+        .form-textarea:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background-color:#fff; }
+        .char-counter { display:flex;justify-content:space-between;align-items:center;margin-top:8px; }
+        .char-count-text { font-family:var(--art-font);font-size:0.7rem;letter-spacing:1px;color:var(--text-light);transition:color 0.2s; }
+        .char-count-text.below-min { color:#ef4444; }
+        .char-count-text.at-max { color:#d97706; }
+        .char-count-text.good { color:#16a34a; }
+        .field-error { font-size:0.8rem;color:#ef4444;margin-top:6px;display:none;align-items:center;gap:5px; }
+        .field-error.visible { display:flex; }
+
+        /* VIDEO UPLOAD */
+        .video-requirements { background:#fafaf8;border:1px solid var(--border);border-radius:var(--radius-xs);padding:16px 18px;margin-bottom:18px; }
+        .video-req-title { font-family:var(--art-font);font-size:0.72rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:#444;margin-bottom:10px; }
+        .video-req-list { list-style:none;display:flex;flex-direction:column;gap:6px; }
+        .video-req-list li { display:flex;align-items:flex-start;gap:8px;font-size:0.86rem;color:var(--text-muted);line-height:1.5; }
+        .req-bullet { color:var(--accent-dark);font-size:0.7rem;margin-top:3px;flex-shrink:0; }
+        .video-req-list li.warn-item { color:#c4957a; }
+        .drop-zone { border:2px dashed rgba(215,168,141,0.5);border-radius:var(--radius-sm);padding:40px 24px;text-align:center;background:#fdf9f7;transition:all 0.25s ease;cursor:pointer;position:relative; }
+        .drop-zone:hover,.drop-zone.drag-over { border-color:var(--accent-dark);background:var(--accent-light);box-shadow:0 0 0 4px var(--accent-glow); }
+        .drop-zone.has-file { border-style:solid;border-color:rgba(34,197,94,0.4);background:#f0fdf4; }
+        .drop-zone input[type="file"] { position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer; }
+        .drop-icon { font-size:2.5rem;margin-bottom:12px;display:block; }
+        .drop-title { font-family:var(--art-font);font-size:0.9rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#333;margin-bottom:6px; }
+        .drop-subtitle { font-size:0.85rem;color:var(--text-muted);line-height:1.5; }
+        .drop-formats { margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap; }
+        .format-tag { font-family:var(--art-font);font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:50px;background:rgba(215,168,141,0.15);color:var(--accent-dark);border:1px solid var(--accent-glow); }
+        .upload-state { display:none;margin-top:16px; }
+        .upload-state.visible { display:block; }
+        .progress-bar-wrap { background:#eee;border-radius:50px;height:6px;overflow:hidden;margin:8px 0 10px; }
+        .progress-bar-fill { height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));border-radius:50px;transition:width 0.3s ease; }
+        .progress-label { font-family:var(--art-font);font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:flex;justify-content:space-between; }
+        .video-preview-card { display:flex;align-items:center;gap:16px;padding:16px 18px;background:#f0fdf4;border:1.5px solid rgba(34,197,94,0.3);border-radius:var(--radius-xs); }
+        .video-preview-thumb { width:72px;height:54px;background:#ddd;border-radius:8px;object-fit:cover;flex-shrink:0; }
+        .video-preview-info { flex:1;min-width:0; }
+        .video-preview-name { font-family:var(--art-font);font-size:0.82rem;font-weight:700;color:#166534;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px; }
+        .video-preview-size { font-size:0.78rem;color:#16a34a; }
+        .remove-video-btn { background:none;border:none;color:#ef4444;font-size:1.1rem;cursor:pointer;padding:4px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s; }
+        .remove-video-btn:hover { background:rgba(239,68,68,0.1); }
+
+        /* CHECKBOXES */
+        .checkbox-group { display:flex;flex-direction:column;gap:14px; }
+        .checkbox-item { display:flex;align-items:flex-start;gap:12px;cursor:pointer; }
+        .checkbox-item input[type="checkbox"] { width:20px;height:20px;flex-shrink:0;margin-top:1px;cursor:pointer;accent-color:var(--accent-dark); }
+        .checkbox-text { font-size:0.9rem;color:#444;line-height:1.55; }
+        .checkbox-text strong { color:#111;font-weight:700; }
+
+        /* SUBMIT */
+        .submit-section { display:flex;gap:14px;align-items:center;flex-wrap:wrap; }
+        .btn-primary { flex:1;min-width:200px;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 32px;background:#111;color:#fff;border:none;border-radius:50px;font-family:var(--art-font);font-size:0.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+        .btn-primary:hover:not(:disabled) { background:var(--accent-dark);box-shadow:0 12px 30px var(--accent-glow);transform:translateY(-2px); }
+        .btn-primary:disabled { opacity:0.5;cursor:not-allowed;transform:none; }
+        .btn-primary.loading { pointer-events:none; }
+        .btn-primary .spinner { width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none; }
+        .btn-primary.loading .spinner { display:block; }
+        .btn-primary.loading .btn-label { opacity:0.7; }
+        @keyframes spin { to{transform:rotate(360deg);} }
+        .btn-cancel { padding:16px 28px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border-strong);border-radius:50px;font-family:var(--art-font);font-size:0.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap; }
+        .btn-cancel:hover { border-color:#111;color:#111; }
+
+        /* SUCCESS */
+        #success-view { display:none;text-align:center;padding:60px 40px;background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-lg);animation:fadeIn 0.5s ease;margin-bottom:30px; }
+        #success-view.visible { display:block; }
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);} }
+        .success-icon-wrap { width:80px;height:80px;background:#f0fdf4;border:2px solid rgba(34,197,94,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 24px; }
+        #success-view h2 { font-family:var(--header-font);font-size:clamp(1.8rem,4vw,2.5rem);font-style:italic;color:#111;margin-bottom:12px; }
+        #success-view p { color:var(--text-muted);font-size:0.95rem;line-height:1.7;max-width:480px;margin:0 auto 24px; }
+        .success-ref-id { display:inline-block;font-family:var(--art-font);font-size:0.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;background:var(--accent-light);border:1.5px solid var(--warn-border);border-radius:50px;color:var(--accent-dark);margin-bottom:32px; }
+        .success-actions { display:flex;gap:14px;justify-content:center;flex-wrap:wrap; }
+        .btn-back { display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#111;color:#fff;border-radius:50px;font-family:var(--art-font);font-size:0.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all 0.25s; }
+        .btn-back:hover { background:var(--accent-dark);transform:translateY(-2px); }
+        .btn-back-outline { display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border-strong);border-radius:50px;font-family:var(--art-font);font-size:0.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all 0.25s; }
+        .btn-back-outline:hover { border-color:#111;color:#111; }
+
+        /* EXPIRED */
+        #expired-overlay { display:none;text-align:center;padding:60px 30px;background:var(--card-bg);border-radius:var(--radius);border:1.5px solid rgba(239,68,68,0.3);box-shadow:var(--shadow-lg);margin-bottom:30px; }
+        #expired-overlay.visible { display:block; }
+        .expired-icon { font-size:3rem;margin-bottom:16px; }
+        #expired-overlay h2 { font-family:var(--header-font);font-size:2rem;font-style:italic;color:#111;margin-bottom:10px; }
+        #expired-overlay p { color:var(--text-muted);font-size:0.95rem;line-height:1.7;max-width:450px;margin:0 auto 16px; }
+
+        /* ERROR SUMMARY */
+        .form-error-summary { background:#fff5f5;border:1.5px solid rgba(239,68,68,0.3);border-radius:var(--radius-xs);padding:14px 18px;margin-bottom:16px;display:none; }
+        .form-error-summary.visible { display:block; }
+        .form-error-summary p { font-family:var(--art-font);font-size:0.8rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#991b1b;margin-bottom:6px; }
+        .form-error-summary ul { margin-left:18px;font-size:0.85rem;color:#b91c1c;line-height:1.6; }
+
+        /* AI BADGE */
+        .ai-future-badge { display:inline-flex;align-items:center;gap:6px;font-family:var(--art-font);font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6366f1;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);padding:4px 10px;border-radius:50px;margin-left:auto; }
+        .ai-future-badge::before { content:'🤖';font-size:0.75rem; }
+
+        /* FOOTER */
+        .site-footer { background:#111;color:#fff;padding:60px 5% 30px;margin-top:auto; }
+        .footer-grid { max-width:1200px;margin:0 auto 40px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px; }
+        .footer-brand h2 { font-family:var(--header-font);font-size:2rem;font-style:italic;margin-bottom:12px; }
+        .footer-brand p { color:#888;line-height:1.6;max-width:300px; }
+        .footer-col h4 { font-family:var(--art-font);font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;color:var(--accent); }
+        .footer-col ul { list-style:none; }
+        .footer-col ul li { margin-bottom:12px; }
+        .footer-col ul li a { color:#ccc;text-decoration:none;font-family:var(--body-font);transition:0.3s; }
+        .footer-col ul li a:hover { color:#fff;padding-left:5px; }
+        .footer-bottom { border-top:1px solid #222;text-align:center;padding-top:24px;color:#666;font-size:0.82rem;font-family:var(--art-font); }
+        @media (max-width:800px) { .footer-grid{grid-template-columns:1fr;} }
+        @media (max-width:600px) {
+            .page-wrapper{padding-top:24px;} .card-body{padding:20px;} .card-header{padding:18px 20px 14px;}
+            .order-summary-product{flex-direction:column;} .order-product-img{width:100%;height:180px;}
+            .submit-section{flex-direction:column;} .btn-primary,.btn-cancel{width:100%;justify-content:center;}
+            #success-view{padding:40px 20px;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="floating-dreamscape" aria-hidden="true">
+    <svg class="cutu-shape shape-1" viewBox="0 0 100 120"><ellipse cx="50" cy="70" rx="30" ry="45"/><rect x="38" y="10" width="24" height="20" rx="6"/></svg>
+    <svg class="cutu-shape shape-2" viewBox="0 0 80 80"><circle cx="40" cy="40" r="38"/></svg>
+    <svg class="cutu-shape shape-3" viewBox="0 0 90 110"><path d="M45 5 C20 5 10 25 12 50 C14 75 30 100 45 105 C60 100 76 75 78 50 C80 25 70 5 45 5Z"/></svg>
+</div>
+
+<nav>
+    <a href="/" class="logo-fusion">
+        <span class="english-part">FUN WITH </span><span class="hindi-char">Art</span>
+    </a>
+    <div class="nav-links desktop-links">
+        <a href="/">Home</a>
+        <a href="/collection">Collection</a>
+        <a href="/studio">Studio</a>
+    </div>
+    <div class="nav-actions">
+        <a href="/wishlist" class="nav-icon" title="Wishlist">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count" id="wishlist-count">0</span>
+        </a>
+        <a href="/cart" class="nav-icon" title="Cart">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+            <span class="badge-count" id="cart-count">0</span>
+        </a>
+        <a href="/account" id="account-link" class="nav-account-link" title="My Account">Account</a>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/account">My Account</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <a href="/order-history">Order History</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <a href="/orders" id="breadcrumb-order-link">Order Details</a>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span class="breadcrumb-current">Exchange Request</span>
+    </nav>
+
+    <div class="page-title-block">
+        <h1>Request an Exchange</h1>
+        <p>Found a problem with your piece? We&#8217;re here to make it right.</p>
+    </div>
+
+    <!-- EXPIRED -->
+    <div id="expired-overlay" role="alert">
+        <div class="expired-icon">&#8987;</div>
+        <h2>Exchange Window Expired</h2>
+        <p>Exchange requests must be submitted within <strong>48 hours</strong> of purchase/delivery. Unfortunately, this window has now closed for this order.</p>
+        <p style="font-size:0.88rem;">If you believe this is an error, please <a href="/contact" style="color:var(--accent-dark);">contact our support team</a>.</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+            <a href="/order-history" class="btn-back">&#8592; Back to Orders</a>
+            <a href="/support" class="btn-back-outline">Contact Support</a>
+        </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="success-view" role="status" aria-live="polite">
+        <div class="success-icon-wrap">&#10003;</div>
+        <h2>Request Submitted!</h2>
+        <p>Your exchange request has been forwarded for manual review.<br>Our team will verify the uploaded video and exchange details.<br>You will receive updates through your registered email and account notifications.</p>
+        <div class="success-ref-id" id="success-ref-id">Reference ID: EXC-000000</div>
+        <div class="success-actions">
+            <a href="/order-history" class="btn-back">&#8592; Back to Orders</a>
+            <a href="/account" class="btn-back-outline">My Account</a>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div id="exchange-form-wrapper">
+
+        <!-- Eligibility Banner -->
+        <div class="eligibility-banner eligible" id="eligibility-banner" role="status">
+            <span class="eligibility-icon">&#10003;</span>
+            <span id="eligibility-text">Eligible for exchange</span>
+            <span class="eligibility-timer" id="eligibility-timer">
+                <strong id="time-remaining">--:--:--</strong> remaining
+            </span>
+        </div>
+
+        <!-- 1. Order Summary -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon">&#128334;</div>
+                <h2>Order Summary</h2>
+                <span class="step-num">1 of 5</span>
+            </div>
+            <div class="card-body">
+                <div class="order-summary-product">
+                    <img id="product-image" src="https://placehold.co/200x200/fdf6f2/d7a88d?text=Ceramics" alt="Product" class="order-product-img" onerror="this.src='https://placehold.co/200x200/fdf6f2/d7a88d?text=Art'">
+                    <div class="order-product-details">
+                        <div class="order-product-name" id="product-name">Handcrafted Terracotta Vase</div>
+                        <div class="order-product-variant" id="product-variant">Variant: Individual &#183; Natural Clay</div>
+                        <div class="order-meta-grid">
+                            <div class="order-meta-cell"><span class="meta-label">Order ID</span><span class="meta-value" id="order-id-display">#&#8212;</span></div>
+                            <div class="order-meta-cell"><span class="meta-label">Date Placed</span><span class="meta-value" id="order-date-display">&#8212;</span></div>
+                            <div class="order-meta-cell"><span class="meta-label">Price Paid</span><span class="meta-value accent" id="order-price-display">&#8212;</span></div>
+                            <div class="order-meta-cell"><span class="meta-label">Status</span><span class="meta-value" id="order-status-display">Delivered</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Exchange Type -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon">&#128260;</div>
+                <h2>Exchange Type</h2>
+                <span class="step-num">2 of 5</span>
+            </div>
+            <div class="card-body">
+                <div class="callout callout-info" style="margin-bottom:20px;">
+                    <span class="callout-icon">&#8505;&#65039;</span>
+                    <span class="callout-text">Choose how you&#8217;d like your exchange to be fulfilled. Both options are subject to stock availability at the time of approval.</span>
+                </div>
+                <div class="exchange-type-grid" role="radiogroup" aria-label="Exchange type selection">
+                    <div class="exchange-type-option">
+                        <input type="radio" id="exchange-same" name="exchange-type" value="same" checked>
+                        <label class="exchange-type-label" for="exchange-same">
+                            <div class="type-icon">&#9851;&#65039;</div>
+                            <div class="type-header"><div class="type-radio-dot"></div><div class="type-title">Same Item</div></div>
+                            <div class="type-desc">Replace with the identical product &#8212; same design, size, and variant.</div>
+                        </label>
+                    </div>
+                    <div class="exchange-type-option">
+                        <input type="radio" id="exchange-other" name="exchange-type" value="other">
+                        <label class="exchange-type-label" for="exchange-other">
+                            <div class="type-icon">&#128717;&#65039;</div>
+                            <div class="type-header"><div class="type-radio-dot"></div><div class="type-title">Another Item</div></div>
+                            <div class="type-desc">Choose a different product of equal value from our collection.</div>
+                            <div class="type-note">Equal value only &#8212; no price adjustments.</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="alt-product-section" id="alt-product-section">
+                    <div class="alt-product-note">&#8505;&#65039; &nbsp;Alternative products must be of equal value. Additional payment or refunds are currently not supported.</div>
+                    <label class="form-label" for="alt-product-select">Preferred Replacement Product <span class="required">*</span></label>
+                    <select class="form-select" id="alt-product-select" name="alt_product">
+                        <option value="">&#8212; Select a product of equal value &#8212;</option>
+                    </select>
+                    <div class="field-error" id="alt-product-error" role="alert"><span>&#9888;</span> Please select a replacement product.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Reason -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon">&#128221;</div>
+                <h2>Reason for Exchange</h2>
+                <span class="step-num">3 of 5</span>
+            </div>
+            <div class="card-body">
+                <label class="form-label" for="exchange-reason">Describe the issue <span class="required">*</span></label>
+                <textarea class="form-textarea" id="exchange-reason" name="reason" placeholder="Please describe the issue and why you would like an exchange. Be as specific as possible &#8212; mention what the defect is, where it is on the product, and how it affects its use or appearance." maxlength="500" rows="5" aria-describedby="char-counter-text reason-error"></textarea>
+                <div class="char-counter">
+                    <div class="field-error" id="reason-error" role="alert" style="margin-top:0;"><span>&#9888;</span> <span id="reason-error-text">Minimum 20 characters required.</span></div>
+                    <span class="char-count-text below-min" id="char-counter-text" aria-live="polite">0 / 500</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Video -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon">&#127909;</div>
+                <h2>Unboxing Video</h2>
+                <span class="step-num">4 of 5</span>
+                <span class="ai-future-badge" title="AI video verification &#8212; coming soon">AI Verified Soon</span>
+            </div>
+            <div class="card-body">
+                <div class="callout callout-warn" style="margin-bottom:20px;">
+                    <span class="callout-icon">&#9888;&#65039;</span>
+                    <div class="callout-text"><strong>Video is mandatory.</strong> To protect against fraudulent claims, all exchange requests require a continuous unboxing video. Requests without a valid video will be rejected without review.</div>
+                </div>
+                <div class="video-requirements">
+                    <div class="video-req-title">&#128203; Video Requirements</div>
+                    <ul class="video-req-list">
+                        <li><span class="req-bullet">&#9658;</span> Video must be <strong>continuous and unedited</strong> &#8212; no cuts, pauses, or jump edits</li>
+                        <li><span class="req-bullet">&#9658;</span> Must clearly show the <strong>sealed/closed package</strong> at the start</li>
+                        <li><span class="req-bullet">&#9658;</span> Must capture the full <strong>unboxing and unwrapping</strong> process</li>
+                        <li><span class="req-bullet">&#9658;</span> Must show <strong>product inspection</strong> highlighting the issue</li>
+                        <li><span class="req-bullet">&#9658;</span> Accepted formats: <strong>MP4, MOV, WEBM</strong></li>
+                        <li><span class="req-bullet">&#9658;</span> Maximum file size: <strong>500 MB</strong></li>
+                        <li class="warn-item"><span class="req-bullet" style="color:#c4957a;">&#9658;</span> Edited or incomplete videos will result in immediate rejection</li>
+                    </ul>
+                </div>
+                <div class="drop-zone" id="drop-zone" role="button" aria-label="Upload unboxing video">
+                    <input type="file" id="video-input" name="unboxing_video" accept="video/mp4,video/quicktime,video/webm" aria-label="Upload unboxing video file">
+                    <span class="drop-icon" id="drop-icon">&#127916;</span>
+                    <div class="drop-title" id="drop-title">Drag &amp; drop your video here</div>
+                    <div class="drop-subtitle" id="drop-subtitle">or click anywhere to browse your files</div>
+                    <div class="drop-formats">
+                        <span class="format-tag">MP4</span>
+                        <span class="format-tag">MOV</span>
+                        <span class="format-tag">WEBM</span>
+                        <span class="format-tag">Max 500 MB</span>
+                    </div>
+                </div>
+                <div class="upload-state" id="upload-progress">
+                    <div class="progress-label"><span>Preparing upload&#8230;</span><span id="progress-pct">0%</span></div>
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+                </div>
+                <div class="upload-state" id="video-preview-wrap">
+                    <div class="video-preview-card">
+                        <video id="video-preview-player" class="video-preview-thumb" muted preload="metadata" style="background:#111;"></video>
+                        <div class="video-preview-info">
+                            <div class="video-preview-name" id="video-filename">video.mp4</div>
+                            <div class="video-preview-size" id="video-filesize">&#8212; MB</div>
+                        </div>
+                        <span style="font-size:1.4rem;flex-shrink:0;">&#10003;</span>
+                        <button type="button" class="remove-video-btn" id="remove-video-btn" title="Remove video" aria-label="Remove video">&#10005;</button>
+                    </div>
+                </div>
+                <div class="field-error" id="video-error" role="alert" style="margin-top:12px;"><span>&#9888;</span> <span id="video-error-text">Please upload your unboxing video to continue.</span></div>
+            </div>
+        </div>
+
+        <!-- 5. Terms -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-icon">&#10003;</div>
+                <h2>Terms &amp; Verification</h2>
+                <span class="step-num">5 of 5</span>
+            </div>
+            <div class="card-body">
+                <div class="checkbox-group" role="group" aria-label="Exchange terms checkboxes">
+                    <label class="checkbox-item" for="confirm-authentic">
+                        <input type="checkbox" id="confirm-authentic" name="confirm_authentic">
+                        <span class="checkbox-text">I confirm that the uploaded video is <strong>authentic and completely unedited</strong>, and was recorded during the actual unboxing of this order.</span>
+                    </label>
+                    <label class="checkbox-item" for="confirm-review">
+                        <input type="checkbox" id="confirm-review" name="confirm_review">
+                        <span class="checkbox-text">I understand that exchange approval is subject to <strong>manual review</strong> by the Fun With Art team, and the decision is final.</span>
+                    </label>
+                    <label class="checkbox-item" for="confirm-policy">
+                        <input type="checkbox" id="confirm-policy" name="confirm_policy">
+                        <span class="checkbox-text">I understand that <strong>false or misleading claims</strong> may result in permanent rejection of future exchange requests from this account.</span>
+                    </label>
+                </div>
+                <div class="field-error" id="terms-error" role="alert" style="margin-top:14px;"><span>&#9888;</span> Please accept all terms before submitting.</div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="card">
+            <div class="card-body">
+                <div class="form-error-summary" id="form-error-summary" role="alert">
+                    <p>&#9888; Please fix the following before submitting:</p>
+                    <ul id="form-error-list"></ul>
+                </div>
+                <div class="submit-section">
+                    <button type="button" id="submit-btn" class="btn-primary" aria-label="Submit exchange request">
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="btn-label">Submit Exchange Request</span>
+                        <span aria-hidden="true">&#8594;</span>
+                    </button>
+                    <a href="/order-history" class="btn-cancel">Cancel</a>
+                </div>
+                <p style="margin-top:16px;font-size:0.78rem;color:var(--text-light);text-align:center;line-height:1.5;">
+                    By submitting, you agree to our <a href="/legal" style="color:var(--accent-dark);text-decoration:none;">Exchange Policy</a>.
+                    Our team will respond within 3&#8211;5 business days after reviewing your video.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer class="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h2>Fun With Art</h2>
+            <p>Art you can hold. Handcrafted terracotta and ceramics made slowly, with intention, in New Delhi, India.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Shop</h4>
+            <ul>
+                <li><a href="/collection">All Ceramics</a></li>
+                <li><a href="/studio">Studio Classes</a></li>
+                <li><a href="/about">Our Story</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="/support">FAQ</a></li>
+                <li><a href="/support">Shipping &amp; Returns</a></li>
+                <li><a href="/contact">Contact Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="/legal">Terms of Service</a></li>
+                <li><a href="/legal">Privacy Policy</a></li>
+                <li><a href="/legal">Exchange Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom"><p>&#169; 2026 Fun With Art Studio. Built in Delhi.</p></div>
+</footer>
+
+<script>
+(function(){
+    'use strict';
+    var EXCHANGE_WINDOW_HOURS=48,MAX_VIDEO_BYTES=500*1024*1024,ACCEPTED_VIDEO_TYPES=['video/mp4','video/quicktime','video/webm'];
+    var state={orderId:null,orderDate:null,productName:'',productVariant:'',productImage:'',productPrice:'',orderStatus:'delivered',isEligible:false,videoFile:null,submitting:false};
+
+    function init(){
+        if(!window.UdaanAPI||!window.UdaanAPI.isLoggedIn()){
+            window.location.href='/login.html?next='+encodeURIComponent(window.location.pathname+window.location.search);
+            return;
+        }
+        var params=new URLSearchParams(window.location.search);
+        state.orderId=params.get('order')||'1042';
+        var itemParam=params.get('item')||null;
+        window.UdaanAPI.fetchOrders()
+            .then(function(orders){var o=orders.find(function(x){return String(x.id)===String(state.orderId);});if(o){populateFromOrder(o,itemParam);}else{populateDemo();}})
+            .catch(function(){populateDemo();});
+        if(window.UdaanAPI.updateBadges){window.UdaanAPI.updateBadges();}
+    }
+
+    function populateFromOrder(order,itemId){
+        var item=itemId?(order.items||[]).find(function(i){return String(i.id)===String(itemId);}):(order.items&&order.items[0]);
+        if(!item){populateDemo();return;}
+        state.productName=item.product_name||'Unnamed Product';
+        state.productVariant='Individual \u00b7 '+(item.purchase_option||'Standard');
+        state.productPrice=item.line_total?formatMoney(item.line_total):'—';
+        state.orderStatus=order.status||'delivered';
+        state.productImage='https://placehold.co/200x200/fdf6f2/d7a88d?text='+encodeURIComponent(state.productName);
+        state.orderDate=new Date(order.created_at);
+        applyToUI(order);
+    }
+
+    function populateDemo(){
+        state.productName='Terracotta Wall Vase';
+        state.productVariant='Individual \u00b7 Terracotta Clay';
+        state.productImage='https://placehold.co/200x200/fdf6f2/d7a88d?text=Ceramics';
+        state.productPrice='₹1,850';
+        state.orderStatus='delivered';
+        state.orderDate=new Date(Date.now()-12*3600*1000);
+        applyToUI({id:state.orderId,created_at:state.orderDate.toISOString(),status:state.orderStatus});
+    }
+
+    function applyToUI(order){
+        function el(id){return document.getElementById(id);}
+        el('product-name').textContent=state.productName;
+        el('product-variant').textContent='Variant: '+state.productVariant;
+        el('product-image').src=state.productImage;
+        el('product-image').alt=state.productName;
+        el('order-id-display').textContent='#'+state.orderId;
+        el('order-price-display').textContent=state.productPrice;
+        el('order-status-display').textContent=capitalise(order.status||'Delivered');
+        el('order-date-display').textContent=new Date(order.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+        el('breadcrumb-order-link').href='/orders?id='+state.orderId;
+        checkEligibility();
+    }
+
+    function checkEligibility(){
+        if(!state.orderDate)return;
+        var deadline=new Date(state.orderDate.getTime()+EXCHANGE_WINDOW_HOURS*3600*1000);
+        state.isEligible=new Date()<deadline;
+        var banner=document.getElementById('eligibility-banner'),bannerText=document.getElementById('eligibility-text');
+        if(state.isEligible){
+            banner.className='eligibility-banner eligible';
+            bannerText.textContent='Eligible for exchange';
+            startCountdown(deadline);
+        }else{
+            banner.className='eligibility-banner expired';
+            bannerText.textContent='Exchange window expired';
+            document.getElementById('eligibility-timer').style.display='none';
+            document.getElementById('expired-overlay').classList.add('visible');
+            document.getElementById('exchange-form-wrapper').style.display='none';
+        }
+    }
+
+    function startCountdown(deadline){
+        function tick(){
+            var diff=deadline-new Date();
+            if(diff<=0){document.getElementById('time-remaining').textContent='Expired';document.getElementById('eligibility-banner').className='eligibility-banner expired';return;}
+            var h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+            document.getElementById('time-remaining').textContent=pad(h)+':'+pad(m)+':'+pad(s);
+            if(diff<6*3600000){document.getElementById('time-remaining').style.color='#ef4444';}
+        }
+        tick();setInterval(tick,1000);
+    }
+    function pad(n){return n<10?'0'+n:String(n);}
+
+    document.querySelectorAll('input[name="exchange-type"]').forEach(function(radio){
+        radio.addEventListener('change',function(){
+            var section=document.getElementById('alt-product-section');
+            if(this.value==='other'){section.classList.add('visible');loadAltProducts();}
+            else{section.classList.remove('visible');}
+        });
+    });
+
+    function loadAltProducts(){
+        var select=document.getElementById('alt-product-select');
+        if(select.options.length>1)return;
+        if(window.UdaanAPI){
+            window.UdaanAPI.fetchProducts()
+                .then(function(products){
+                    var list = Array.isArray(products) ? products : (products.results || []);
+                    list = list.filter(function(p){ return p.is_available; });
+                    list.forEach(function(p){
+                        var o=document.createElement('option');
+                        o.value=p.id;
+                        o.textContent=p.name + ' — ' + formatMoney(p.price);
+                        select.appendChild(o);
+                    });
+                })
+                .catch(function(err){
+                    console.error('Failed to load alternative products:', err);
+                });
+        }
+    }
+
+    var reasonTA=document.getElementById('exchange-reason'),charCounter=document.getElementById('char-counter-text');
+    reasonTA.addEventListener('input',function(){
+        var len=this.value.length;
+        charCounter.textContent=len+' / 500';
+        charCounter.className='char-count-text';
+        if(len===0||len<20){charCounter.classList.add('below-min');}
+        else if(len>=490){charCounter.classList.add('at-max');}
+        else{charCounter.classList.add('good');}
+        if(len>=20){hideError('reason-error');}
+    });
+
+    var dropZone=document.getElementById('drop-zone'),videoInput=document.getElementById('video-input');
+    dropZone.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag-over');});
+    dropZone.addEventListener('dragleave',function(){this.classList.remove('drag-over');});
+    dropZone.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)handleVideoFile(f);});
+    videoInput.addEventListener('change',function(){if(this.files[0])handleVideoFile(this.files[0]);});
+    document.getElementById('remove-video-btn').addEventListener('click',function(){
+        state.videoFile=null;videoInput.value='';hideUploadPreview();
+        dropZone.classList.remove('has-file');
+        document.getElementById('drop-icon').textContent='\uD83C\uDFAC';
+        document.getElementById('drop-title').textContent='Drag & drop your video here';
+        document.getElementById('drop-subtitle').textContent='or click anywhere to browse your files';
+    });
+
+    function handleVideoFile(file){
+        if(!ACCEPTED_VIDEO_TYPES.includes(file.type)){showError('video-error','Invalid file format. Please upload an MP4, MOV, or WEBM video.');return;}
+        if(file.size>MAX_VIDEO_BYTES){showError('video-error','File too large. Maximum allowed size is 500 MB.');return;}
+        hideError('video-error');state.videoFile=file;simulateUpload(file);
+    }
+
+    function simulateUpload(file){
+        var pw=document.getElementById('upload-progress'),fill=document.getElementById('progress-fill'),pct=document.getElementById('progress-pct');
+        pw.classList.add('visible');document.getElementById('video-preview-wrap').classList.remove('visible');
+        var progress=0,interval=setInterval(function(){
+            progress+=Math.random()*14;
+            if(progress>=100){progress=100;clearInterval(interval);setTimeout(function(){pw.classList.remove('visible');showVideoPreview(file);},400);}
+            fill.style.width=progress+'%';pct.textContent=Math.floor(progress)+'%';
+        },120);
+    }
+
+    function showVideoPreview(file){
+        var pw=document.getElementById('video-preview-wrap'),player=document.getElementById('video-preview-player');
+        player.src=URL.createObjectURL(file);
+        document.getElementById('video-filename').textContent=file.name;
+        document.getElementById('video-filesize').textContent=(file.size/(1024*1024)).toFixed(1)+' MB';
+        pw.classList.add('visible');dropZone.classList.add('has-file');
+        document.getElementById('drop-icon').textContent='\u2705';
+        document.getElementById('drop-title').textContent='Video ready';
+        document.getElementById('drop-subtitle').textContent='Drag a new file here to replace it';
+    }
+
+    function hideUploadPreview(){
+        document.getElementById('video-preview-wrap').classList.remove('visible');
+        document.getElementById('upload-progress').classList.remove('visible');
+        var player=document.getElementById('video-preview-player');
+        if(player.src){URL.revokeObjectURL(player.src);player.src='';}
+    }
+
+    document.getElementById('submit-btn').addEventListener('click',function(){
+        if(state.submitting||!state.isEligible)return;
+        var errors=validate();
+        if(errors.length){showErrorSummary(errors);return;}
+        hideErrorSummary();doSubmit();
+    });
+
+    function validate(){
+        var errors=[];
+        var exchangeType=document.querySelector('input[name="exchange-type"]:checked').value;
+        if(exchangeType==='other'){
+            if(!document.getElementById('alt-product-select').value){showError('alt-product-error','');errors.push('Select a replacement product for your exchange.');}
+            else{hideError('alt-product-error');}
+        }
+        var reason=reasonTA.value.trim();
+        if(reason.length<20){showError('reason-error',reason.length===0?'Please describe the reason for your exchange.':'Minimum 20 characters required ('+reason.length+' entered).');errors.push('Exchange reason must be at least 20 characters.');}
+        else{hideError('reason-error');}
+        if(!state.videoFile){showError('video-error','Please upload your unboxing video to continue.');errors.push('Unboxing video is required.');}
+        else{hideError('video-error');}
+        var allTerms=['confirm-authentic','confirm-review','confirm-policy'].every(function(id){return document.getElementById(id).checked;});
+        if(!allTerms){showError('terms-error','');errors.push('Please accept all terms and conditions.');}
+        else{hideError('terms-error');}
+        return errors;
+    }
+
+    function doSubmit(){
+        state.submitting=true;
+        var btn=document.getElementById('submit-btn');btn.classList.add('loading');btn.disabled=true;
+        
+        var fd=new FormData();
+        fd.append('order_id',state.orderId);
+        var exchangeType=document.querySelector('input[name="exchange-type"]:checked').value;
+        fd.append('exchange_type',exchangeType);
+        if(exchangeType==='other'){
+            fd.append('alt_product_id',document.getElementById('alt-product-select').value);
+        }
+        var itemParam=new URLSearchParams(window.location.search).get('item');
+        if(itemParam){
+            fd.append('order_item_id',itemParam);
+        }
+        fd.append('reason',reasonTA.value.trim());
+        fd.append('unboxing_video',state.videoFile);
+        
+        fd.append('confirm_authentic',document.getElementById('confirm-authentic').checked);
+        fd.append('confirm_review',document.getElementById('confirm-review').checked);
+        fd.append('confirm_policy',document.getElementById('confirm-policy').checked);
+
+        var headers={};
+        if(window.UdaanAPI){
+            var auth=window.UdaanAPI.getAuth();
+            if(auth&&auth.token){
+                headers['Authorization']='Token '+auth.token;
+            }
+        }
+
+        var apiBase=(window.UdaanAPI&&window.UdaanAPI.apiBase)||'/api';
+        fetch(apiBase+'/exchanges/',{
+            method:'POST',
+            headers:headers,
+            body:fd
+        })
+        .then(function(res){
+            if(!res.ok){
+                return res.json().then(function(err){
+                    var errorMsg='Failed to submit exchange request.';
+                    if(err){
+                        if(typeof err==='string')errorMsg=err;
+                        else if(err.error)errorMsg=err.error;
+                        else if(err.detail)errorMsg=err.detail;
+                        else{
+                            var firstKey=Object.keys(err)[0];
+                            if(firstKey){
+                                var val=err[firstKey];
+                                if(Array.isArray(val))errorMsg=String(val[0]);
+                                else if(typeof val==='string')errorMsg=val;
+                            }
+                        }
+                    }
+                    throw new Error(errorMsg);
+                });
+            }
+            return res.json();
+        })
+        .then(function(data){
+            btn.classList.remove('loading');btn.disabled=false;state.submitting=false;
+            showSuccess(data);
+        })
+        .catch(function(err){
+            btn.classList.remove('loading');btn.disabled=false;state.submitting=false;
+            showErrorSummary([err.message||'An unexpected error occurred. Please try again.']);
+        });
+    }
+
+    function showSuccess(data){
+        document.getElementById('exchange-form-wrapper').style.display='none';
+        document.getElementById('eligibility-banner').style.display='none';
+        document.getElementById('success-ref-id').textContent='Reference ID: '+(data.reference_id||'EXC-'+Date.now());
+        var sv=document.getElementById('success-view');sv.classList.add('visible');
+        sv.scrollIntoView({behavior:'smooth',block:'start'});
+        window.dispatchEvent(new CustomEvent('exchangeSubmitted',{detail:data}));
+    }
+
+    function showError(id,msg){var el=document.getElementById(id);if(!el)return;if(msg){var textEl=document.getElementById(id.replace('-error','-error-text'));if(textEl)textEl.textContent=msg;}el.classList.add('visible');}
+    function hideError(id){var el=document.getElementById(id);if(el)el.classList.remove('visible');}
+    function showErrorSummary(errors){var s=document.getElementById('form-error-summary');document.getElementById('form-error-list').innerHTML=errors.map(function(e){return '<li>'+e+'</li>';}).join('');s.classList.add('visible');s.scrollIntoView({behavior:'smooth',block:'nearest'});}
+    function hideErrorSummary(){document.getElementById('form-error-summary').classList.remove('visible');}
+    function capitalise(str){return str?str.charAt(0).toUpperCase()+str.slice(1):'';}
+    function formatMoney(amount){return '₹'+parseFloat(amount).toLocaleString('en-IN',{minimumFractionDigits:0});}
+
+    init();
+})();
+</script>
+</body>
+</html>
+

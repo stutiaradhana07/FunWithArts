@@ -1,0 +1,33 @@
+Fun with Art — Exchange Request Received
+========================================
+
+Reference ID: {{ exchange.reference_id }}
+
+Hi there,
+
+We've received your exchange request and it is now under review.
+
+REQUEST DETAILS
+---------------
+Reference ID  : {{ exchange.reference_id }}
+Order         : #{{ order.id }}
+{% if exchange.order_item %}Item          : {{ exchange.order_item.product_name }}{% endif %}
+Exchange Type : {{ exchange.get_exchange_type_display }}
+{% if exchange.alt_product %}Replacement   : {{ exchange.alt_product.name }}{% endif %}
+Status        : Pending Review
+Submitted     : {{ exchange.created_at|date:"j M Y, g:i A" }}
+
+WHAT HAPPENS NEXT
+-----------------
+1. Request Received — Done ✓
+2. Video Review — Our team will review your unboxing video (3–5 business days).
+3. Decision Notification — You'll receive an email once a decision has been made.
+4. Exchange Dispatched — If approved, your replacement will be dispatched promptly.
+
+Please keep your reference ID ({{ exchange.reference_id }}) handy
+in case you need to contact our support team.
+
+Questions? Reply to this email or write to us at {{ support_email }}.
+
+— The Fun with Art Team
+  www.funwithartstudio.com

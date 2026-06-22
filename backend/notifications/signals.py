@@ -7,6 +7,8 @@ Triggers:
     - order_shipped             → shipping notification with tracking context (email)
     - workshop_booked           → workshop booking confirmation (email)
     - workshop_confirmed        → workshop booking confirmation (WhatsApp)
+    - exchange_submitted        → exchange request received confirmation (email)
+    - exchange_decided          → exchange approved/rejected notification (email)
 """
 
 import logging
@@ -15,7 +17,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
 from django.template.loader import render_to_string
 
-from orders.models import Order
+from orders.models import Order, ExchangeRequest
 from workshops.models import Booking
 
 from .emails import send_email_async
@@ -197,4 +199,120 @@ def _send_workshop_confirmed_whatsapp(booking):
         }
         send_whatsapp_async(phone, 'workshop_booked', variables)
     except Exception:
-        logger.exception('Failed to trigger workshop confirmation WhatsApp message')
+        logger.exception('Failed to trigger workshop confirmation WhatsApp message')
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Exchange Request signals
+# ──────────────────────────────────────────────────────────────────────
+
+@receiver(pre_save, sender=ExchangeRequest)
+def on_exchange_pre_save(sender, instance, **kwargs):
+    """Cache the previous status to detect transitions in post_save."""
+    if instance.pk:
+        try:
+            instance._old_status = ExchangeRequest.objects.get(pk=instance.pk).status
+        except ExchangeRequest.DoesNotExist:
+            instance._old_status = None
+    else:
+        instance._old_status = None
+
+
+@receiver(post_save, sender=ExchangeRequest)
+def on_exchange_saved(sender, instance, created, **kwargs):
+    """
+    Post-save hook for ExchangeRequest.
+
+    *If created*: send exchange_submitted confirmation email to the customer.
+    *If status transitions to APPROVED or REJECTED*: send exchange_decision email.
+    """
+    if created:
+        _send_exchange_submitted_email(instance)
+    else:
+        old_status = getattr(instance, '_old_status', None)
+        decided_statuses = (
+            ExchangeRequest.ExchangeStatus.APPROVED,
+            ExchangeRequest.ExchangeStatus.REJECTED,
+        )
+        if old_status not in decided_statuses and instance.status in decided_statuses:
+            _send_exchange_decision_email(instance)
+
+
+def _send_exchange_submitted_email(exchange):
+    """Send confirmation email to the customer when their exchange request is received."""
+    try:
+        recipient = (
+            exchange.user.email if exchange.user
+            else exchange.order.contact_email
+        )
+        if not recipient:
+            logger.warning(
+                'ExchangeRequest %s has no recipient email; skipping submission confirmation.',
+                exchange.pk,
+            )
+            return
+
+        context = {
+            'exchange': exchange,
+            'order': exchange.order,
+            'studio_name': 'Fun with Art',
+            'support_email': settings.DEFAULT_FROM_EMAIL,
+        }
+        subject = f'Exchange Request Received — {exchange.reference_id} | Fun with Art'
+        body_plain = render_to_string('notifications/exchange_submitted.txt', context)
+        body_html = render_to_string('notifications/exchange_submitted.html', context)
+
+        user = exchange.user if exchange.user else None
+        send_email_async(subject, body_plain, body_html, [recipient], user=user)
+        logger.info('Exchange submission email sent for %s → %s', exchange.reference_id, recipient)
+    except Exception:
+        logger.exception(
+            'Failed to send exchange submission email for ExchangeRequest %s (non-fatal)',
+            exchange.pk,
+        )
+
+
+def _send_exchange_decision_email(exchange):
+    """Send approve/reject decision email to the customer."""
+    try:
+        recipient = (
+            exchange.user.email if exchange.user
+            else exchange.order.contact_email
+        )
+        if not recipient:
+            logger.warning(
+                'ExchangeRequest %s has no recipient email; skipping decision notification.',
+                exchange.pk,
+            )
+            return
+
+        is_approved = exchange.status == ExchangeRequest.ExchangeStatus.APPROVED
+        context = {
+            'exchange': exchange,
+            'order': exchange.order,
+            'studio_name': 'Fun with Art',
+            'support_email': settings.DEFAULT_FROM_EMAIL,
+            'is_approved': is_approved,
+        }
+        subject = (
+            f'Exchange {exchange.reference_id} — '
+            + ('Approved ✓' if is_approved else 'Update on your request')
+            + ' | Fun with Art'
+        )
+        body_plain = render_to_string('notifications/exchange_decision.txt', context)
+        body_html = render_to_string('notifications/exchange_decision.html', context)
+
+        user = exchange.user if exchange.user else None
+        send_email_async(subject, body_plain, body_html, [recipient], user=user)
+        logger.info(
+            'Exchange decision email sent for %s (%s) → %s',
+            exchange.reference_id,
+            exchange.status,
+            recipient,
+        )
+    except Exception:
+        logger.exception(
+            'Failed to send exchange decision email for ExchangeRequest %s (non-fatal)',
+            exchange.pk,
+        )
+

@@ -5,11 +5,13 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from .delivery import lookup_pincode
-from .models import Order
+from .models import Order, ExchangeRequest
 from .serializers import (
     GuestOrderLookupSerializer,
     OrderCreateSerializer,
     OrderSerializer,
+    ExchangeRequestCreateSerializer,
+    ExchangeRequestSerializer,
 )
 
 
@@ -122,3 +124,74 @@ def guest_order_lookup(request):
     )
 
     return Response(OrderSerializer(order).data)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Exchange Request Views
+# ──────────────────────────────────────────────────────────────────────────────
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def exchange_list_create(request):
+    """
+    GET  /api/exchanges/
+         Returns all exchange requests for the authenticated user (newest first).
+
+    POST /api/exchanges/
+         Submit a new exchange request.
+         Expects multipart/form-data with:
+           - order_id (int)
+           - order_item_id (int, optional)
+           - exchange_type: 'same' | 'other'
+           - alt_product_id (int, required if exchange_type='other')
+           - reason (str, min 20 chars)
+           - unboxing_video (file, MP4/MOV/WEBM, max 500 MB)
+           - confirm_authentic / confirm_review / confirm_policy (bool)
+    """
+    if request.method == 'POST':
+        serializer = ExchangeRequestCreateSerializer(
+            data=request.data,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        exchange = serializer.save()
+        return Response(
+            ExchangeRequestSerializer(exchange, context={'request': request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    # GET — list current user's exchange requests
+    qs = (
+        ExchangeRequest.objects
+        .filter(user=request.user)
+        .select_related('order', 'order_item', 'alt_product')
+        .order_by('-created_at')
+    )
+
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    page = paginator.paginate_queryset(qs, request)
+    serializer = ExchangeRequestSerializer(page, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def exchange_detail(request, pk):
+    """
+    GET /api/exchanges/<id>/
+    Returns the status of a specific exchange request.
+    Authenticated owners can view their own; staff can view any.
+    """
+    if request.user.is_staff:
+        exchange = get_object_or_404(
+            ExchangeRequest.objects.select_related('order', 'order_item', 'alt_product'),
+            pk=pk,
+        )
+    else:
+        exchange = get_object_or_404(
+            ExchangeRequest.objects.select_related('order', 'order_item', 'alt_product'),
+            pk=pk,
+            user=request.user,
+        )
+    return Response(ExchangeRequestSerializer(exchange, context={'request': request}).data)
