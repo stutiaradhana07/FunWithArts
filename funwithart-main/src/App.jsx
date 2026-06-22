@@ -85,6 +85,7 @@ export default function App() {
       <Route path="/orders" element={<LegacyPage source="orders.html" title="Track Your Order | Fun With Art" />} />
       <Route path="/settings" element={<LegacyPage source="settings.html" title="Settings | Fun With Art" />} />
       <Route path="/addresses" element={<LegacyPage source="addresses.html" title="Saved Addresses | Fun With Art" />} />
+      <Route path="/exchange" element={<LegacyPage source="exchange.html" title="Request an Exchange | Fun With Art" />} />
       <Route path="/product/:id" element={<ProductRoute />} />
       <Route path="/search" element={<LegacyPage source="search.html" title="Search | Fun With Art" />} />
       <Route path="/blogs" element={<BlogIndex />} />

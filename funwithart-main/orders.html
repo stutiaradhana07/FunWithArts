@@ -168,10 +168,15 @@
             }
 
             document.getElementById('orders-root').innerHTML = orders.map((order) => {
-                const itemsHtml = (order.items || []).map((item) =>
-                    '<div class="order-item"><span>' + item.product_name + ' × ' + item.quantity +
-                    '</span><span>' + window.UdaanAPI.formatMoney(item.line_total) + '</span></div>'
-                ).join('');
+                const itemsHtml = (order.items || []).map((item) => {
+                    let exchangeLink = '';
+                    if (order.status === 'delivered') {
+                        exchangeLink = ' <a href="/exchange?order=' + order.id + '&item=' + item.id + '" style="color:#d7a88d;margin-left:12px;font-size:0.75rem;text-decoration:none;font-family:var(--art-font);text-transform:uppercase;letter-spacing:1px;font-weight:700;">Request Exchange</a>';
+                    }
+                    return '<div class="order-item"><span style="display:flex;align-items:center;flex-wrap:wrap;">' + item.product_name + ' × ' + item.quantity +
+                    exchangeLink +
+                    '</span><span>' + window.UdaanAPI.formatMoney(item.line_total) + '</span></div>';
+                }).join('');
 
                 const created = new Date(order.created_at).toLocaleDateString('en-IN', {
                     day: 'numeric', month: 'short', year: 'numeric',
