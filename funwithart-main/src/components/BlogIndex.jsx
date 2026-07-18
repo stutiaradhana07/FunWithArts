@@ -55,7 +55,10 @@ function getPostCover(post) {
   if (secureCover.startsWith('https://') || secureCover.startsWith('data:')) {
     return secureCover;
   }
-  const apiBase = window.__UDAAN_API_BASE__ || 'http://127.0.0.1:8000/api';
+  const apiBase = window.__UDAAN_API_BASE__ || '/api';
+  if (apiBase === '/api' || apiBase === 'http://127.0.0.1:8000/api' || apiBase === 'http://localhost:8000/api') {
+    return secureCover.startsWith('/') ? secureCover : `/${secureCover}`;
+  }
   const backendHost = apiBase.replace(/\/api\/?$/, '');
   const finalCover = `${backendHost}${secureCover.startsWith('/') ? '' : '/'}${secureCover}`;
   return finalCover.startsWith('http://') ? finalCover.replace('http://', 'https://') : finalCover;

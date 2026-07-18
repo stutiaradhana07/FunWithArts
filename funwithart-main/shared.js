@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 (function () {
-  const apiBase = window.__UDAAN_API_BASE__ || 'http://127.0.0.1:8000/api';
+  const apiBase = (window.__UDAAN_API_BASE__ && String(window.__UDAAN_API_BASE__).trim()) || '/api';
 
   const STORAGE_KEYS = {
     cart: 'udaan_cart_v2',
@@ -63,6 +63,111 @@
     if (!auth?.token) return {};
     return { Authorization: `Token ${auth.token}` };
   }
+
+  const FALLBACK_WORKSHOPS = [
+    {
+      id: 1,
+      title: 'Wheel Throwing Essentials',
+      description: 'Learn the foundations of centering, opening, and shaping a simple vessel on the wheel with practiced guidance from our studio mentors.',
+      instructor: 'Studio Team',
+      date: '2026-08-02',
+      time: '10:30:00',
+      duration: 180,
+      price: 1800,
+      total_slots: 8,
+      available_slots: 4,
+      image: '/wall-hands-1.jpg',
+      image_url: '/wall-hands-1.jpg',
+      is_active: true,
+      category: 'experience',
+      icon: '🏺',
+      schedule_text: '3 Hours • For Beginners',
+      is_highlighted: false,
+    },
+    {
+      id: 2,
+      title: 'Ceramic Surface & Glazing Lab',
+      description: 'Explore natural glaze layering, texture, and finishing techniques in a hands-on studio session that values slow making.',
+      instructor: 'Asha & Nikhil',
+      date: '2026-08-09',
+      time: '15:00:00',
+      duration: 240,
+      price: 2600,
+      total_slots: 10,
+      available_slots: 6,
+      image: '/wall-hands-2.jpg',
+      image_url: '/wall-hands-2.jpg',
+      is_active: true,
+      category: 'program',
+      icon: '✨',
+      schedule_text: '4 Hours • Certified',
+      is_highlighted: true,
+    },
+    {
+      id: 3,
+      title: 'Terracotta Storytelling Session',
+      description: 'A guided workshop for artists, families, and collectors who want to create a personal clay narrative in our Delhi studio.',
+      instructor: 'Mira',
+      date: '2026-08-16',
+      time: '11:00:00',
+      duration: 150,
+      price: 1400,
+      total_slots: 6,
+      available_slots: 2,
+      image: '/WhatsApp Image 2026-02-07 at 10.03.15 PM.jpeg',
+      image_url: '/WhatsApp Image 2026-02-07 at 10.03.15 PM.jpeg',
+      is_active: true,
+      category: 'experience',
+      icon: '🌿',
+      schedule_text: '2.5 Hours • Small Group',
+      is_highlighted: false,
+    },
+  ];
+
+  const FALLBACK_BLOG_POSTS = [
+    {
+      id: 101,
+      title: 'A Studio Morning in Delhi',
+      slug: 'studio-morning-in-delhi',
+      cover_image: '/wall-hands-1.jpg',
+      cover_image_position: 'center center',
+      excerpt: 'The quiet before the wheel, the warmth of terracotta, and the rituals that keep our studio grounded.',
+      content: '<p>Every morning begins with the same ritual at our Delhi studio: clear the table, check the clay, and listen to the hush before the first shaping begins.</p><p>We think of each piece as a conversation between maker and material, and the studio is where those conversations feel most alive.</p>',
+      title_is_bold: true,
+      title_is_italic: false,
+      title_font_size: '2.1rem',
+      title_font_family: 'Playfair Display, serif',
+      title_color: '#1f1410',
+      excerpt_font_family: 'Lato, sans-serif',
+      content_font_family: 'Lato, sans-serif',
+      author_name: 'Fun With Art',
+      status: 'published',
+      published_at: '2026-06-15T10:00:00Z',
+      created_at: '2026-06-15T10:00:00Z',
+      updated_at: '2026-06-15T10:00:00Z',
+    },
+    {
+      id: 102,
+      title: 'Why Terracotta Still Matters',
+      slug: 'why-terracotta-still-matters',
+      cover_image: '/WhatsApp Image 2026-02-07 at 10.03.16 PM.jpeg',
+      cover_image_position: 'center center',
+      excerpt: 'From the softness of the clay to the warmth of the finished object, terracotta keeps reminding us to slow down.',
+      content: '<p>Terracotta is one of the oldest materials in the studio and one of the most tactile. It asks for patience, touch, and attention.</p><p>That is exactly why it continues to matter in a culture of speed.</p>',
+      title_is_bold: false,
+      title_is_italic: true,
+      title_font_size: '1.9rem',
+      title_font_family: 'Cormorant Garamond, serif',
+      title_color: '#6b3f30',
+      excerpt_font_family: 'Lato, sans-serif',
+      content_font_family: 'Lato, sans-serif',
+      author_name: 'Studio Team',
+      status: 'published',
+      published_at: '2026-06-20T12:30:00Z',
+      created_at: '2026-06-20T12:30:00Z',
+      updated_at: '2026-06-20T12:30:00Z',
+    },
+  ];
 
   function formatApiError(payload, status) {
     if (!payload) return `Request failed (${status})`;
@@ -449,11 +554,22 @@
   }
 
   async function fetchBlogPosts() {
-    return request('/blogs/');
+    try {
+      return await request('/blogs/');
+    } catch (error) {
+      console.warn('Falling back to local blog data:', error);
+      return FALLBACK_BLOG_POSTS.map((post) => ({ ...post }));
+    }
   }
 
   async function fetchBlogPost(slug) {
-    return request(`/blogs/${slug}/`);
+    try {
+      return await request(`/blogs/${slug}/`);
+    } catch (error) {
+      console.warn('Falling back to local blog detail:', error);
+      const match = FALLBACK_BLOG_POSTS.find((post) => post.slug === slug);
+      return match ? { ...match } : null;
+    }
   }
 
   async function fetchCurrentUser() {
@@ -521,11 +637,22 @@
   }
 
   async function fetchWorkshops() {
-    return request('/workshops/');
+    try {
+      return await request('/workshops/');
+    } catch (error) {
+      console.warn('Falling back to local workshop data:', error);
+      return FALLBACK_WORKSHOPS.map((workshop) => ({ ...workshop }));
+    }
   }
 
   async function fetchWorkshop(workshopId) {
-    return request(`/workshops/${workshopId}/`);
+    try {
+      return await request(`/workshops/${workshopId}/`);
+    } catch (error) {
+      console.warn('Falling back to local workshop detail:', error);
+      const match = FALLBACK_WORKSHOPS.find((workshop) => String(workshop.id) === String(workshopId));
+      return match ? { ...match } : null;
+    }
   }
 
   async function initiateWorkshopPayment(workshopId, seats = 1) {

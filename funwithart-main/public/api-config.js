@@ -1,8 +1,4 @@
-// Production API base URL with local development fallback
+// Prefer the same-origin API path so Vite can proxy it to Django during local development.
 (function () {
-  var h = window.location.hostname;
-  var isLocal = h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.');
-  window.__UDAAN_API_BASE__ = isLocal
-    ? 'http://127.0.0.1:8000/api'
-    : 'https://funwitharts-production.up.railway.app/api';
-})();
+  window.__UDAAN_API_BASE__ = '/api';
+})();
