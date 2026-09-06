@@ -8,7 +8,7 @@ MAX_LIMIT = 100
 
 
 def build_product_queryset(*, search='', category='', is_new=None):
-    qs = Product.objects.filter(is_available=True).annotate(
+    qs = Product.objects.filter(is_available=True).select_related('category').annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews'),
     ).order_by('-created_at')

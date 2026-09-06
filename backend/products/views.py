@@ -27,7 +27,9 @@ def product_list(request):
 
     qs = build_product_queryset(search=search, category=category, is_new=is_new)
     serializer = ProductSerializer(qs, many=True, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=300'
+    return response
 
 
 @api_view(['GET'])
@@ -56,26 +58,30 @@ def product_search(request):
     products = list(qs)
     serializer = ProductSerializer(products, many=True, context={'request': request})
 
-    return Response(
+    response = Response(
         {
             'query': query,
             'count': len(products),
             'results': serializer.data,
         }
     )
+    response['Cache-Control'] = 'public, max-age=30, stale-while-revalidate=120'
+    return response
 
 
 @api_view(['GET'])
 def product_detail(request, pk):
     product = get_object_or_404(
-        Product.objects.annotate(
+        Product.objects.select_related('category').annotate(
             avg_rating=Avg('reviews__rating'),
             review_count=Count('reviews'),
         ),
         pk=pk,
     )
     serializer = ProductSerializer(product, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=300'
+    return response
 
 
 @api_view(['GET', 'POST'])
@@ -189,4 +195,6 @@ def category_list(request):
         .order_by('name')
         .values_list('name', flat=True)
     )
-    return Response(list(categories))
+    response = Response(list(categories))
+    response['Cache-Control'] = 'public, max-age=300, stale-while-revalidate=600'
+    return response

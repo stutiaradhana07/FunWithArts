@@ -30,14 +30,18 @@ def workshop_list(request):
         is_active=True, date__gte=date.today()
     ).order_by('date', 'time')
     serializer = WorkshopSerializer(workshops, many=True, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=300'
+    return response
 
 
 @api_view(['GET'])
 def workshop_detail(request, pk):
     workshop = get_object_or_404(Workshop, pk=pk)
     serializer = WorkshopSerializer(workshop, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=300'
+    return response
 
 
 # ──────────────────────────────────────────────

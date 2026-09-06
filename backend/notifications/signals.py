@@ -63,17 +63,17 @@ def on_order_saved(sender, instance, created, **kwargs):
     """
     Post-save hook for orders.
 
-    *If created* (brand-new order) → send order confirmation email.
-    *If status transitions to CONFIRMED* → send WhatsApp confirmation.
+    *If status transitions to CONFIRMED* (e.g. Card/UPI payment captured) → send confirmation email + WhatsApp.
     *If status transitions to SHIPPED* → send shipping notification email.
+    Note: For newly created COD orders, confirmation is dispatched in OrderCreateSerializer
+    via transaction.on_commit after OrderItems are inserted into the database.
     """
-    if created:
-        _send_order_confirmation(instance)
-    else:
+    if not created:
         old_status = getattr(instance, '_old_status', None)
 
-        # Trigger WhatsApp on confirmation
+        # Trigger confirmation email & WhatsApp when order transitions to CONFIRMED
         if old_status != Order.OrderStatus.CONFIRMED and instance.status == Order.OrderStatus.CONFIRMED:
+            _send_order_confirmation(instance)
             _send_order_confirmed_whatsapp(instance)
 
         # Shipping notification: fire only when transitioning TO 'shipped'

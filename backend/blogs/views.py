@@ -38,14 +38,22 @@ def newsletter_subscribe(request):
 @api_view(['GET'])
 def post_list(request):
     """Return all published blog posts (lightweight — no full content)."""
-    posts = Post.objects.filter(status='published')
+    posts = Post.objects.filter(status='published').select_related('author')
     serializer = PostListSerializer(posts, many=True, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=600'
+    return response
 
 
 @api_view(['GET'])
 def post_detail(request, slug):
     """Return a single published blog post by slug (full content)."""
-    post = get_object_or_404(Post, slug=slug, status='published')
+    post = get_object_or_404(
+        Post.objects.select_related('author'),
+        slug=slug,
+        status='published',
+    )
     serializer = PostDetailSerializer(post, context={'request': request})
-    return Response(serializer.data)
+    response = Response(serializer.data)
+    response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=600'
+    return response

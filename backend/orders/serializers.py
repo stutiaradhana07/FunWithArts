@@ -166,6 +166,12 @@ class OrderCreateSerializer(serializers.Serializer):
                 product.stock -= qty
                 product.save(update_fields=['stock'])
 
+            # For COD (immediately confirmed), dispatch confirmation after items are committed to DB
+            if initial_status == Order.OrderStatus.CONFIRMED:
+                from notifications.signals import _send_order_confirmation, _send_order_confirmed_whatsapp
+                transaction.on_commit(lambda: _send_order_confirmation(order))
+                transaction.on_commit(lambda: _send_order_confirmed_whatsapp(order))
+
         return order
 
 

@@ -1,8 +1,10 @@
+from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+
 from products.models import Product
 from .models import Cart, CartItem
 from .serializers import (
@@ -20,6 +22,23 @@ def _get_or_create_cart(request):
     return Cart.get_or_create_for_request(user, session_id)
 
 
+def _serialize_cart(cart):
+    """Prefetch items with product details to avoid N+1 queries during serialization."""
+    if cart is None:
+        return None
+    cart = (
+        Cart.objects
+        .prefetch_related(
+            Prefetch(
+                'items',
+                queryset=CartItem.objects.select_related('product', 'product__category')
+            )
+        )
+        .get(pk=cart.pk)
+    )
+    return CartSerializer(cart).data
+
+
 @api_view(['GET'])
 def cart_detail(request):
     """
@@ -30,7 +49,7 @@ def cart_detail(request):
     if cart is None:
         return Response({'error': 'session_id query parameter required for guest carts.'},
                         status=status.HTTP_400_BAD_REQUEST)
-    return Response(CartSerializer(cart).data)
+    return Response(_serialize_cart(cart))
 
 
 @api_view(['POST'])
@@ -70,7 +89,7 @@ def cart_add_item(request):
         item.quantity += qty
         item.save(update_fields=['quantity'])
 
-    return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+    return Response(_serialize_cart(cart), status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])
@@ -101,7 +120,7 @@ def cart_update_item(request, item_id):
         item.quantity = new_qty
         item.save(update_fields=['quantity'])
 
-    return Response(CartSerializer(cart).data)
+    return Response(_serialize_cart(cart))
 
 
 @api_view(['DELETE'])
@@ -117,7 +136,7 @@ def cart_remove_item(request, item_id):
 
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
     item.delete()
-    return Response(CartSerializer(cart).data)
+    return Response(_serialize_cart(cart))
 
 
 @api_view(['POST'])
@@ -132,7 +151,7 @@ def cart_clear(request):
                         status=status.HTTP_400_BAD_REQUEST)
 
     cart.items.all().delete()
-    return Response(CartSerializer(cart).data)
+    return Response(_serialize_cart(cart))
 
 
 @api_view(['POST'])
@@ -151,4 +170,4 @@ def cart_merge(request):
     session_id = serializer.validated_data['session_id']
     merged_cart = Cart.merge_guest_into_user(request.user, session_id)
 
-    return Response(CartSerializer(merged_cart).data, status=status.HTTP_200_OK)
+    return Response(_serialize_cart(merged_cart), status=status.HTTP_200_OK)

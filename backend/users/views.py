@@ -47,7 +47,7 @@ def wishlist(request):
           Body: { "product_id": <int> }
     """
     if request.method == 'GET':
-        items = WishlistItem.objects.filter(user=request.user).select_related('product')
+        items = WishlistItem.objects.filter(user=request.user).select_related('product', 'product__category')
         serializer = WishlistItemSerializer(items, many=True, context={'request': request})
         return Response(serializer.data)
 

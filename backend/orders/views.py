@@ -76,10 +76,11 @@ def order_detail(request, pk):
     - Authenticated users: Can view their own orders or staff can view any.
     - Guest users: Cannot access this endpoint (use guest_order_lookup instead).
     """
+    qs = Order.objects.prefetch_related('items')
     if request.user.is_staff:
-        order = get_object_or_404(Order, pk=pk)
+        order = get_object_or_404(qs, pk=pk)
     else:
-        order = get_object_or_404(Order, pk=pk, user=request.user)
+        order = get_object_or_404(qs, pk=pk, user=request.user)
     return Response(OrderSerializer(order).data)
 
 
