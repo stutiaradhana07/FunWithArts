@@ -171,7 +171,7 @@
                 const itemsHtml = (order.items || []).map((item) => {
                     let exchangeLink = '';
                     if (order.status === 'delivered') {
-                        exchangeLink = ' <a href="/exchange?order=' + order.id + '&item=' + item.id + '" style="color:#d7a88d;margin-left:12px;font-size:0.75rem;text-decoration:none;font-family:var(--art-font);text-transform:uppercase;letter-spacing:1px;font-weight:700;">Request Exchange</a>';
+                        exchangeLink = ' <a href="/exchange?order=' + order.id + '&item=' + item.id + '" style="color:#d7a88d;margin-left:12px;font-size:0.75rem;text-decoration:none;font-family:var(--art-font);text-transform:uppercase;letter-spacing:1px;font-weight:700;">Request Exchange (48h)</a>';
                     }
                     return '<div class="order-item"><span style="display:flex;align-items:center;flex-wrap:wrap;">' + item.product_name + ' × ' + item.quantity +
                     exchangeLink +
@@ -182,6 +182,10 @@
                     day: 'numeric', month: 'short', year: 'numeric',
                 });
 
+                const exchangeNotice = order.status === 'delivered'
+                    ? '<p class="order-meta" style="margin-top:8px;font-size:0.78rem;color:#b45309;">⚠️ Eligible for exchange within 48 hours of delivery with unboxing video. Monetary refunds are not available.</p>'
+                    : '';
+
                 return '<article class="order-card">' +
                     '<div class="order-head"><div>' +
                     '<div class="order-id">Order #' + order.id + '</div>' +
@@ -190,6 +194,7 @@
                     buildTrackingStepper(order) +
                     '<div class="order-total">' + window.UdaanAPI.formatMoney(order.total_amount) + '</div>' +
                     '<p class="order-meta" style="margin-top:8px;">Ship to ' + order.shipping_city + ', ' + order.shipping_pincode + '</p>' +
+                    exchangeNotice +
                     '<div class="order-items">' + itemsHtml + '</div></article>';
             }).join('');
         }

@@ -265,20 +265,23 @@
                     </div>
                 </div>
 
-                <div class="checkout-box">
+                <div class="checkout-box" id="payment-box">
                     <h2>3. Payment Method</h2>
+                    <div id="exchange-payment-notice" style="display: none; background: #fff8f5; border: 1.5px solid var(--accent-color); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.95rem; color: #555;">
+                        <strong style="color: #111;">Exchange Difference Payment:</strong> Cash on Delivery is disabled for exchange upgrades. Please pay the difference online via UPI, Cards, or NetBanking to confirm your exchange request.
+                    </div>
                     
-                    <label class="payment-option">
+                    <label class="payment-option" id="opt-upi">
                         <input type="radio" name="payment" value="upi" onchange="updateRadioStyles()">
                         <span>UPI / Google Pay / Paytm</span>
                     </label>
                     
-                    <label class="payment-option">
+                    <label class="payment-option" id="opt-card">
                         <input type="radio" name="payment" value="card" onchange="updateRadioStyles()">
                         <span>Credit / Debit Card</span>
                     </label>
                     
-                    <label class="payment-option selected">
+                    <label class="payment-option selected" id="opt-cod">
                         <input type="radio" name="payment" value="cod" checked onchange="updateRadioStyles()">
                         <span>Cash on Delivery (COD)</span>
                         <div class="cod-badge">Popular</div>
@@ -358,6 +361,7 @@
         const ORDER_CONFIRMATION_KEY = 'udaan_last_order_confirmation';
         let cartItems = [];       // legacy-shaped from API
         let productImageMap = {}; // product_id → image_url
+        let currentExchange = null; // Exchange details if in exchange_id mode
 
         async function buildProductImageMap() {
             try {
@@ -418,6 +422,49 @@
 
         function renderCheckout() {
             var itemsContainer = document.getElementById('checkout-items');
+
+            if (currentExchange) {
+                // RENDER EXCHANGE SUMMARY
+                var origPrice = parseFloat(currentExchange.original_item_price || 0);
+                var replPrice = parseFloat(currentExchange.alt_product_price || 0);
+                var diff = parseFloat(currentExchange.amount_to_pay || 0);
+                var replImg = currentExchange.alt_product_image || 'https://placehold.co/100x100/EAE6DB/111';
+
+                itemsContainer.innerHTML =
+                    '<div style="background: #fff; border: 1.5px solid var(--accent-color); border-radius: 18px; padding: 20px; margin-bottom: 25px;">' +
+                    '  <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #eee;">' +
+                    '    <img src="' + replImg + '" style="width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid #eee;">' +
+                    '    <div style="flex: 1;">' +
+                    '      <div style="font-family: var(--art-font); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-color); font-weight: bold;">New Replacement Item</div>' +
+                    '      <div style="font-family: var(--art-font); font-weight: bold; font-size: 1.05rem; color: #111;">' + (currentExchange.alt_product_name || 'Selected Replacement') + '</div>' +
+                    '      <div style="font-family: var(--body-font); color: #666; font-size: 0.9rem;">Returning: ' + (currentExchange.order_item_name || 'Original Item') + '</div>' +
+                    '    </div>' +
+                    '  </div>' +
+                    '  <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #555; margin-bottom: 8px;">' +
+                    '    <span>Original Item Value</span>' +
+                    '    <span style="font-family: var(--art-font); font-weight: bold; color: #111;">₹' + origPrice.toLocaleString('en-IN') + '</span>' +
+                    '  </div>' +
+                    '  <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #555; margin-bottom: 8px;">' +
+                    '    <span>Replacement Price</span>' +
+                    '    <span style="font-family: var(--art-font); font-weight: bold; color: #111;">₹' + replPrice.toLocaleString('en-IN') + '</span>' +
+                    '  </div>' +
+                    '  <div style="display: flex; justify-content: space-between; font-size: 0.95rem; color: #166534; font-weight: bold;">' +
+                    '    <span>Exchange Credit Applied</span>' +
+                    '    <span>− ₹' + origPrice.toLocaleString('en-IN') + '</span>' +
+                    '  </div>' +
+                    '</div>';
+
+                document.getElementById('sum-subtotal').innerText = '₹' + diff.toLocaleString('en-IN');
+                document.getElementById('sum-shipping').innerHTML = '<span style="color: #166534; font-weight: bold;">Covered (Free)</span>';
+                document.getElementById('sum-total').innerText = '₹' + diff.toLocaleString('en-IN');
+                
+                var placeBtn = document.getElementById('place-btn');
+                placeBtn.innerText = 'Pay Difference (₹' + diff.toLocaleString('en-IN') + ')';
+                placeBtn.style.opacity = '1';
+                placeBtn.style.pointerEvents = 'all';
+                return;
+            }
+
             var subtotal = 0;
 
             if (cartItems.length === 0) {
@@ -452,6 +499,7 @@
                 document.getElementById('sum-subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
                 document.getElementById('sum-shipping').innerText = '₹' + shippingFee.toLocaleString('en-IN');
                 document.getElementById('sum-total').innerText = '₹' + total.toLocaleString('en-IN');
+                document.getElementById('place-btn').innerText = 'Place Order';
                 document.getElementById('place-btn').style.opacity = '1';
                 document.getElementById('place-btn').style.pointerEvents = 'all';
             }
@@ -509,13 +557,91 @@
             e.preventDefault();
 
             if (!window.UdaanAPI.isLoggedIn()) {
-                window.UdaanAPI.showAuthModal("To complete checkout and purchase these handcrafted ceramics, please sign in or create an artisan account.");
+                window.UdaanAPI.showAuthModal("To complete checkout and proceed, please sign in or create an account.");
                 return;
             }
 
             var btn = document.getElementById('place-btn');
             var form = document.getElementById('checkout-form');
 
+            // ── FLOW A: EXCHANGE DIFFERENCE CHECKOUT ──
+            if (currentExchange) {
+                btn.innerText = "Initiating Payment...";
+                btn.style.pointerEvents = "none";
+                btn.style.background = "#555";
+                btn.style.boxShadow = "none";
+
+                try {
+                    var initData = await window.UdaanAPI.initiateExchangePayment(currentExchange.id);
+
+                    var options = {
+                        key: initData.key_id,
+                        amount: initData.amount,
+                        currency: initData.currency || 'INR',
+                        name: initData.name || 'Fun with Art',
+                        description: initData.description || ('Price difference for Exchange ' + (currentExchange.reference_id || '')),
+                        order_id: initData.razorpay_order_id,
+                        prefill: initData.prefill || {
+                            email: form.querySelector('[name="contact_email"]')?.value || '',
+                            contact: form.querySelector('[name="contact_phone"]')?.value || '',
+                        },
+                        handler: async function (response) {
+                            try {
+                                await window.UdaanAPI.verifyExchangePayment(
+                                    currentExchange.id,
+                                    response.razorpay_order_id,
+                                    response.razorpay_payment_id,
+                                    response.razorpay_signature
+                                );
+
+                                var confirmation = {
+                                    id: currentExchange.id,
+                                    orderNumber: currentExchange.reference_id || ('EXC-' + currentExchange.id),
+                                    customerName: form.querySelector('[name="shipping_first_name"]')?.value || '',
+                                    email: form.querySelector('[name="contact_email"]')?.value || '',
+                                    paymentMethod: 'online_exchange_diff',
+                                    subtotal: parseFloat(currentExchange.amount_to_pay || 0),
+                                    shipping: 0,
+                                    total: parseFloat(currentExchange.amount_to_pay || 0),
+                                    itemCount: 1,
+                                    items: [{
+                                        title: 'Exchange Replacement: ' + (currentExchange.alt_product_name || 'Selected Item'),
+                                        qty: 1,
+                                        basePrice: parseFloat(currentExchange.amount_to_pay || 0),
+                                        imgSrc: currentExchange.alt_product_image || ''
+                                    }],
+                                    placedAt: new Date().toISOString()
+                                };
+                                localStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmation));
+                                showToast('Exchange difference paid! Request #' + (currentExchange.reference_id || currentExchange.id) + ' confirmed.');
+
+                                setTimeout(function () {
+                                    window.location.href = 'success.html';
+                                }, 900);
+                            } catch (verifyErr) {
+                                showToast(verifyErr.message || 'Payment verification failed. Please contact support.');
+                                resetBtn('Pay Difference (₹' + parseFloat(currentExchange.amount_to_pay || 0).toLocaleString('en-IN') + ')');
+                            }
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                showToast('Payment cancelled. You can try again.');
+                                resetBtn('Pay Difference (₹' + parseFloat(currentExchange.amount_to_pay || 0).toLocaleString('en-IN') + ')');
+                            }
+                        },
+                        theme: { color: '#D7A88D' }
+                    };
+
+                    var rzp = new Razorpay(options);
+                    rzp.open();
+                } catch (error) {
+                    showToast(error.message || 'Could not initiate payment.');
+                    resetBtn('Pay Difference (₹' + parseFloat(currentExchange.amount_to_pay || 0).toLocaleString('en-IN') + ')');
+                }
+                return;
+            }
+
+            // ── FLOW B: NORMAL CART CHECKOUT ──
             if (!cartItems.length) {
                 showToast('Your bag is empty.');
                 return;
@@ -580,13 +706,13 @@
                             }, 900);
                         } catch (verifyErr) {
                             showToast('Payment verification failed. Please contact support.');
-                            resetBtn();
+                            resetBtn('Place Order');
                         }
                     },
                     modal: {
                         ondismiss: function () {
                             showToast('Payment cancelled. You can try again.');
-                            resetBtn();
+                            resetBtn('Place Order');
                         }
                     },
                     theme: { color: '#D7A88D' }
@@ -597,11 +723,11 @@
 
             } catch (error) {
                 showToast(error.message || 'Could not place your order.');
-                resetBtn();
+                resetBtn('Place Order');
             }
 
-            function resetBtn() {
-                btn.innerText = "Place Order";
+            function resetBtn(label) {
+                btn.innerText = label || "Place Order";
                 btn.style.pointerEvents = "all";
                 btn.style.background = "#111";
                 btn.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
@@ -616,8 +742,54 @@
         };
 
         (async function init() {
-            await buildProductImageMap();
-            await loadSelectedCartItems();
+            var params = new URLSearchParams(window.location.search);
+            var exchangeId = params.get('exchange_id');
+
+            if (exchangeId) {
+                // Configure UI for Exchange Difference Mode
+                document.querySelector('.page-header h1').innerText = "Exchange Checkout";
+                var backCartBtn = document.querySelector('.back-to-cart-btn');
+                if (backCartBtn) {
+                    backCartBtn.href = 'exchange.html';
+                    backCartBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Exchange';
+                }
+                var backLink = document.querySelector('.back-link');
+                if (backLink) {
+                    backLink.href = 'exchange.html';
+                    backLink.innerText = '← Return to Exchange Form';
+                }
+
+                // Show exchange notice and disable COD
+                var noticeEl = document.getElementById('exchange-payment-notice');
+                if (noticeEl) noticeEl.style.display = 'block';
+
+                var codOpt = document.getElementById('opt-cod');
+                if (codOpt) {
+                    codOpt.style.opacity = '0.4';
+                    codOpt.style.pointerEvents = 'none';
+                    var codInput = codOpt.querySelector('input');
+                    if (codInput) codInput.disabled = true;
+                }
+                var upiOpt = document.getElementById('opt-upi');
+                if (upiOpt) {
+                    var upiInput = upiOpt.querySelector('input');
+                    if (upiInput) upiInput.checked = true;
+                }
+                updateRadioStyles();
+
+                try {
+                    currentExchange = await window.UdaanAPI.fetchExchange(exchangeId);
+                } catch (e) {
+                    console.error('Failed to load exchange:', e);
+                    showToast('Failed to load exchange request. Redirecting to exchange page...');
+                    setTimeout(function() { window.location.href = 'exchange.html'; }, 2000);
+                    return;
+                }
+            } else {
+                await buildProductImageMap();
+                await loadSelectedCartItems();
+            }
+
             renderCheckout();
             if (window.UdaanAPI && window.UdaanAPI.updateBadges) {
                 window.UdaanAPI.updateBadges();

@@ -136,6 +136,125 @@
         .form-select { width:100%;padding:14px 18px;border:1.5px solid var(--border-strong);border-radius:var(--radius-xs);font-family:var(--body-font);font-size:0.95rem;color:var(--text);background:#fafaf8;outline:none;transition:border-color 0.2s,box-shadow 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:18px; }
         .form-select:focus { border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background-color:#fff; }
 
+        /* REPLACEMENT ITEM & PRICE DIFF */
+        .replacement-product-card {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            background: #fafaf8;
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-xs);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .replacement-img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            background: #eee;
+        }
+        .replacement-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .replacement-title {
+            font-family: var(--header-font);
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 2px;
+        }
+        .replacement-price {
+            font-family: var(--art-font);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-dark);
+        }
+        .btn-change-item {
+            font-family: var(--art-font);
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 8px 14px;
+            border: 1px solid var(--border-strong);
+            border-radius: 50px;
+            background: #fff;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-change-item:hover {
+            border-color: #111;
+            color: #111;
+        }
+
+        .exchange-diff-box {
+            background: #fff;
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-xs);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+        }
+        .exchange-diff-header {
+            font-family: var(--art-font);
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .diff-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .diff-row.total-row {
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+            padding-top: 12px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #111;
+        }
+        .diff-row.total-row .diff-val {
+            font-family: var(--art-font);
+            color: var(--accent-dark);
+            font-size: 1.15rem;
+        }
+        .diff-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-family: var(--art-font);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .diff-badge.free {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        .diff-badge.pay {
+            background: #fffbf0;
+            color: #b45309;
+            border: 1px solid rgba(215,168,141,0.5);
+        }
+
         /* FORM FIELDS */
         .form-label { display:block;font-family:var(--art-font);font-size:0.72rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;color:#444;margin-bottom:10px; }
         .form-label .required { color:var(--accent-dark);margin-left:2px; }
@@ -230,17 +349,22 @@
         .ai-future-badge::before { content:'🤖';font-size:0.75rem; }
 
         /* FOOTER */
-        .site-footer { background:#111;color:#fff;padding:60px 5% 30px;margin-top:auto; }
-        .footer-grid { max-width:1200px;margin:0 auto 40px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px; }
-        .footer-brand h2 { font-family:var(--header-font);font-size:2rem;font-style:italic;margin-bottom:12px; }
-        .footer-brand p { color:#888;line-height:1.6;max-width:300px; }
-        .footer-col h4 { font-family:var(--art-font);font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;color:var(--accent); }
-        .footer-col ul { list-style:none; }
-        .footer-col ul li { margin-bottom:12px; }
-        .footer-col ul li a { color:#ccc;text-decoration:none;font-family:var(--body-font);transition:0.3s; }
-        .footer-col ul li a:hover { color:#fff;padding-left:5px; }
-        .footer-bottom { border-top:1px solid #222;text-align:center;padding-top:24px;color:#666;font-size:0.82rem;font-family:var(--art-font); }
-        @media (max-width:800px) { .footer-grid{grid-template-columns:1fr;} }
+        .site-footer { background: #111; color: #fff; padding: 80px 5% 40px; margin-top: auto; position: relative; z-index: 5; }
+        .footer-grid { max-width: 1400px; margin: 0 auto 60px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
+        .footer-brand { grid-column: span 2; }
+        .footer-brand h2 { font-family: var(--header-font); font-size: 2.5rem; font-style: italic; margin-bottom: 15px; color: #fff; }
+        .footer-brand p { font-family: var(--body-font); color: #888; line-height: 1.6; max-width: 300px; }
+        .footer-col h4 { font-family: var(--art-font); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; color: var(--accent); }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col ul li { margin-bottom: 15px; }
+        .footer-col ul li a { color: #ccc; text-decoration: none; font-family: var(--body-font); transition: color 0.3s; display: inline-block; }
+        .footer-col ul li a:hover { color: #fff; }
+        .footer-bottom { border-top: 1px solid #222; text-align: center; padding-top: 30px; color: #666; font-size: 0.85rem; font-family: var(--art-font); }
+        @media (max-width: 768px) {
+            .footer-brand { grid-column: span 1; }
+            .site-footer { padding: 50px 5% 30px; }
+            .footer-grid { gap: 30px; margin-bottom: 40px; }
+        }
         @media (max-width:600px) {
             .page-wrapper{padding-top:24px;} .card-body{padding:20px;} .card-header{padding:18px 20px 14px;}
             .order-summary-product{flex-direction:column;} .order-product-img{width:100%;height:180px;}
@@ -300,7 +424,7 @@
     <div id="expired-overlay" role="alert">
         <div class="expired-icon">&#8987;</div>
         <h2>Exchange Window Expired</h2>
-        <p>Exchange requests must be submitted within <strong>48 hours</strong> of purchase/delivery. Unfortunately, this window has now closed for this order.</p>
+        <p>In accordance with our studio policy, <strong>monetary refunds are not available</strong>, and exchange requests must be submitted within <strong>48 hours of delivery</strong>. Unfortunately, this window has now closed for this order.</p>
         <p style="font-size:0.88rem;">If you believe this is an error, please <a href="/contact" style="color:var(--accent-dark);">contact our support team</a>.</p>
         <div style="display:flex;gap:14px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
             <a href="/order-history" class="btn-back">&#8592; Back to Orders</a>
@@ -323,10 +447,18 @@
     <!-- FORM -->
     <div id="exchange-form-wrapper">
 
+        <!-- Policy Banner Notice -->
+        <div class="callout callout-warn" style="margin-bottom:24px;border-left:4px solid var(--accent-dark);background:var(--warn-bg);padding:18px 20px;">
+            <span class="callout-icon" style="font-size:1.3rem;">ℹ️</span>
+            <div class="callout-text" style="color:#6d4c30;font-size:0.92rem;">
+                <strong>Exchange-Only Policy:</strong> Because all Fun With Art ceramics and terracotta items are handcrafted with care in limited batches, <strong>monetary refunds are not available</strong>. However, if your item arrives damaged or broken during transit, you are eligible for an <strong>exchange within 48 hours of delivery</strong>. A continuous, unedited unboxing video is strictly required to verify the transit issue.
+            </div>
+        </div>
+
         <!-- Eligibility Banner -->
         <div class="eligibility-banner eligible" id="eligibility-banner" role="status">
             <span class="eligibility-icon">&#10003;</span>
-            <span id="eligibility-text">Eligible for exchange</span>
+            <span id="eligibility-text">Eligible for exchange (48h window from delivery)</span>
             <span class="eligibility-timer" id="eligibility-timer">
                 <strong id="time-remaining">--:--:--</strong> remaining
             </span>
@@ -382,18 +514,18 @@
                         <label class="exchange-type-label" for="exchange-other">
                             <div class="type-icon">&#128717;&#65039;</div>
                             <div class="type-header"><div class="type-radio-dot"></div><div class="type-title">Another Item</div></div>
-                            <div class="type-desc">Choose a different product of equal value from our collection.</div>
-                            <div class="type-note">Equal value only &#8212; no price adjustments.</div>
+                            <div class="type-desc">Choose a replacement item of equal or greater value from our collection.</div>
+                            <div class="type-note">Pay the difference if the replacement item costs more.</div>
                         </label>
                     </div>
                 </div>
                 <div class="alt-product-section" id="alt-product-section">
-                    <div class="alt-product-note">&#8505;&#65039; &nbsp;Alternative products must be of equal value. Additional payment or refunds are currently not supported.</div>
-                    <label class="form-label" for="alt-product-select">Preferred Replacement Product <span class="required">*</span></label>
-                    <select class="form-select" id="alt-product-select" name="alt_product">
-                        <option value="">&#8212; Select a product of equal value &#8212;</option>
-                    </select>
-                    <div class="field-error" id="alt-product-error" role="alert"><span>&#9888;</span> Please select a replacement product.</div>
+                    <div id="alt-product-selected-container"></div>
+                    <div id="alt-product-prompt" style="display:none;text-align:center;padding:24px 20px;background:#fafaf8;border:1.5px dashed var(--border-strong);border-radius:var(--radius-xs);">
+                        <p style="font-size:0.95rem;color:#555;margin-bottom:12px;">Browse our collection to choose a replacement piece of equal or greater value.</p>
+                        <button type="button" id="browse-collection-btn" class="btn-primary" style="display:inline-flex;padding:12px 28px;background:var(--accent-dark);margin:0 auto;">Browse Collection ➔</button>
+                    </div>
+                    <div class="field-error" id="alt-product-error" role="alert"><span>&#9888;</span> Please choose a replacement product from the collection.</div>
                 </div>
             </div>
         </div>
@@ -513,8 +645,8 @@
                     <a href="/order-history" class="btn-cancel">Cancel</a>
                 </div>
                 <p style="margin-top:16px;font-size:0.78rem;color:var(--text-light);text-align:center;line-height:1.5;">
-                    By submitting, you agree to our <a href="/legal" style="color:var(--accent-dark);text-decoration:none;">Exchange Policy</a>.
-                    Our team will respond within 3&#8211;5 business days after reviewing your video.
+                    By submitting, you agree to our <a href="/legal" style="color:var(--accent-dark);text-decoration:none;">Exchange Policy</a> (monetary refunds are not available; exchanges are provided within 48 hours of delivery).
+                    Our team will respond within 3&#8211;5 business days after reviewing your unboxing video.
                 </p>
             </div>
         </div>
@@ -531,71 +663,118 @@
         <div class="footer-col">
             <h4>Shop</h4>
             <ul>
-                <li><a href="/collection">All Ceramics</a></li>
-                <li><a href="/studio">Studio Classes</a></li>
-                <li><a href="/about">Our Story</a></li>
+                <li><a href="collection.html">All Ceramics</a></li>
+                <li><a href="studio.html">Studio Classes</a></li>
+                <li><a href="about.html">Our Story</a></li>
             </ul>
         </div>
         <div class="footer-col">
             <h4>Support</h4>
             <ul>
-                <li><a href="/support">FAQ</a></li>
-                <li><a href="/support">Shipping &amp; Returns</a></li>
-                <li><a href="/contact">Contact Us</a></li>
+                <li><a href="support.html">FAQ</a></li>
+                <li><a href="support.html">Shipping &amp; Returns</a></li>
+                <li><a href="support.html">Contact Us</a></li>
             </ul>
         </div>
         <div class="footer-col">
             <h4>Legal</h4>
             <ul>
-                <li><a href="/legal">Terms of Service</a></li>
-                <li><a href="/legal">Privacy Policy</a></li>
-                <li><a href="/legal">Exchange Policy</a></li>
+                <li><a href="legal.html">Terms of Service</a></li>
+                <li><a href="legal.html">Privacy Policy</a></li>
             </ul>
         </div>
     </div>
-    <div class="footer-bottom"><p>&#169; 2026 Fun With Art Studio. Built in Delhi.</p></div>
+    <div class="footer-bottom"><p>&copy; 2026 Fun With Art Studio. Built in Delhi.</p></div>
 </footer>
 
 <script>
 (function(){
     'use strict';
     var EXCHANGE_WINDOW_HOURS=48,MAX_VIDEO_BYTES=500*1024*1024,ACCEPTED_VIDEO_TYPES=['video/mp4','video/quicktime','video/webm'];
-    var state={orderId:null,orderDate:null,productName:'',productVariant:'',productImage:'',productPrice:'',orderStatus:'delivered',isEligible:false,videoFile:null,submitting:false};
+    var state={
+        orderId:null,
+        itemId:null,
+        orderDate:null,
+        productName:'',
+        productVariant:'',
+        productImage:'',
+        productPrice:'',
+        originalPriceRaw:0,
+        altProductId:null,
+        altProduct:null,
+        orderStatus:'delivered',
+        isEligible:false,
+        videoFile:null,
+        submitting:false
+    };
+
+    var catalogFallback = [
+        { id: "kala-tikka-trio", name: "Kala Tikka Trio", title: "Kala Tikka Trio", price: 180, img: "Teen Shagun .jpg" },
+        { id: "bhukkad-nandi", name: "Bhukkad Nandi", title: "Bhukkad Nandi", price: 500, img: "Bhala Nandi.png" },
+        { id: "nautanki-twins", name: "Nautanki Twins", title: "Nautanki Twins", price: 120, img: "character-pots.jpg" },
+        { id: "terracotta-holder", name: "Terracotta Holder", title: "Terracotta Holder", price: 250, img: "wall-pen-holder.PNG" },
+        { id: "the-guardians", name: "The Guardians", title: "The Guardians", price: 95, img: "wall-faces.jpg" },
+        { id: "emerald-duo", name: "Emerald Duo", title: "Emerald Duo", price: 55, img: "Mor ki Diya .png" },
+        { id: "p1", name: "Midnight Leaf Trio", title: "Midnight Leaf Trio", price: 1800, img: "tall-vases.jpg" }
+    ];
 
     function init(){
-        if(!window.UdaanAPI||!window.UdaanAPI.isLoggedIn()){
-            window.location.href='/login.html?next='+encodeURIComponent(window.location.pathname+window.location.search);
+        var params=new URLSearchParams(window.location.search);
+        var isPreview = params.has('preview') || params.has('demo') || window.location.protocol === 'file:';
+        if(!isPreview && (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn())){
+            window.location.href='/login?next='+encodeURIComponent(window.location.pathname+window.location.search);
             return;
         }
-        var params=new URLSearchParams(window.location.search);
         state.orderId=params.get('order')||'1042';
-        var itemParam=params.get('item')||null;
-        window.UdaanAPI.fetchOrders()
-            .then(function(orders){var o=orders.find(function(x){return String(x.id)===String(state.orderId);});if(o){populateFromOrder(o,itemParam);}else{populateDemo();}})
-            .catch(function(){populateDemo();});
-        if(window.UdaanAPI.updateBadges){window.UdaanAPI.updateBadges();}
+        state.itemId=params.get('item')||null;
+        state.altProductId=params.get('alt_product_id')||null;
+        var exchangeTypeParam=params.get('exchange_type');
+
+        if(isPreview && (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn())){
+            populateDemo(exchangeTypeParam);
+            return;
+        }
+
+        if(window.UdaanAPI && window.UdaanAPI.fetchOrders){
+            window.UdaanAPI.fetchOrders()
+                .then(function(orders){
+                    var o=orders.find(function(x){return String(x.id)===String(state.orderId);});
+                    if(o){populateFromOrder(o,state.itemId,exchangeTypeParam);}
+                    else{populateDemo(exchangeTypeParam);}
+                })
+                .catch(function(){populateDemo(exchangeTypeParam);});
+        } else {
+            populateDemo(exchangeTypeParam);
+        }
+        if(window.UdaanAPI && window.UdaanAPI.updateBadges){window.UdaanAPI.updateBadges();}
     }
 
-    function populateFromOrder(order,itemId){
+    function populateFromOrder(order,itemId,exchangeTypeParam){
         var item=itemId?(order.items||[]).find(function(i){return String(i.id)===String(itemId);}):(order.items&&order.items[0]);
-        if(!item){populateDemo();return;}
+        if(!item){populateDemo(exchangeTypeParam);return;}
+        state.itemId=item.id;
         state.productName=item.product_name||'Unnamed Product';
         state.productVariant='Individual \u00b7 '+(item.purchase_option||'Standard');
-        state.productPrice=item.line_total?formatMoney(item.line_total):'—';
+        state.originalPriceRaw=parseFloat(item.unit_price || item.line_total || 0);
+        state.productPrice=formatMoney(state.originalPriceRaw);
         state.orderStatus=order.status||'delivered';
         state.productImage='https://placehold.co/200x200/fdf6f2/d7a88d?text='+encodeURIComponent(state.productName);
-        state.orderDate=new Date(order.created_at);
+        state.orderDate=new Date(order.delivered_at || order.created_at);
         applyToUI(order);
+        setupExchangeFlowUI(exchangeTypeParam);
     }
 
-    function populateDemo(){
+    function populateDemo(exchangeTypeParam){
+        state.itemId='1';
         state.productName='Terracotta Wall Vase';
         state.productVariant='Individual \u00b7 Terracotta Clay';
-        state.productImage='https://placehold.co/200x200/fdf6f2/d7a88d?text=Ceramics';
-        state.productPrice='₹1,850';
+        state.productImage='tall-vases.jpg';
+        state.originalPriceRaw=1850;
+        state.productPrice=formatMoney(state.originalPriceRaw);
         state.orderStatus='delivered';
         state.orderDate=new Date(Date.now()-12*3600*1000);
         applyToUI({id:state.orderId,created_at:state.orderDate.toISOString(),status:state.orderStatus});
+        setupExchangeFlowUI(exchangeTypeParam);
     }
 
     function applyToUI(order){
@@ -610,6 +789,149 @@
         el('order-date-display').textContent=new Date(order.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
         el('breadcrumb-order-link').href='/orders?id='+state.orderId;
         checkEligibility();
+    }
+
+    function setupExchangeFlowUI(typeParam){
+        var sameRadio=document.getElementById('exchange-same');
+        var otherRadio=document.getElementById('exchange-other');
+        var section=document.getElementById('alt-product-section');
+
+        if(typeParam==='other' || state.altProductId){
+            otherRadio.checked=true;
+            section.classList.add('visible');
+            if(state.altProductId){
+                loadSelectedAltProduct(state.altProductId);
+            } else {
+                showAltProductPrompt();
+            }
+        } else {
+            sameRadio.checked=true;
+            section.classList.remove('visible');
+        }
+    }
+
+    function redirectToCollection(){
+        var url='/collection?exchange_flow=1&order_id='+encodeURIComponent(state.orderId)+
+                '&item='+encodeURIComponent(state.itemId||'')+
+                '&min_price='+encodeURIComponent(state.originalPriceRaw||0);
+        window.location.href=url;
+    }
+
+    document.querySelectorAll('input[name="exchange-type"]').forEach(function(radio){
+        radio.addEventListener('change',function(){
+            var section=document.getElementById('alt-product-section');
+            if(this.value==='other'){
+                section.classList.add('visible');
+                if(!state.altProductId){
+                    redirectToCollection();
+                } else {
+                    hideError('alt-product-error');
+                }
+            } else {
+                section.classList.remove('visible');
+                hideError('alt-product-error');
+            }
+        });
+    });
+
+    var browseBtn=document.getElementById('browse-collection-btn');
+    if(browseBtn){
+        browseBtn.addEventListener('click',function(e){
+            e.preventDefault();
+            redirectToCollection();
+        });
+    }
+
+    function showAltProductPrompt(){
+        var container=document.getElementById('alt-product-selected-container');
+        if(container) container.innerHTML='';
+        var promptEl=document.getElementById('alt-product-prompt');
+        if(promptEl) promptEl.style.display='block';
+    }
+
+    function loadSelectedAltProduct(altId){
+        function onFound(product){
+            state.altProduct=product;
+            renderSelectedAltProduct(product);
+        }
+
+        if(window.UdaanAPI && window.UdaanAPI.fetchProducts){
+            window.UdaanAPI.fetchProducts()
+                .then(function(products){
+                    var list = Array.isArray(products) ? products : (products.results || []);
+                    var found = list.find(function(p){ return String(p.id) === String(altId) || String(p.productId) === String(altId); });
+                    if(found){
+                        var mapped = window.UdaanAPI.mapApiProduct ? window.UdaanAPI.mapApiProduct(found) : found;
+                        onFound(mapped);
+                    } else {
+                        var fallbackFound = catalogFallback.find(function(p){ return String(p.id) === String(altId); });
+                        if(fallbackFound) onFound(fallbackFound);
+                        else showAltProductPrompt();
+                    }
+                })
+                .catch(function(){
+                    var fallbackFound = catalogFallback.find(function(p){ return String(p.id) === String(altId); });
+                    if(fallbackFound) onFound(fallbackFound);
+                    else showAltProductPrompt();
+                });
+        } else {
+            var fallbackFound = catalogFallback.find(function(p){ return String(p.id) === String(altId); });
+            if(fallbackFound) onFound(fallbackFound);
+            else showAltProductPrompt();
+        }
+    }
+
+    function renderSelectedAltProduct(product){
+        var promptEl=document.getElementById('alt-product-prompt');
+        if(promptEl) promptEl.style.display='none';
+        var container=document.getElementById('alt-product-selected-container');
+        if(!container) return;
+
+        var prodPrice=parseFloat(product.price||0);
+        var originalPrice=state.originalPriceRaw||0;
+        var diff=Math.max(0, prodPrice - originalPrice);
+        var changeUrl='/collection?exchange_flow=1&order_id='+encodeURIComponent(state.orderId)+
+                      '&item='+encodeURIComponent(state.itemId||'')+
+                      '&min_price='+encodeURIComponent(state.originalPriceRaw||0);
+
+        var imgSrc=product.img || product.image_url || product.image || 'tall-vases.jpg';
+        var title=product.name || product.title || 'Selected Replacement';
+
+        container.innerHTML = `
+            <div class="replacement-product-card">
+                <img src="${imgSrc}" class="replacement-img" alt="${title}" onerror="this.src='tall-vases.jpg'">
+                <div class="replacement-info">
+                    <div class="replacement-title">${title}</div>
+                    <div class="replacement-price">₹${prodPrice.toLocaleString('en-IN')}</div>
+                </div>
+                <a href="${changeUrl}" class="btn-change-item">Change Item</a>
+            </div>
+
+            <div class="exchange-diff-box">
+                <div class="exchange-diff-header">
+                    <span>Exchange Price Breakdown</span>
+                    ${diff > 0 
+                        ? '<span class="diff-badge pay">Payable at Checkout</span>' 
+                        : '<span class="diff-badge free">No Extra Payment</span>'}
+                </div>
+                <div class="diff-row">
+                    <span>Original Item (${state.productName})</span>
+                    <span>₹${originalPrice.toLocaleString('en-IN')}</span>
+                </div>
+                <div class="diff-row">
+                    <span>Replacement Item (${title})</span>
+                    <span>₹${prodPrice.toLocaleString('en-IN')}</span>
+                </div>
+                <div class="diff-row total-row">
+                    <span>Amount to Pay</span>
+                    <span class="diff-val">₹${diff.toLocaleString('en-IN')}</span>
+                </div>
+                ${diff > 0 
+                    ? '<p style="font-size:0.8rem;color:#b45309;margin-top:8px;">Price difference of ₹' + diff.toLocaleString('en-IN') + ' will be charged at Checkout via Razorpay.</p>' 
+                    : '<p style="font-size:0.8rem;color:#166534;margin-top:8px;">Replacement is of equal price. ₹0 payment required.</p>'}
+            </div>
+        `;
+        hideError('alt-product-error');
     }
 
     function checkEligibility(){
@@ -632,44 +954,29 @@
 
     function startCountdown(deadline){
         function tick(){
+            var el = document.getElementById('time-remaining');
+            if(!el) return false;
             var diff=deadline-new Date();
-            if(diff<=0){document.getElementById('time-remaining').textContent='Expired';document.getElementById('eligibility-banner').className='eligibility-banner expired';return;}
+            if(diff<=0){
+                el.textContent='Expired';
+                var eb = document.getElementById('eligibility-banner');
+                if(eb) eb.className='eligibility-banner expired';
+                return false;
+            }
             var h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-            document.getElementById('time-remaining').textContent=pad(h)+':'+pad(m)+':'+pad(s);
-            if(diff<6*3600000){document.getElementById('time-remaining').style.color='#ef4444';}
+            el.textContent=pad(h)+':'+pad(m)+':'+pad(s);
+            if(diff<6*3600000){el.style.color='#ef4444';}
+            return true;
         }
-        tick();setInterval(tick,1000);
+        if(tick()){
+            var timerId = setInterval(function(){
+                if(!tick()){
+                    clearInterval(timerId);
+                }
+            }, 1000);
+        }
     }
     function pad(n){return n<10?'0'+n:String(n);}
-
-    document.querySelectorAll('input[name="exchange-type"]').forEach(function(radio){
-        radio.addEventListener('change',function(){
-            var section=document.getElementById('alt-product-section');
-            if(this.value==='other'){section.classList.add('visible');loadAltProducts();}
-            else{section.classList.remove('visible');}
-        });
-    });
-
-    function loadAltProducts(){
-        var select=document.getElementById('alt-product-select');
-        if(select.options.length>1)return;
-        if(window.UdaanAPI){
-            window.UdaanAPI.fetchProducts()
-                .then(function(products){
-                    var list = Array.isArray(products) ? products : (products.results || []);
-                    list = list.filter(function(p){ return p.is_available; });
-                    list.forEach(function(p){
-                        var o=document.createElement('option');
-                        o.value=p.id;
-                        o.textContent=p.name + ' — ' + formatMoney(p.price);
-                        select.appendChild(o);
-                    });
-                })
-                .catch(function(err){
-                    console.error('Failed to load alternative products:', err);
-                });
-        }
-    }
 
     var reasonTA=document.getElementById('exchange-reason'),charCounter=document.getElementById('char-counter-text');
     reasonTA.addEventListener('input',function(){
@@ -740,8 +1047,12 @@
         var errors=[];
         var exchangeType=document.querySelector('input[name="exchange-type"]:checked').value;
         if(exchangeType==='other'){
-            if(!document.getElementById('alt-product-select').value){showError('alt-product-error','');errors.push('Select a replacement product for your exchange.');}
-            else{hideError('alt-product-error');}
+            if(!state.altProductId){
+                showError('alt-product-error','Please choose a replacement product from the collection.');
+                errors.push('Replacement product selection is required.');
+            } else {
+                hideError('alt-product-error');
+            }
         }
         var reason=reasonTA.value.trim();
         if(reason.length<20){showError('reason-error',reason.length===0?'Please describe the reason for your exchange.':'Minimum 20 characters required ('+reason.length+' entered).');errors.push('Exchange reason must be at least 20 characters.');}
@@ -763,9 +1074,9 @@
         var exchangeType=document.querySelector('input[name="exchange-type"]:checked').value;
         fd.append('exchange_type',exchangeType);
         if(exchangeType==='other'){
-            fd.append('alt_product_id',document.getElementById('alt-product-select').value);
+            fd.append('alt_product_id',state.altProductId);
         }
-        var itemParam=new URLSearchParams(window.location.search).get('item');
+        var itemParam=state.itemId || new URLSearchParams(window.location.search).get('item');
         if(itemParam){
             fd.append('order_item_id',itemParam);
         }
@@ -814,7 +1125,13 @@
         })
         .then(function(data){
             btn.classList.remove('loading');btn.disabled=false;state.submitting=false;
-            showSuccess(data);
+            var amountToPay=parseFloat(data.amount_to_pay || 0);
+            if(amountToPay > 0){
+                // Route to Checkout for difference only
+                window.location.href = '/checkout?exchange_id=' + encodeURIComponent(data.id);
+            } else {
+                showSuccess(data);
+            }
         })
         .catch(function(err){
             btn.classList.remove('loading');btn.disabled=false;state.submitting=false;

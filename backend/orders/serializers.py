@@ -188,7 +188,11 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
     """Read-only serializer for returning exchange request data to the customer."""
     order_id = serializers.IntegerField(source='order.id', read_only=True)
     order_item_name = serializers.CharField(source='order_item.product_name', read_only=True, default=None)
+    original_item_price = serializers.SerializerMethodField()
+    alt_product_id = serializers.IntegerField(source='alt_product.id', read_only=True, default=None)
     alt_product_name = serializers.CharField(source='alt_product.name', read_only=True, default=None)
+    alt_product_price = serializers.SerializerMethodField()
+    alt_product_image = serializers.SerializerMethodField()
     unboxing_video_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -197,15 +201,44 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
             'id',
             'reference_id',
             'order_id',
+            'order_item_id',
             'order_item_name',
+            'original_item_price',
             'exchange_type',
+            'alt_product_id',
             'alt_product_name',
+            'alt_product_price',
+            'alt_product_image',
+            'amount_to_pay',
+            'payment_status',
+            'razorpay_order_id',
             'reason',
             'unboxing_video_url',
             'status',
             'created_at',
             'updated_at',
         ]
+
+    def get_original_item_price(self, obj):
+        if obj.order_item:
+            return str(obj.order_item.unit_price)
+        return None
+
+    def get_alt_product_price(self, obj):
+        if obj.alt_product:
+            return str(obj.alt_product.price)
+        return None
+
+    def get_alt_product_image(self, obj):
+        if obj.alt_product:
+            request = self.context.get('request')
+            image_url = getattr(obj.alt_product, 'image_url', None) or getattr(obj.alt_product, 'image', None)
+            if image_url:
+                url_str = image_url if isinstance(image_url, str) else getattr(image_url, 'url', str(image_url))
+                if request and not url_str.startswith('http'):
+                    return request.build_absolute_uri(url_str)
+                return url_str
+        return None
 
     def get_unboxing_video_url(self, obj):
         request = self.context.get('request')
@@ -224,6 +257,7 @@ class ExchangeRequestCreateSerializer(serializers.Serializer):
     - One active exchange per order_item (pending/approved/completed).
     - Video is required; must be MP4/MOV/WEBM and ≤ 500 MB.
     - If exchange_type == 'other', alt_product_id is required and product must be available.
+    - Replacement product price must be >= original product price.
     - Reason must be at least 20 characters.
     """
 
@@ -317,8 +351,11 @@ class ExchangeRequestCreateSerializer(serializers.Serializer):
                     )}
                 )
 
-        # 4. Validate alt_product if type == 'other'
+        # 4. Validate alt_product and price difference if type == 'other'
         alt_product = None
+        amount_to_pay = Decimal('0.00')
+        payment_status = 'not_required'
+
         if data['exchange_type'] == ExchangeRequest.ExchangeType.OTHER:
             alt_product_id = data.get('alt_product_id')
             if not alt_product_id:
@@ -333,9 +370,33 @@ class ExchangeRequestCreateSerializer(serializers.Serializer):
                     {'alt_product_id': 'Selected replacement product is unavailable or does not exist.'}
                 )
 
+            if not order_item:
+                raise serializers.ValidationError(
+                    {'order_item_id': 'Please specify the item you are exchanging to calculate price differences.'}
+                )
+
+            original_price = order_item.unit_price
+            replacement_price = alt_product.price
+
+            if replacement_price < original_price:
+                raise serializers.ValidationError(
+                    {'alt_product_id': (
+                        f'Selected replacement product (₹{replacement_price}) cannot be cheaper than '
+                        f'the original item (₹{original_price}). Please choose an item of equal or greater value.'
+                    )}
+                )
+
+            amount_to_pay = replacement_price - original_price
+            if amount_to_pay > Decimal('0.00'):
+                payment_status = 'pending'
+            else:
+                payment_status = 'not_required'
+
         data['_order'] = order
         data['_order_item'] = order_item
         data['_alt_product'] = alt_product
+        data['_amount_to_pay'] = amount_to_pay
+        data['_payment_status'] = payment_status
         return data
 
     def create(self, validated_data):
@@ -343,6 +404,8 @@ class ExchangeRequestCreateSerializer(serializers.Serializer):
         order = validated_data.pop('_order')
         order_item = validated_data.pop('_order_item')
         alt_product = validated_data.pop('_alt_product')
+        amount_to_pay = validated_data.pop('_amount_to_pay', Decimal('0.00'))
+        payment_status = validated_data.pop('_payment_status', 'not_required')
 
         # Strip agreement booleans (not stored on model)
         validated_data.pop('confirm_authentic')
@@ -358,6 +421,8 @@ class ExchangeRequestCreateSerializer(serializers.Serializer):
             user=user,
             alt_product=alt_product,
             exchange_type=validated_data['exchange_type'],
+            amount_to_pay=amount_to_pay,
+            payment_status=payment_status,
             reason=validated_data['reason'],
             unboxing_video=validated_data['unboxing_video'],
         )

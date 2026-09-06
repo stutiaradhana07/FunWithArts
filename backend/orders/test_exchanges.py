@@ -1,3 +1,4 @@
+from unittest.mock import patch, MagicMock
 from decimal import Decimal
 from datetime import timedelta
 import sys
@@ -34,6 +35,22 @@ class ExchangeAPITests(TestCase):
             description='Handcrafted green ceramic plate',
             price=Decimal('2500.00'),
             stock=5,
+            category=cls.category,
+            is_available=True,
+        )
+        cls.expensive_product = Product.objects.create(
+            name='Deluxe Vase',
+            description='Gold rim vase',
+            price=Decimal('3500.00'),
+            stock=5,
+            category=cls.category,
+            is_available=True,
+        )
+        cls.cheap_product = Product.objects.create(
+            name='Small Coaster',
+            description='Ceramic coaster',
+            price=Decimal('1500.00'),
+            stock=10,
             category=cls.category,
             is_available=True,
         )
@@ -392,3 +409,105 @@ class ExchangeAPITests(TestCase):
         exchange.refresh_from_db()
         self.assertEqual(exchange.status, ExchangeRequest.ExchangeStatus.COMPLETED)
         self.assertIn('completed', modeladmin.last_message)
+
+    def test_exchange_another_item_same_price_zero_amount(self):
+        payload = self._get_base_payload()
+        payload['exchange_type'] = 'other'
+        payload['alt_product_id'] = self.alt_product.id  # Both 2500.00
+        response = self.client.post('/api/exchanges/', payload, format='multipart', **self.auth_headers)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(Decimal(str(data['amount_to_pay'])), Decimal('0.00'))
+        self.assertEqual(data['payment_status'], 'not_required')
+
+    def test_exchange_another_item_cheaper_rejected(self):
+        payload = self._get_base_payload()
+        payload['exchange_type'] = 'other'
+        payload['alt_product_id'] = self.cheap_product.id  # 1500.00 < 2500.00
+        response = self.client.post('/api/exchanges/', payload, format='multipart', **self.auth_headers)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('alt_product_id', response.json())
+
+    def test_exchange_another_item_higher_price_requires_payment(self):
+        payload = self._get_base_payload()
+        payload['exchange_type'] = 'other'
+        payload['alt_product_id'] = self.expensive_product.id  # 3500.00 - 2500.00 = 1000.00
+        response = self.client.post('/api/exchanges/', payload, format='multipart', **self.auth_headers)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(Decimal(str(data['amount_to_pay'])), Decimal('1000.00'))
+        self.assertEqual(data['payment_status'], 'pending')
+
+    @patch('orders.views._get_razorpay_client')
+    def test_exchange_create_payment_order(self, mock_client):
+        exchange = ExchangeRequest.objects.create(
+            order=self.order,
+            order_item=self.order_item,
+            user=self.user,
+            exchange_type=ExchangeRequest.ExchangeType.OTHER,
+            alt_product=self.expensive_product,
+            amount_to_pay=Decimal('1000.00'),
+            payment_status='pending',
+            reason='The ceramic bowl was cracked on arrival near the rim.',
+            unboxing_video=self.video_file,
+        )
+        mock_rzp = MagicMock()
+        mock_rzp.order.create.return_value = {
+            'id': 'order_exc_test_123',
+            'amount': 100000,
+            'currency': 'INR',
+        }
+        mock_client.return_value = mock_rzp
+
+        response = self.client.post(
+            f'/api/exchanges/{exchange.id}/create-payment-order/',
+            {},
+            **self.auth_headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(data['razorpay_order_id'], 'order_exc_test_123')
+        self.assertEqual(data['amount'], 100000)
+        exchange.refresh_from_db()
+        self.assertEqual(exchange.razorpay_order_id, 'order_exc_test_123')
+
+    @patch('orders.views._get_razorpay_client')
+    def test_exchange_verify_payment(self, mock_client):
+        exchange = ExchangeRequest.objects.create(
+            order=self.order,
+            order_item=self.order_item,
+            user=self.user,
+            exchange_type=ExchangeRequest.ExchangeType.OTHER,
+            alt_product=self.expensive_product,
+            amount_to_pay=Decimal('1000.00'),
+            payment_status='pending',
+            razorpay_order_id='order_exc_test_123',
+            reason='The ceramic bowl was cracked on arrival near the rim.',
+            unboxing_video=self.video_file,
+        )
+        mock_rzp = MagicMock()
+        mock_rzp.utility.verify_payment_signature.return_value = True
+        mock_client.return_value = mock_rzp
+
+        payload = {
+            'razorpay_order_id': 'order_exc_test_123',
+            'razorpay_payment_id': 'pay_test_999',
+            'razorpay_signature': 'sig_test_valid',
+        }
+        response = self.client.post(
+            f'/api/exchanges/{exchange.id}/verify-payment/',
+            payload,
+            content_type='application/json',
+            **self.auth_headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        exchange.refresh_from_db()
+        self.assertEqual(exchange.payment_status, 'paid')
+        self.assertEqual(exchange.razorpay_payment_id, 'pay_test_999')
+
+    def test_product_list_min_price_filter(self):
+        response = self.client.get('/api/products/?min_price=2500')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [Decimal(str(p['price'])) for p in response.json()]
+        self.assertTrue(all(p >= Decimal('2500.00') for p in prices))
+        self.assertNotIn(Decimal('1500.00'), prices)

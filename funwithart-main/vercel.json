@@ -8,6 +8,7 @@
     { "source": "/checkout", "destination": "/index.html" },
     { "source": "/collection", "destination": "/index.html" },
     { "source": "/contact", "destination": "/index.html" },
+    { "source": "/exchange", "destination": "/index.html" },
     { "source": "/forgot-password", "destination": "/index.html" },
     { "source": "/home", "destination": "/index.html" },
     { "source": "/legal", "destination": "/index.html" },

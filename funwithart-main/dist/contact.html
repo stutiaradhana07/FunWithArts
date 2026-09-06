@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -122,7 +122,7 @@
         const lenis = new Lenis({ duration: 1.2, smooth: true });
         function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
 
-        setTimeout(() => { document.querySelector('.page-transition').classList.add('loaded'); }, 300);
+        setTimeout(() => { const pt = document.querySelector('.page-transition'); if (pt) pt.classList.add('loaded'); }, 300);
 
         function showToast(message) {
             const container = document.getElementById('toast-container');

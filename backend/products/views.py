@@ -24,8 +24,9 @@ def product_list(request):
     search = request.query_params.get('search', '').strip()
     is_new_param = request.query_params.get('is_new', '').strip().lower()
     is_new = is_new_param in ('true', '1', 'yes') if is_new_param else None
+    min_price = request.query_params.get('min_price', '').strip() or None
 
-    qs = build_product_queryset(search=search, category=category, is_new=is_new)
+    qs = build_product_queryset(search=search, category=category, is_new=is_new, min_price=min_price)
     serializer = ProductSerializer(qs, many=True, context={'request': request})
     response = Response(serializer.data)
     response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=300'
@@ -52,9 +53,10 @@ def product_search(request):
     category = request.query_params.get('category', '').strip()
     is_new_param = request.query_params.get('is_new', '').strip().lower()
     is_new = is_new_param in ('true', '1', 'yes') if is_new_param else None
+    min_price = request.query_params.get('min_price', '').strip() or None
     limit = parse_limit(request.query_params.get('limit', DEFAULT_LIMIT))
 
-    qs = build_product_queryset(search=query, category=category, is_new=is_new)[:limit]
+    qs = build_product_queryset(search=query, category=category, is_new=is_new, min_price=min_price)[:limit]
     products = list(qs)
     serializer = ProductSerializer(products, many=True, context={'request': request})
 

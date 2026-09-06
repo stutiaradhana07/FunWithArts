@@ -6,6 +6,7 @@ const FONT_HREF =
 
 // ── Whitelist of app-internal path prefixes ──
 const APP_ROUTES = [
+  '/',
   '/account',
   '/orders',
   '/collection',
@@ -17,7 +18,7 @@ const APP_ROUTES = [
   '/login',
   '/forgot-password',
   '/reset-password',
-  '/product/',
+  '/product',
   '/search',
   '/about',
   '/legal',
@@ -26,13 +27,36 @@ const APP_ROUTES = [
   '/settings',
   '/addresses',
   '/order-history',
+  '/exchange',
+  '/workshop-confirmation',
   '/blogs',
 ];
 
+function normalizeAppPath(href) {
+  if (!href) return '';
+  try {
+    const url = new URL(href, window.location.origin);
+    let pathname = url.pathname;
+
+    // Normalize .html before query or hash
+    pathname = pathname.replace(/\.html?$/i, '');
+    if (pathname === '/index' || pathname === '/legacy-index' || pathname === '') {
+      pathname = '/';
+    }
+    return pathname + url.search + url.hash;
+  } catch (err) {
+    let clean = href.replace(/\.html(?=[?#]|$)/i, '');
+    clean = clean.replace(/^\/(?:index|legacy-index)(?=[?#]|$)/i, '/');
+    return clean;
+  }
+}
+
 function isInternalAppLink(href) {
   if (!href) return false;
-  if (href === '/') return true;
-  return APP_ROUTES.some((route) => href.startsWith(route));
+  const normalized = normalizeAppPath(href);
+  const pathname = normalized.split(/[?#]/)[0];
+  if (pathname === '/' || pathname === '') return true;
+  return APP_ROUTES.some((route) => route !== '/' && (pathname === route || pathname.startsWith(route + '/')));
 }
 
 function shouldInterceptClick(target, href) {
@@ -199,10 +223,7 @@ export default function LegacyPage({ source, title }) {
 
       if (path) {
         // Normalize path
-        path = path.replace(/\.html$/, '');
-        path = path.replace(/\/index\.html?$/, '/');
-        path = path.replace(/\/legacy-index\.html?$/, '/');
-        if (path === '/index' || path === '/legacy-index') path = '/';
+        path = normalizeAppPath(path);
         if (!path.startsWith('/')) path = '/' + path;
 
         // Kill all legacy transition/wipe handlers

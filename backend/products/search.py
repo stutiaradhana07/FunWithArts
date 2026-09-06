@@ -7,7 +7,10 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 100
 
 
-def build_product_queryset(*, search='', category='', is_new=None):
+from decimal import Decimal, InvalidOperation
+
+
+def build_product_queryset(*, search='', category='', is_new=None, min_price=None):
     qs = Product.objects.filter(is_available=True).select_related('category').annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews'),
@@ -27,6 +30,13 @@ def build_product_queryset(*, search='', category='', is_new=None):
 
     if is_new is True:
         qs = qs.filter(is_new=True)
+
+    if min_price is not None:
+        try:
+            min_p = Decimal(str(min_price))
+            qs = qs.filter(price__gte=min_p)
+        except (ValueError, TypeError, InvalidOperation):
+            pass
 
     return qs
 

@@ -167,6 +167,83 @@
         .toast { background: var(--primary-color); color: var(--bg-color); padding: 15px 30px; border-radius: 50px; font-family: var(--body-font); font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
         .toast.show { opacity: 1; transform: translateY(0); }
 
+        /* EXCHANGE FLOW STYLES */
+        .exchange-mode-banner {
+            background: linear-gradient(135deg, #fdf8f5, #f7ece5);
+            border: 1.5px solid #d7a88d;
+            border-radius: 16px;
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(215, 168, 141, 0.15);
+            animation: fadeIn 0.4s ease;
+        }
+        .exchange-banner-badge {
+            display: inline-block;
+            background: #d7a88d;
+            color: #fff;
+            font-family: var(--art-font);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 50px;
+            margin-bottom: 6px;
+        }
+        .exchange-banner-text {
+            font-size: 0.95rem;
+            color: #444;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .exchange-banner-cancel {
+            font-family: var(--art-font);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #888;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 50px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .exchange-banner-cancel:hover {
+            color: #111;
+            border-color: #111;
+            background: rgba(0,0,0,0.03);
+        }
+        .exchange-select-btn {
+            background: #111;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-family: var(--art-font);
+            font-size: 0.78rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+            display: block;
+            cursor: pointer;
+        }
+        .exchange-select-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(215, 168, 141, 0.35);
+        }
+        .product-card.exchange-mode .action-layer {
+            bottom: 25px;
+        }
+
         @media (max-width: 768px) { 
             .nav-links { display: none; }
             .gallery-grid { grid-template-columns: 1fr; } 
@@ -216,6 +293,7 @@
 
     <div class="toolbar-wrapper">
         <div class="breadcrumbs"><a href="/">Home</a> / Collection</div>
+        <div id="exchange-mode-banner-container"></div>
         <div class="toolbar">
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="all">All</button>
@@ -264,6 +342,13 @@
 
     <script>
         const storage = window.UdaanAPI?.STORAGE_KEYS || { cart: 'udaan_cart_v2', wishlist: 'udaan_wishlist_v2', activeProduct: 'udaan_active_product' };
+        
+        // Exchange Flow Detection
+        const urlParams = new URLSearchParams(window.location.search);
+        const isExchangeFlow = urlParams.get('exchange_flow') === '1';
+        const exchangeOrderId = urlParams.get('order_id') || urlParams.get('order') || '';
+        const exchangeItemId = urlParams.get('item') || '';
+        const exchangeMinPrice = parseFloat(urlParams.get('min_price')) || 0;
 
         /* --- FALLBACK CATALOG (used if API is offline) --- */
         const catalogFallback = [
@@ -353,20 +438,24 @@
                 const delay = index * 0.05; 
                 const badgeHTML = item.badge ? `<div class="product-badge badge-new">${item.badge}</div>` : '';
                 
+                const actionLayerHTML = isExchangeFlow
+                    ? `<button class="exchange-select-btn" data-product-id="${item.productId || item.id}">Exchange ➔</button>`
+                    : `<button class="quick-add-btn">Quick Add +</button>
+                       <div class="grid-qty-controls">
+                           <button class="grid-qty-btn minus">-</button>
+                           <span class="grid-qty-val">1</span>
+                           <button class="grid-qty-btn plus">+</button>
+                       </div>`;
+
                 const card = `
-                    <div class="product-card" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
+                    <div class="product-card ${isExchangeFlow ? 'exchange-mode' : ''}" data-category="${item.category}" data-is-latest="${item.isLatest ? 'true' : 'false'}" data-id="${item.id}" data-product-id="${item.productId || item.id}" data-product-slug="${item.slug || ''}" data-base-price="${item.price}" style="animation-delay: ${delay}s">
                         ${badgeHTML}
                         <div class="image-wrapper view-link">
                             <img src="${item.img}" class="product-image primary liquid-img" alt="${item.title}" style="object-position: ${item.image_position || '50% 50%'}; --image-zoom: ${item.image_zoom || 1.0};" onerror="this.onerror=null; this.src='https://placehold.co/400x500/EAE6DB/111111?text=Image+Found+No+Match'">
-                            <button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
+                            ${!isExchangeFlow ? `<button class="quick-save-btn" aria-label="Save to Wishlist"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>` : ''}
                             
                             <div class="action-layer">
-                                <button class="quick-add-btn">Quick Add +</button>
-                                <div class="grid-qty-controls">
-                                    <button class="grid-qty-btn minus">-</button>
-                                    <span class="grid-qty-val">1</span>
-                                    <button class="grid-qty-btn plus">+</button>
-                                </div>
+                                ${actionLayerHTML}
                             </div>
 
                         </div>
@@ -375,7 +464,7 @@
                             <div class="price-row">
                                 <span class="price">₹${item.price.toLocaleString('en-IN')}</span>
                             </div>
-                            <div class="stars-row">${window.UdaanAPI.renderStars(item.avg_rating, { showCount: true, count: item.review_count, size: 'sm' })}</div>
+                            <div class="stars-row">${window.UdaanAPI ? window.UdaanAPI.renderStars(item.avg_rating, { showCount: true, count: item.review_count, size: 'sm' }) : ''}</div>
                         </div>
                     </div>
                 `;
@@ -383,13 +472,33 @@
             });
             attachEventListeners();
             updateBadges();
-            updateCardUIs(); // Instantly checks if any items are already in the cart
+            if (!isExchangeFlow) {
+                updateCardUIs();
+            }
         }
 
         async function initCatalog() {
+            if (isExchangeFlow) {
+                const bannerContainer = document.getElementById('exchange-mode-banner-container');
+                if (bannerContainer) {
+                    bannerContainer.innerHTML = `
+                        <div class="exchange-mode-banner" id="exchange-mode-banner">
+                            <div class="exchange-banner-content">
+                                <span class="exchange-banner-badge">Exchange Selection Mode</span>
+                                <p class="exchange-banner-text">
+                                    Selecting replacement for <strong>Order #${exchangeOrderId}</strong>.
+                                    ${exchangeMinPrice > 0 ? `Showing eligible items (₹${exchangeMinPrice.toLocaleString('en-IN')} or above).` : 'Choose any product below.'}
+                                </p>
+                            </div>
+                            <a href="/exchange?order=${encodeURIComponent(exchangeOrderId)}&item=${encodeURIComponent(exchangeItemId)}" class="exchange-banner-cancel">✕ Cancel Selection</a>
+                        </div>
+                    `;
+                }
+            }
+
             if (window.UdaanAPI) {
                 try {
-                    const products = await window.UdaanAPI.fetchProducts();
+                    const products = await window.UdaanAPI.fetchProducts(isExchangeFlow && exchangeMinPrice > 0 ? { min_price: exchangeMinPrice } : undefined);
                     if (Array.isArray(products)) {
                         catalogDB = products.map((product) => normalizeCatalogItem(window.UdaanAPI.mapApiProduct(product)));
                     }
@@ -535,12 +644,29 @@
                 });
             });
 
+            if (isExchangeFlow) {
+                document.querySelectorAll('.exchange-select-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const card = this.closest('.product-card');
+                        const prodId = card.getAttribute('data-product-id') || card.getAttribute('data-id');
+                        window.location.href = `/exchange?order=${encodeURIComponent(exchangeOrderId)}&item=${encodeURIComponent(exchangeItemId)}&alt_product_id=${encodeURIComponent(prodId)}&exchange_type=other`;
+                    });
+                });
+            }
+
             // Page Transition to Product Details
             document.querySelectorAll('.view-link').forEach(link => {
                 link.addEventListener('click', function(e) {
                     if(e.target.closest('.action-layer') || e.target.closest('.quick-save-btn')) return;
                     e.preventDefault();
                     const card = this.closest('.product-card');
+                    if (isExchangeFlow) {
+                        const prodId = card.getAttribute('data-product-id') || card.getAttribute('data-id');
+                        window.location.href = `/exchange?order=${encodeURIComponent(exchangeOrderId)}&item=${encodeURIComponent(exchangeItemId)}&alt_product_id=${encodeURIComponent(prodId)}&exchange_type=other`;
+                        return;
+                    }
                     const prodData = catalogDB.find(p => String(p.id) === String(card.getAttribute('data-id')));
                     localStorage.setItem(storage.activeProduct, JSON.stringify(prodData));
                     window.location.href = `/product/${encodeURIComponent(prodData.slug || prodData.productId || prodData.id)}`;
@@ -574,6 +700,9 @@
 
         function getVisibleCatalog() {
             const filtered = catalogDB.filter((item) => {
+                if (isExchangeFlow && exchangeMinPrice > 0) {
+                    if (Number(item.price) < exchangeMinPrice) return false;
+                }
                 if (activeCategory === 'all') return true;
                 if (activeCategory === 'latest') return item.isLatest;
                 return item.category === activeCategory;
@@ -615,15 +744,9 @@
                 else { mainNav.classList.remove('hide'); }
                 lastScrollY = scrollY;
                 
-                // Only perform visual skew/parallax transformations on desktop to prevent mobile scroll lag!
+                // Keep background dreamscape parallax without tilting or moving product cards
                 if (window.innerWidth > 768) {
                     if (dreamscape) { dreamscape.style.transform = `translateY(${scrollY * 0.15}px)`; }
-                    const skew = Math.max(-15, Math.min(15, speed * 0.6));
-                    const scale = 1 - Math.min(0.1, Math.abs(speed * 0.01));
-                    document.querySelectorAll('.liquid-img').forEach(img => { 
-                        const customZoom = parseFloat(img.style.getPropertyValue('--image-zoom') || 1.0);
-                        img.style.transform = `skewY(${skew}deg) scale(${scale * customZoom})`; 
-                    });
                 }
             });
             function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);

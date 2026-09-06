@@ -12,15 +12,25 @@ function ProductRoute() {
   useEffect(() => {
     try {
       const existing = localStorage.getItem('udaan_active_product');
-      const parsed = existing ? JSON.parse(existing) : {};
-      localStorage.setItem(
-        'udaan_active_product',
-        JSON.stringify({
-          ...parsed,
-          slug: parsed?.slug || id,
-          id: parsed?.id || id,
-        })
-      );
+      const parsed = existing ? JSON.parse(existing) : null;
+      const isSameProduct =
+        parsed && (String(parsed.id) === String(id) || String(parsed.slug) === String(id));
+
+      if (isSameProduct) {
+        localStorage.setItem(
+          'udaan_active_product',
+          JSON.stringify({
+            ...parsed,
+            slug: parsed?.slug || id,
+            id: parsed?.id || id,
+          })
+        );
+      } else {
+        localStorage.setItem(
+          'udaan_active_product',
+          JSON.stringify({ id, slug: id })
+        );
+      }
     } catch (error) {
       localStorage.setItem('udaan_active_product', JSON.stringify({ id, slug: id }));
     }
@@ -86,6 +96,8 @@ export default function App() {
       <Route path="/settings" element={<LegacyPage source="settings.html" title="Settings | Fun With Art" />} />
       <Route path="/addresses" element={<LegacyPage source="addresses.html" title="Saved Addresses | Fun With Art" />} />
       <Route path="/exchange" element={<LegacyPage source="exchange.html" title="Request an Exchange | Fun With Art" />} />
+      <Route path="/workshop-confirmation" element={<LegacyPage source="workshop-confirmation.html" title="Confirm Your Workshop | Fun With Art" />} />
+      <Route path="/success" element={<LegacyPage source="success.html" title="Order Confirmed | Fun With Art" />} />
       <Route path="/product/:id" element={<ProductRoute />} />
       <Route path="/search" element={<LegacyPage source="search.html" title="Search | Fun With Art" />} />
       <Route path="/blogs" element={<BlogIndex />} />

@@ -1,3 +1,5 @@
+import razorpay
+from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -196,3 +198,125 @@ def exchange_detail(request, pk):
             user=request.user,
         )
     return Response(ExchangeRequestSerializer(exchange, context={'request': request}).data)
+
+
+def _get_razorpay_client():
+    return razorpay.Client(
+        auth=(getattr(settings, 'RAZORPAY_KEY_ID', ''), getattr(settings, 'RAZORPAY_KEY_SECRET', ''))
+    )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def exchange_create_payment_order(request, pk):
+    """
+    POST /api/exchanges/<pk>/create-payment-order/
+    Creates a Razorpay order for the price difference on an exchange request.
+    Only valid if amount_to_pay > 0 and payment_status != 'paid'.
+    """
+    if request.user.is_staff:
+        exchange = get_object_or_404(
+            ExchangeRequest.objects.select_related('order', 'order_item', 'alt_product'),
+            pk=pk,
+        )
+    else:
+        exchange = get_object_or_404(
+            ExchangeRequest.objects.select_related('order', 'order_item', 'alt_product'),
+            pk=pk,
+            user=request.user,
+        )
+
+    if exchange.payment_status == 'paid':
+        return Response(
+            {'error': 'Payment has already been completed for this exchange request.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if exchange.amount_to_pay <= 0:
+        return Response(
+            {'error': 'No payment is required for this exchange.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    amount_paise = int(exchange.amount_to_pay * 100)
+
+    try:
+        client = _get_razorpay_client()
+        razorpay_order = client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'receipt': f'exchange_{exchange.id}',
+            'payment_capture': 1,
+        })
+        exchange.razorpay_order_id = razorpay_order['id']
+        exchange.save(update_fields=['razorpay_order_id', 'updated_at'])
+
+        return Response({
+            'razorpay_order_id': razorpay_order['id'],
+            'amount': amount_paise,
+            'currency': 'INR',
+            'key_id': getattr(settings, 'RAZORPAY_KEY_ID', ''),
+            'exchange_id': exchange.id,
+            'reference_id': exchange.reference_id,
+            'amount_to_pay': str(exchange.amount_to_pay),
+            'name': 'Fun with Art',
+            'description': f'Price difference for Exchange {exchange.reference_id}',
+            'prefill': {
+                'email': exchange.order.contact_email or request.user.email or '',
+                'contact': exchange.order.contact_phone or '',
+            },
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to create payment order: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def exchange_verify_payment(request, pk):
+    """
+    POST /api/exchanges/<pk>/verify-payment/
+    Verifies the Razorpay payment signature for an exchange request.
+    Expects { razorpay_order_id, razorpay_payment_id, razorpay_signature }.
+    """
+    if request.user.is_staff:
+        exchange = get_object_or_404(ExchangeRequest, pk=pk)
+    else:
+        exchange = get_object_or_404(ExchangeRequest, pk=pk, user=request.user)
+
+    razorpay_order_id = request.data.get('razorpay_order_id')
+    razorpay_payment_id = request.data.get('razorpay_payment_id')
+    razorpay_signature = request.data.get('razorpay_signature')
+
+    if not (razorpay_order_id and razorpay_payment_id and razorpay_signature):
+        return Response(
+            {'error': 'razorpay_order_id, razorpay_payment_id, and razorpay_signature are required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    client = _get_razorpay_client()
+    try:
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature,
+        })
+    except Exception:
+        return Response(
+            {'error': 'Invalid payment signature.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    exchange.razorpay_payment_id = razorpay_payment_id
+    exchange.razorpay_signature = razorpay_signature
+    exchange.payment_status = 'paid'
+    exchange.save(update_fields=['razorpay_payment_id', 'razorpay_signature', 'payment_status', 'updated_at'])
+
+    return Response({
+        'message': 'Exchange payment verified successfully.',
+        'exchange_id': exchange.id,
+        'reference_id': exchange.reference_id,
+        'payment_status': exchange.payment_status,
+    })

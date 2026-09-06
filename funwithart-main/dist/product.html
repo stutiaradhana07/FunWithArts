@@ -556,21 +556,34 @@
                 return null;
             }
 
-            return (
-                catalogDB.find(p =>
-                    String(p.id) === String(storedProduct?.id || routeId) ||
-                    String(p.slug || '') === String(storedProduct?.slug || routeId) ||
-                    window.UdaanAPI.normalize(p.title) === window.UdaanAPI.normalize(storedProduct?.title || routeId)
-                ) ||
-                (storedProduct ? {
+            if (routeId) {
+                const byRoute = catalogDB.find(p =>
+                    String(p.id) === String(routeId) ||
+                    String(p.slug || '').toLowerCase() === String(routeId).toLowerCase() ||
+                    window.UdaanAPI.normalize(p.title) === window.UdaanAPI.normalize(routeId)
+                );
+                if (byRoute) return byRoute;
+            }
+
+            if (storedProduct) {
+                const byStored = catalogDB.find(p =>
+                    String(p.id) === String(storedProduct.id) ||
+                    (storedProduct.slug && String(p.slug || '').toLowerCase() === String(storedProduct.slug).toLowerCase()) ||
+                    (storedProduct.title && window.UdaanAPI.normalize(p.title) === window.UdaanAPI.normalize(storedProduct.title))
+                );
+                if (byStored) return byStored;
+
+                return {
                     id: storedProduct.id || routeId,
                     slug: storedProduct.slug || '',
-                    title: storedProduct.title,
+                    title: storedProduct.title || 'Product',
                     price: Number(storedProduct.price || 0),
-                    img: storedProduct.img,
+                    img: storedProduct.img || '',
                     desc: storedProduct.desc || '',
-                } : null)
-            );
+                };
+            }
+
+            return null;
         }
 
         async function loadProductData() {
@@ -725,6 +738,15 @@
                                     <button class="pincode-btn" id="pin-btn">Check</button>
                                 </div>
                                 <p class="shipping-msg" id="pin-msg">Pan-India delivery takes 4-6 business days.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <button class="accordion-header">Exchange & Refund Policy <span>+</span></button>
+                            <div class="accordion-content">
+                                <p style="padding: 10px 0 25px; line-height: 1.7; font-size: 0.9rem;">
+                                    <strong>No Monetary Refunds:</strong> Because each ceramic and terracotta piece is handcrafted slowly in small studio batches, we do not offer monetary refunds.<br><br>
+                                    <strong>48-Hour Exchange:</strong> In the rare event your piece arrives damaged or defective in transit, you can request an exchange within <strong>48 hours of delivery</strong> through our <a href="/exchange" style="color:var(--accent-color);text-decoration:underline;">Exchange Portal</a>. A continuous, unedited unboxing video is required.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1163,8 +1185,9 @@
 
             try {
                 const data = await window.UdaanAPI.fetchProductReviews(productId, 1, 5);
-                reviewState.currentPage = data.page;
-                reviewState.totalPages = data.total_pages;
+                const totalCount = data.count !== undefined ? data.count : (Array.isArray(data.results) ? data.results.length : 0);
+                reviewState.currentPage = data.page || 1;
+                reviewState.totalPages = data.total_pages || Math.ceil(totalCount / 5) || 1;
                 serverFeed = Array.isArray(data.results) ? data.results : [];
             } catch (e) {
                 reviewState.currentPage = 1;
@@ -1178,9 +1201,9 @@
             renderPdpRatingRow(reviewState.summary);
             renderFeedPage({
                 results: allReviews.slice(0, Math.max(allReviews.length, 5)),
-                page: 1,
+                page: reviewState.currentPage,
                 total: allReviews.length,
-                total_pages: 1
+                total_pages: reviewState.totalPages
             }, productId);
 
             checkAndUpdateAlreadyReviewed();
@@ -1528,10 +1551,11 @@
             btn.innerText = 'Loading...';
 
             try {
-                var nextPage = reviewState.currentPage + 1;
+                var nextPage = (Number(reviewState.currentPage) || 1) + 1;
                 var data = await window.UdaanAPI.fetchProductReviews(reviewState.productId, nextPage, 5);
-                reviewState.currentPage = data.page;
-                reviewState.totalPages = data.total_pages;
+                var totalCount = data.count !== undefined ? data.count : (Array.isArray(data.results) ? data.results.length : 0);
+                reviewState.currentPage = data.page || nextPage;
+                reviewState.totalPages = data.total_pages || Math.ceil(totalCount / 5) || reviewState.totalPages;
 
                 var loadMoreRow = document.querySelector('#review-feed .load-more-row');
                 if (loadMoreRow) loadMoreRow.remove();
@@ -1667,22 +1691,11 @@
             try {
                 var auth = window.UdaanAPI.getAuth();
                 if (auth && auth.token) {
-                    try {
-                        await window.UdaanAPI.submitReview(reviewState.productId, {
-                            rating: reviewState.selectedRating,
-                            title: title,
-                            comment: comment,
-                        });
-                    } catch (apiError) {
-                        saveLocalReview(reviewState.productId, {
-                            rating: reviewState.selectedRating,
-                            title: title,
-                            comment: comment,
-                            user_name: name,
-                            created_at: new Date().toISOString(),
-                            is_verified_buyer: false,
-                        });
-                    }
+                    await window.UdaanAPI.submitReview(reviewState.productId, {
+                        rating: reviewState.selectedRating,
+                        title: title,
+                        comment: comment,
+                    });
                 } else {
                     saveLocalReview(reviewState.productId, {
                         rating: reviewState.selectedRating,

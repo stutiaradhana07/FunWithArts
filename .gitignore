@@ -49,6 +49,7 @@ fix.js
 backend_audit.md
 FIXES_APPLIED.md
 2.0
+scratch/
 
 # ── Python cache in backend apps ───────────────────────────────────────────
 backend/**/migrations/__pycache__/

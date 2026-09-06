@@ -34,7 +34,7 @@
     />
     <script>
       var rawApiUrl = '%VITE_API_URL%';
-      window.__UDAAN_API_BASE__ = rawApiUrl && !rawApiUrl.startsWith('%') ? rawApiUrl : '/api';
+      window.__UDAAN_API_BASE__ = rawApiUrl.startsWith('%') ? 'http://127.0.0.1:8000/api' : rawApiUrl;
     </script>
     <script src="/shared.js"></script>
     <script src="https://accounts.google.com/gsi/client?onload=onGoogleLibraryLoad" async defer></script>

@@ -5,4 +5,4 @@
   window.__UDAAN_API_BASE__ = isLocal
     ? 'http://127.0.0.1:8000/api'
     : 'https://funwitharts-production.up.railway.app/api';
-})();
+})();

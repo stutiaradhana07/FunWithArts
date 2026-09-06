@@ -682,7 +682,10 @@
                                 '<span class="meta-label">Shipping to:</span>' +
                                 '<span class="meta-value" style="font-size:0.88rem;color:var(--text-muted);">' + escapeHtml(order.shipping_city) + ', ' + escapeHtml(order.shipping_pincode) + '</span>' +
                             '</div>' +
-                            '<a href="/orders" class="btn btn-outline btn-sm">Track Shipment</a>' +
+                            '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+                                (order.status === 'delivered' ? '<a href="/exchange?order=' + order.id + '" class="btn btn-sm" style="background:var(--accent-dark);color:#fff;">Exchange (48h)</a>' : '') +
+                                '<a href="/orders" class="btn btn-outline btn-sm">Track Shipment</a>' +
+                            '</div>' +
                         '</div>' +
                         '</article>';
                 }).join('');
