@@ -1,0 +1,34 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block result_list %}
+  {% if catalog_stats %}
+  <div class="product-admin-kpi-bar" data-threshold="{{ low_stock_threshold }}">
+    <span class="kpi-item"><strong>{{ catalog_stats.total }}</strong> Products</span>
+    <span class="kpi-divider">|</span>
+    <span class="kpi-item active-kpi"><strong>{{ catalog_stats.active }}</strong> Active</span>
+    <span class="kpi-divider">|</span>
+    <span class="kpi-item low-stock-kpi"><strong>{{ catalog_stats.low_stock }}</strong> Low Stock</span>
+    <span class="kpi-divider">|</span>
+    <span class="kpi-item out-of-stock-kpi"><strong>{{ catalog_stats.out_of_stock }}</strong> Out of Stock</span>
+
+    {% if cl.formset %}
+    <div class="top-save-container">
+      <input type="submit" name="_save" class="default" value="💾 Save Changes">
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {{ block.super }}
+
+  {% if cl.formset %}
+  <div id="product-sticky-save-bar" class="product-sticky-save-bar">
+    <div class="unsaved-info">
+      <span class="pulse-dot"></span>
+      <span id="unsaved-count-text"><strong>0</strong> unsaved changes</span>
+    </div>
+    <input type="submit" name="_save" class="default sticky-save-btn" value="💾 Save Changes" form="changelist-form">
+  </div>
+  {% endif %}
+{% endblock %}
