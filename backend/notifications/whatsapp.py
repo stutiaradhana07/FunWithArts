@@ -15,6 +15,10 @@ TEMPLATES = {
     'workshop_booked': {
         'body': "Hi {name}, your payment for \"{workshop_title}\" has been successfully completed on {payment_date} at {payment_time}! Our team will contact you shortly with further details and schedules.",
         'variables': ['name', 'workshop_title', 'payment_date', 'payment_time']
+    },
+    'home_tuition_booked': {
+        'body': "Hi {name}, your payment for {sessions} Home Tuition session(s) totaling ₹{total_amount} is confirmed. Our team will contact you personally to finalize your schedule and other details.",
+        'variables': ['name', 'sessions', 'total_amount']
     }
 }
 

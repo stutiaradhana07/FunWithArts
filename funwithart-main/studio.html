@@ -212,6 +212,23 @@
     </div>
 </section>
 
+    <section class="workshops-section" id="home-tuition">
+        <h2 class="section-title">Home Tuition</h2>
+        <div class="class-grid">
+            <article class="class-card">
+                <div class="class-icon" aria-hidden="true">🏠</div>
+                <h3 class="class-title">Private Pottery Sessions</h3>
+                <p class="class-desc">Learn pottery with personal guidance at a pace that works for you. Each session is ₹1,500.</p>
+                <p class="class-desc">Our team will contact you personally after registration to finalize your schedule and other details.</p>
+                <div class="class-meta">
+                    <span>₹1,500 / session</span>
+                    <span class="duration">Personal tuition</span>
+                </div>
+                <button type="button" class="submit-btn" id="home-tuition-cta">Book Home Tuition</button>
+            </article>
+        </div>
+    </section>
+
     <section class="enroll-section" id="enroll">
         <div class="enroll-text">
             <h2>Book Your Wheel.</h2>
@@ -223,23 +240,23 @@
             <div class="form-row">
                 <div class="input-group">
                     <label>First Name</label>
-                    <input type="text" required placeholder="Your Name">
+                    <input type="text" name="customer_name" required placeholder="Your Name" autocomplete="name">
                 </div>
                 <div class="input-group">
                     <label>Phone Number</label>
-                    <input type="tel" required placeholder="+91 98765 43210">
+                    <input type="tel" name="customer_phone" required placeholder="+91 98765 43210" autocomplete="tel">
                 </div>
             </div>
             
             <div class="input-group" style="margin-bottom: 20px;">
                 <label>Email Address</label>
-                <input type="email" required placeholder="hello@example.com">
+                <input type="email" name="customer_email" required placeholder="hello@example.com" autocomplete="email">
             </div>
 
             <div class="input-group" style="margin-bottom: 20px;">
                 <label>Select Workshop</label>
                 <div class="custom-select-wrap" id="workshop-select-wrap">
-                    <div class="custom-select-trigger" id="workshop-trigger" onclick="this.parentElement.classList.toggle('open'); event.stopPropagation();">
+                    <div class="custom-select-trigger" id="workshop-trigger" onclick="this.parentElement.classList.toggle('open'); event.stopPropagation();" role="button" tabindex="0" aria-haspopup="listbox">
                         <span class="trigger-label">Choose a Class</span>
                         <span class="custom-select-arrow">▼</span>
                     </div>
@@ -253,10 +270,11 @@
 
             <div class="form-row">
                 <div class="input-group">
-                    <label>Seats</label>
+                    <label id="seat-count-label">Seats</label>
                     <input type="number" name="seats" min="1" max="6" value="1" required>
                 </div>
             </div>
+            <p id="tuition-total" aria-live="polite" style="display:none;color:#ddd;font-family:var(--art-font);margin-top:4px;">Estimated total: <strong id="tuition-total-amount">₹1,500</strong></p>
 
             <button type="submit" class="submit-btn" id="enroll-btn">Confirm Registration</button>
         </form>
@@ -323,21 +341,30 @@
         });
         function raf(time) { lenis.raf(time); requestAnimationFrame(raf); } requestAnimationFrame(raf);
 
-        // 1. Setup the Icons
+        const HOME_TUITION_PRICE = 1500;
 const CATEGORY_LABELS = { program: 'Professional Programs', experience: 'Studio Experiences' };
 
 function buildCard(w) {
     const card = document.createElement('article');
     card.className = 'class-card' + (w.is_highlighted ? ' highlighted-card' : '');
-    card.innerHTML = [
-        `<div class="class-icon">${w.icon || '🏺'}</div>`,
-        `<h3 class="class-title">${w.title}</h3>`,
-        `<p class="class-desc">${w.description}</p>`,
-        `<div class="class-meta">`,
-        `<span>${window.UdaanAPI.formatMoney(w.price)}</span>`,
-        `<span class="duration">${w.schedule_text || w.available_slots + ' spots left'}</span>`,
-        `</div>`
-    ].join('');
+    const icon = document.createElement('div');
+    icon.className = 'class-icon';
+    icon.textContent = w.icon || '🏺';
+    const title = document.createElement('h3');
+    title.className = 'class-title';
+    title.textContent = w.title;
+    const description = document.createElement('p');
+    description.className = 'class-desc';
+    description.textContent = w.description;
+    const meta = document.createElement('div');
+    meta.className = 'class-meta';
+    const price = document.createElement('span');
+    price.textContent = window.UdaanAPI.formatMoney(w.price);
+    const schedule = document.createElement('span');
+    schedule.className = 'duration';
+    schedule.textContent = w.schedule_text || w.available_slots + ' spots left';
+    meta.append(price, schedule);
+    card.append(icon, title, description, meta);
     return card;
 }
 
@@ -346,15 +373,45 @@ function buildDropdownOption(w) {
     div.className = 'custom-select-option';
     div.setAttribute('data-value', w.id);
     div.setAttribute('data-label', `${w.icon || '🏺'} ${w.title} — ${window.UdaanAPI.formatMoney(w.price)} (${w.schedule_text || ''})`);
-    div.setAttribute('onclick', 'selectWorkshop(this)');
-    div.innerHTML = [
-        `<span class="opt-icon">${w.icon || '🏺'}</span>`,
-        `<span class="opt-text">`,
-        `<span class="opt-title">${w.title}</span>`,
-        `<span class="opt-meta">${window.UdaanAPI.formatMoney(w.price)} · ${w.schedule_text || w.available_slots + ' spots'}</span>`,
-        `</span>`
-    ].join('');
+    div.setAttribute('role', 'option');
+    div.addEventListener('click', function() { selectWorkshop(div); });
+    const icon = document.createElement('span');
+    icon.className = 'opt-icon';
+    icon.textContent = w.icon || '🏺';
+    const text = document.createElement('span');
+    text.className = 'opt-text';
+    const title = document.createElement('span');
+    title.className = 'opt-title';
+    title.textContent = w.title;
+    const meta = document.createElement('span');
+    meta.className = 'opt-meta';
+    meta.textContent = `${window.UdaanAPI.formatMoney(w.price)} · ${w.schedule_text || w.available_slots + ' spots'}`;
+    text.append(title, meta);
+    div.append(icon, text);
     return div;
+}
+
+function buildHomeTuitionOption() {
+    const option = document.createElement('div');
+    option.className = 'custom-select-option';
+    option.setAttribute('data-value', 'home_tuition');
+    option.setAttribute('data-label', '🏠 Home Tuition — ₹1,500 per session');
+    option.setAttribute('role', 'option');
+    option.addEventListener('click', function() { selectWorkshop(option); });
+    const icon = document.createElement('span');
+    icon.className = 'opt-icon';
+    icon.textContent = '🏠';
+    const text = document.createElement('span');
+    text.className = 'opt-text';
+    const title = document.createElement('span');
+    title.className = 'opt-title';
+    title.textContent = 'Home Tuition';
+    const meta = document.createElement('span');
+    meta.className = 'opt-meta';
+    meta.textContent = '₹1,500 per session';
+    text.append(title, meta);
+    option.append(icon, text);
+    return option;
 }
 
 function buildOptgroupLabel(text) {
@@ -409,8 +466,15 @@ async function loadWorkshops() {
                 experiences.forEach(w => dropdown.appendChild(buildDropdownOption(w)));
             }
 
+            dropdown.appendChild(buildOptgroupLabel('Private Tuition'));
+            dropdown.appendChild(buildHomeTuitionOption());
+
             if (programs.length === 0 && experiences.length === 0) {
-                dropdown.innerHTML = '<div class="custom-select-option" style="color:#888;pointer-events:none;">No workshops available.</div>';
+                const empty = document.createElement('div');
+                empty.className = 'custom-select-option';
+                empty.style.cssText = 'color:#888;pointer-events:none;';
+                empty.textContent = 'No workshops available.';
+                dropdown.insertBefore(empty, dropdown.firstChild);
             }
         }
     } catch (error) {
@@ -424,7 +488,11 @@ async function loadWorkshops() {
         });
 
         if (dropdown && !dropdown.querySelector('.custom-select-option[data-value]')) {
-            dropdown.innerHTML = '<div class="custom-select-option" style="color:#D7A88D;pointer-events:none;">⚠ Could not load workshops.</div>';
+            const error = document.createElement('div');
+            error.className = 'custom-select-option';
+            error.style.cssText = 'color:#D7A88D;pointer-events:none;';
+            error.textContent = 'Could not load workshops.';
+            dropdown.append(error, buildOptgroupLabel('Private Tuition'), buildHomeTuitionOption());
         }
     }
 }
@@ -432,25 +500,62 @@ async function loadWorkshops() {
 // 3. Form Submit — redirect to confirmation page for review & payment
 const form = document.getElementById('studio-form');
 const enrollBtn = document.getElementById('enroll-btn');
+const seatsInput = form.querySelector('[name="seats"]');
+const tuitionTotal = document.getElementById('tuition-total');
+const tuitionTotalAmount = document.getElementById('tuition-total-amount');
+
+function updateTuitionEstimate() {
+    const sessions = Math.max(1, Number(seatsInput.value) || 1);
+    tuitionTotalAmount.textContent = window.UdaanAPI.formatMoney(sessions * HOME_TUITION_PRICE);
+}
+
+seatsInput.addEventListener('input', function() {
+    if (form.elements.workshop_id.value === 'home_tuition') updateTuitionEstimate();
+});
+
+document.getElementById('home-tuition-cta').addEventListener('click', function() {
+    const dropdown = document.getElementById('workshop-dropdown');
+    let option = dropdown.querySelector('[data-value="home_tuition"]');
+    if (!option) {
+        dropdown.appendChild(buildOptgroupLabel('Private Tuition'));
+        option = buildHomeTuitionOption();
+        dropdown.appendChild(option);
+    }
+    selectWorkshop(option);
+    document.getElementById('enroll').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 
 form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    if (!window.UdaanAPI.isLoggedIn()) {
-        window.UdaanAPI.showAuthModal("To reserve a seat in our pottery workshops and experience the wheel, please sign in or create an artisan account.");
-        return;
-    }
-
-    var workshopId = Number(form.workshop_id.value);
+    var selectedType = form.workshop_id.value;
     var seats = Number(form.seats.value) || 1;
 
-    if (!workshopId) {
+    if (!selectedType) {
         showToast('Please select a workshop.');
         return;
     }
 
-    // Redirect to the confirmation / review page
-    window.location.href = 'workshop-confirmation.html?workshop_id=' + workshopId + '&seats=' + seats;
+    const contact = {
+        customer_name: form.elements.customer_name.value.trim(),
+        customer_phone: form.elements.customer_phone.value.trim(),
+        customer_email: form.elements.customer_email.value.trim(),
+    };
+    sessionStorage.setItem('studio_booking_contact', JSON.stringify(contact));
+
+    var nextPage;
+    if (selectedType === 'home_tuition') {
+        nextPage = '/workshop-confirmation.html?type=home_tuition&sessions=' + seats;
+    } else {
+        nextPage = '/workshop-confirmation.html?workshop_id=' + Number(selectedType) + '&seats=' + seats;
+    }
+
+    if (!window.UdaanAPI.isLoggedIn()) {
+        window.location.href = '/login?next=' + encodeURIComponent(nextPage);
+        return;
+    }
+
+    window.location.href = nextPage;
 });
 
 
@@ -469,6 +574,13 @@ form.addEventListener('submit', function(e) {
             el.classList.add('active');
             // Close dropdown
             wrap.classList.remove('open');
+
+            const isHomeTuition = value === 'home_tuition';
+            document.getElementById('seat-count-label').textContent = isHomeTuition ? 'Sessions' : 'Seats';
+            seatsInput.max = isHomeTuition ? '' : '6';
+            seatsInput.value = '1';
+            tuitionTotal.style.display = isHomeTuition ? 'block' : 'none';
+            if (isHomeTuition) updateTuitionEstimate();
         }
 
         // Click outside to close

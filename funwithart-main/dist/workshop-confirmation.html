@@ -544,24 +544,43 @@
 
             // ── Parse URL params ──
             var params = new URLSearchParams(window.location.search);
+            var bookingType = params.get('type') || 'workshop';
+            var isHomeTuition = bookingType === 'home_tuition';
             var workshopId = parseInt(params.get('workshop_id'), 10);
-            var seats = parseInt(params.get('seats'), 10) || 1;
+            var seats = parseInt(isHomeTuition ? params.get('sessions') : params.get('seats'), 10) || 1;
+            var contact = getContactDetails();
 
             // ── Validate params ──
-            if (!workshopId || workshopId < 1) {
+            if (!isHomeTuition && (!workshopId || workshopId < 1)) {
                 root.innerHTML = renderError('Invalid workshop selection.', 'Please go back and choose a workshop.');
                 return;
             }
-            if (seats < 1 || seats > 10) {
+            if (seats < 1 || (!isHomeTuition && seats > 10)) {
                 root.innerHTML = renderError('Invalid seat count.', 'Please select between 1 and 10 seats.');
                 return;
             }
 
             // ── Auth Guard ──
             if (!window.UdaanAPI || !window.UdaanAPI.isLoggedIn()) {
+                var nextPage = isHomeTuition
+                    ? 'workshop-confirmation.html?type=home_tuition&sessions=' + seats
+                    : 'workshop-confirmation.html?workshop_id=' + workshopId + '&seats=' + seats;
                 window.location.href = 'login.html?next=' + encodeURIComponent(
-                    'workshop-confirmation.html?workshop_id=' + workshopId + '&seats=' + seats
+                    nextPage
                 );
+                return;
+            }
+
+            if (isHomeTuition) {
+                if (!contact.customer_name || !contact.customer_phone || !contact.customer_email) {
+                    root.innerHTML = renderError(
+                        'Contact details are missing.',
+                        'Please return to Studio and enter your name, phone number, and email.'
+                    );
+                    return;
+                }
+                root.innerHTML = renderHomeTuitionConfirmation(seats, contact);
+                wireHomeTuitionActions(seats, contact);
                 return;
             }
 
@@ -611,7 +630,7 @@
                                 '<h2>' + escapeHtml(w.title) + '</h2>',
                                 w.instructor ? '<div class="wi-instructor">with ' + escapeHtml(w.instructor) + '</div>' : '',
                                 '<div class="wi-datetime">' + dateStr + '</div>',
-                                w.duration ? '<div class="wi-duration">Duration: ' + escapeHtml(w.duration) + '</div>' : '',
+                                w.duration ? '<div class="wi-duration">Duration: ' + escapeHtml(formatDuration(w.duration)) + '</div>' : '',
                             '</div>',
                         '</div>',
 
@@ -648,6 +667,43 @@
                 ].join('');
             }
 
+            function renderHomeTuitionConfirmation(sessionCount, customer) {
+                var total = window.UdaanAPI.formatMoney(1500 * sessionCount);
+                return [
+                    '<div class="step-indicator">',
+                        '<div class="step-dot done">1</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot active">2</div>',
+                        '<div class="step-line"></div>',
+                        '<div class="step-dot">3</div>',
+                    '</div>',
+                    '<div class="confirm-card">',
+                        '<h1>Review Your Home Tuition</h1>',
+                        '<p class="subtitle">Confirm your sessions and contact details before proceeding to payment.</p>',
+                        '<div class="workshop-summary">',
+                            '<div class="workshop-icon">🏠</div>',
+                            '<div class="workshop-info">',
+                                '<h2>Private Pottery Sessions</h2>',
+                                '<div class="wi-duration">' + sessionCount + ' session' + (sessionCount !== 1 ? 's' : '') + ' at ₹1,500 per session</div>',
+                            '</div>',
+                        '</div>',
+                        '<div class="price-section">',
+                            '<div class="price-row muted"><span>Price per session</span><span>₹1,500</span></div>',
+                            '<div class="price-row muted"><span>Sessions</span><span>&times; ' + sessionCount + '</span></div>',
+                            '<div class="price-row total"><span>Total</span><span>' + total + '</span></div>',
+                            '<div class="price-row muted"><span>Contact</span><span>' + escapeHtml(customer.customer_name) + '</span></div>',
+                            '<div class="price-row muted"><span>Email</span><span>' + escapeHtml(customer.customer_email) + '</span></div>',
+                            '<div class="price-row muted"><span>Phone</span><span>' + escapeHtml(customer.customer_phone) + '</span></div>',
+                        '</div>',
+                        '<div class="action-row">',
+                            '<a href="/studio" class="btn btn-outline">&larr; Back</a>',
+                            '<button class="btn btn-accent" id="btn-pay-now">Proceed to Payment &rarr;</button>',
+                        '</div>',
+                        '<p style="text-align:center;color:var(--text-light);font-size:0.85rem;margin-top:16px;">Our team will contact you personally after registration to finalize your schedule and other details.</p>',
+                    '</div>',
+                ].join('');
+            }
+
             // ── Wire the Pay Now button ──
             function wireActions(workshop, seatCount) {
                 var payBtn = document.getElementById('btn-pay-now');
@@ -657,9 +713,9 @@
                     payBtn.disabled = true;
                     payBtn.innerText = 'Initiating Payment\u2026';
 
-                    window.UdaanAPI.initiateWorkshopPayment(workshop.id, seatCount)
+                    window.UdaanAPI.initiateWorkshopPayment(workshop.id, seatCount, contact)
                         .then(function (initData) {
-                            openRazorpay(initData, workshop, seatCount);
+                            openRazorpay(initData, workshop, seatCount, 'workshop');
                         })
                         .catch(function (err) {
                             showToast(err.message || 'Could not initiate payment. Please try again.');
@@ -669,8 +725,32 @@
                 });
             }
 
+            function wireHomeTuitionActions(sessionCount, customer) {
+                var payBtn = document.getElementById('btn-pay-now');
+                if (!payBtn) return;
+
+                payBtn.addEventListener('click', function () {
+                    payBtn.disabled = true;
+                    payBtn.innerText = 'Initiating Payment…';
+
+                    window.UdaanAPI.initiateWorkshopPayment(null, 1, {
+                        booking_type: 'home_tuition',
+                        sessions: sessionCount,
+                        customer_name: customer.customer_name,
+                        customer_phone: customer.customer_phone,
+                        customer_email: customer.customer_email,
+                    }).then(function (initData) {
+                        openRazorpay(initData, null, sessionCount, 'home_tuition');
+                    }).catch(function (err) {
+                        showToast(err.message || 'Could not initiate payment. Please try again.');
+                        payBtn.disabled = false;
+                        payBtn.innerText = 'Proceed to Payment →';
+                    });
+                });
+            }
+
             // ── Open Razorpay checkout modal ──
-            function openRazorpay(initData, workshop, seatCount) {
+            function openRazorpay(initData, workshop, seatCount, type) {
                 var payBtn = document.getElementById('btn-pay-now');
 
                 var options = {
@@ -688,7 +768,11 @@
                             response.razorpay_payment_id,
                             response.razorpay_signature
                         ).then(function () {
-                            renderSuccess(workshop, seatCount, response.razorpay_payment_id);
+                            if (type === 'home_tuition') {
+                                renderHomeTuitionSuccess(seatCount, response.razorpay_payment_id);
+                            } else {
+                                renderSuccess(workshop, seatCount, response.razorpay_payment_id);
+                            }
                         }).catch(function () {
                             showToast('Payment verification failed. Please contact support.');
                             payBtn.disabled = false;
@@ -711,6 +795,7 @@
 
             // ── Render success state ──
             function renderSuccess(workshop, seatCount, paymentId) {
+                sessionStorage.removeItem('studio_booking_contact');
                 var dateStr = window.UdaanAPI.formatWorkshopDate(workshop.date, workshop.time);
                 var total = window.UdaanAPI.formatMoney(workshop.price * seatCount);
 
@@ -739,6 +824,33 @@
                 ].join('');
             }
 
+            function renderHomeTuitionSuccess(sessionCount, paymentId) {
+                sessionStorage.removeItem('studio_booking_contact');
+                var total = window.UdaanAPI.formatMoney(1500 * sessionCount);
+                root.innerHTML = [
+                    '<div class="step-indicator">',
+                        '<div class="step-dot done">1</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot done">2</div>',
+                        '<div class="step-line done"></div>',
+                        '<div class="step-dot done">3</div>',
+                    '</div>',
+                    '<div class="confirm-card">',
+                        '<div class="success-state">',
+                            '<div class="success-icon">&#9989;</div>',
+                            '<h2>Home Tuition Registration Confirmed!</h2>',
+                            '<p>' + sessionCount + ' session' + (sessionCount !== 1 ? 's' : '') + ' registered &middot; ' + total + ' paid</p>',
+                            '<p>Our studio team will contact you personally to finalize your schedule and other details.</p>',
+                            '<div class="booking-ref">Payment ID: ' + escapeHtml(paymentId || '—') + '</div>',
+                            '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">',
+                                '<a href="/account" class="btn btn-accent" style="width:auto;">View My Bookings</a>',
+                                '<a href="/studio" class="btn btn-outline" style="width:auto;">Explore Studio</a>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                ].join('');
+            }
+
             // ── Render error state ──
             function renderError(title, detail) {
                 return [
@@ -759,6 +871,25 @@
                 var div = document.createElement('div');
                 div.textContent = String(str);
                 return div.innerHTML;
+            }
+
+            function getContactDetails() {
+                try {
+                    return JSON.parse(sessionStorage.getItem('studio_booking_contact') || '{}');
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            function formatDuration(minutes) {
+                var value = Number(minutes);
+                if (!Number.isFinite(value) || value <= 0) return String(minutes);
+                var hours = Math.floor(value / 60);
+                var remainder = value % 60;
+                var parts = [];
+                if (hours) parts.push(hours + ' hour' + (hours !== 1 ? 's' : ''));
+                if (remainder) parts.push(remainder + ' minute' + (remainder !== 1 ? 's' : ''));
+                return parts.join(' ');
             }
 
             function showToast(message) {

@@ -48,6 +48,10 @@ class Workshop(models.Model):
 from django.contrib.auth.models import User
 
 class Booking(models.Model):
+    class BookingType(models.TextChoices):
+        WORKSHOP = 'workshop', 'Workshop'
+        HOME_TUITION = 'home_tuition', 'Home Tuition'
+
     class PaymentStatus(models.TextChoices):
         PENDING   = 'pending',   'Awaiting Payment'
         CONFIRMED = 'confirmed', 'Payment Confirmed'
@@ -55,9 +59,19 @@ class Booking(models.Model):
         CANCELLED = 'cancelled', 'Cancelled / Refunded'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    workshop = models.ForeignKey(Workshop, on_delete=models.CASCADE)
+    workshop = models.ForeignKey(Workshop, on_delete=models.CASCADE, null=True, blank=True)
+    booking_type = models.CharField(
+        max_length=20,
+        choices=BookingType.choices,
+        default=BookingType.WORKSHOP,
+    )
     booking_date = models.DateTimeField(auto_now_add=True)
     seats = models.IntegerField(default=1)
+    sessions = models.PositiveIntegerField(null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    customer_name = models.CharField(max_length=120, blank=True, default='')
+    customer_phone = models.CharField(max_length=20, blank=True, default='')
+    customer_email = models.EmailField(blank=True, default='')
 
     # ── Payment tracking ──
     payment_status = models.CharField(
@@ -77,4 +91,5 @@ class Booking(models.Model):
         ordering = ['-booking_date']
 
     def __str__(self):
-        return f"{self.user.username} - {self.workshop.title} ({self.get_payment_status_display()})"
+        item = self.workshop.title if self.workshop_id else 'Home Tuition'
+        return f"{self.user.username} - {item} ({self.get_payment_status_display()})"

@@ -42,7 +42,8 @@ class WorkshopSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     workshop = WorkshopSerializer(read_only=True)
     workshop_id = serializers.PrimaryKeyRelatedField(
-        queryset=Workshop.objects.all(), source='workshop', write_only=True
+        queryset=Workshop.objects.all(), source='workshop', write_only=True,
+        required=False, allow_null=True,
     )
     booking_date = serializers.DateTimeField(read_only=True)
     payment_status = serializers.CharField(read_only=True)
@@ -51,8 +52,10 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'workshop', 'workshop_id', 'seats', 'booking_date',
-            'payment_status', 'payment_status_display',
+            'id', 'booking_type', 'workshop', 'workshop_id', 'seats', 'sessions',
+            'amount', 'customer_name', 'customer_phone', 'customer_email',
+            'booking_date', 'payment_status', 'payment_status_display',
+            'razorpay_order_id', 'razorpay_payment_id',
         ]
 
     def get_payment_status_display(self, obj):
@@ -60,8 +63,17 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 class InitiateWorkshopPaymentSerializer(serializers.Serializer):
-    workshop_id = serializers.IntegerField()
-    seats = serializers.IntegerField(min_value=1, max_value=10)
+    booking_type = serializers.ChoiceField(
+        choices=Booking.BookingType.choices,
+        required=False,
+        default=Booking.BookingType.WORKSHOP,
+    )
+    workshop_id = serializers.IntegerField(required=False)
+    seats = serializers.IntegerField(min_value=1, max_value=10, required=False, default=1)
+    sessions = serializers.IntegerField(min_value=1, required=False)
+    customer_name = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    customer_phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    customer_email = serializers.EmailField(required=False, allow_blank=True)
 
     def validate_workshop_id(self, value):
         try:
@@ -81,9 +93,26 @@ class InitiateWorkshopPaymentSerializer(serializers.Serializer):
             )
         return value
 
+    def validate(self, attrs):
+        booking_type = attrs['booking_type']
+        if booking_type == Booking.BookingType.WORKSHOP:
+            if 'workshop_id' not in attrs:
+                raise serializers.ValidationError({'workshop_id': 'Select a workshop.'})
+            return attrs
+
+        if 'workshop_id' in attrs:
+            raise serializers.ValidationError({'workshop_id': 'Home Tuition does not use a workshop.'})
+        if 'sessions' not in attrs:
+            raise serializers.ValidationError({'sessions': 'Select the number of sessions.'})
+
+        for field in ('customer_name', 'customer_phone', 'customer_email'):
+            if not attrs.get(field):
+                raise serializers.ValidationError({field: 'This field is required for Home Tuition.'})
+        return attrs
+
     @property
     def workshop(self):
-        return self._workshop
+        return getattr(self, '_workshop', None)
 
 
 class VerifyWorkshopPaymentSerializer(serializers.Serializer):

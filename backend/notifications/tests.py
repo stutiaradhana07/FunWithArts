@@ -134,6 +134,32 @@ class WhatsAppSignalTests(TestCase):
         mock_send_whatsapp.assert_not_called()
 
     @patch('notifications.signals.send_whatsapp_async')
+    def test_home_tuition_confirmation_signal_uses_submitted_contact(self, mock_send_whatsapp):
+        booking = Booking.objects.create(
+            user=self.user,
+            booking_type=Booking.BookingType.HOME_TUITION,
+            sessions=3,
+            amount=Decimal('4500.00'),
+            customer_name='Asha Artist',
+            customer_phone='9123456789',
+            customer_email='asha@example.com',
+        )
+        mock_send_whatsapp.assert_not_called()
+
+        booking.payment_status = Booking.PaymentStatus.CONFIRMED
+        booking.save()
+
+        mock_send_whatsapp.assert_called_once_with(
+            '9123456789',
+            'home_tuition_booked',
+            {
+                'name': 'Asha Artist',
+                'sessions': '3',
+                'total_amount': '4500.00',
+            }
+        )
+
+    @patch('notifications.signals.send_whatsapp_async')
     def test_workshop_booking_confirmation_signal(self, mock_send_whatsapp):
         """Signal should trigger WhatsApp confirmation when payment_status transitions to CONFIRMED."""
         # Create booking starting in PENDING

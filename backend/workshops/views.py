@@ -3,6 +3,7 @@ import hashlib
 import json
 import razorpay
 from datetime import date, timedelta
+from decimal import Decimal
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils import timezone
@@ -88,66 +89,89 @@ def initiate_workshop_payment(request):
     serializer = InitiateWorkshopPaymentSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
+    booking_type = serializer.validated_data['booking_type']
     workshop = serializer.workshop
     seats = serializer.validated_data['seats']
+    sessions = serializer.validated_data.get('sessions')
+    customer_name = serializer.validated_data.get('customer_name') or request.user.get_full_name() or request.user.username
+    customer_phone = serializer.validated_data.get('customer_phone', '')
+    customer_email = serializer.validated_data.get('customer_email') or request.user.email
 
-    with transaction.atomic():
-        # Lock the workshop row to prevent race conditions
-        workshop = Workshop.objects.select_for_update().get(pk=workshop.pk)
+    if booking_type == Booking.BookingType.WORKSHOP:
+        with transaction.atomic():
+            # Lock the workshop row to prevent race conditions
+            workshop = Workshop.objects.select_for_update().get(pk=workshop.pk)
 
-        # Release expired pending bookings so their slots are freed
-        _release_expired_pending_bookings(workshop)
+            _release_expired_pending_bookings(workshop)
 
-        # Re-validate availability under lock
-        if seats > workshop.available_slots:
-            return Response(
-                {'error': f'Only {workshop.available_slots} seat(s) remaining.'},
-                status=status.HTTP_400_BAD_REQUEST,
+            if seats > workshop.available_slots:
+                return Response(
+                    {'error': f'Only {workshop.available_slots} seat(s) remaining.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            already_confirmed = Booking.objects.filter(
+                user=request.user,
+                workshop=workshop,
+                payment_status=Booking.PaymentStatus.CONFIRMED,
+            ).exists()
+            if already_confirmed:
+                return Response(
+                    {'error': 'You already have a confirmed booking for this workshop.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            workshop.available_slots -= seats
+            workshop.save(update_fields=['available_slots'])
+            total_amount = workshop.price * seats
+            booking = Booking.objects.create(
+                user=request.user,
+                workshop=workshop,
+                booking_type=booking_type,
+                seats=seats,
+                amount=total_amount,
+                customer_name=customer_name,
+                customer_phone=customer_phone,
+                customer_email=customer_email,
+                payment_status=Booking.PaymentStatus.PENDING,
             )
-
-        # Block duplicate CONFIRMED bookings for the same workshop
-        already_confirmed = Booking.objects.filter(
-            user=request.user,
-            workshop=workshop,
-            payment_status=Booking.PaymentStatus.CONFIRMED,
-        ).exists()
-        if already_confirmed:
-            return Response(
-                {'error': 'You already have a confirmed booking for this workshop.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Reserve slots (mark as pending — not deducted yet)
-        workshop.available_slots -= seats
-        workshop.save(update_fields=['available_slots'])
-
-        # Create pending booking
+    else:
+        total_amount = Decimal('1500.00') * sessions
         booking = Booking.objects.create(
             user=request.user,
-            workshop=workshop,
-            seats=seats,
+            booking_type=booking_type,
+            sessions=sessions,
+            amount=total_amount,
+            customer_name=customer_name,
+            customer_phone=customer_phone,
+            customer_email=customer_email,
             payment_status=Booking.PaymentStatus.PENDING,
         )
 
     try:
         client = _get_razorpay_client()
-        receipt_id = f'ws_{workshop.id}_{booking.id}'
+        receipt_id = f'ws_{workshop.id}_{booking.id}' if workshop else f'ht_{booking.id}'
+        notes = {
+            'booking_type': booking_type,
+            'booking_id': str(booking.id),
+        }
+        if workshop:
+            notes['workshop_id'] = str(workshop.id)
+        else:
+            notes['sessions'] = str(sessions)
         razorpay_order = client.order.create({
-            'amount': int(workshop.price * seats * 100),  # paise
+            'amount': int(total_amount * 100),  # paise
             'currency': 'INR',
             'receipt': receipt_id,
             'payment_capture': 1,
-            'notes': {
-                'workshop_id': str(workshop.id),
-                'booking_id': str(booking.id),
-            },
+            'notes': notes,
         })
     except Exception as e:
-        # Rollback slot reservation on Razorpay failure
-        with transaction.atomic():
-            w = Workshop.objects.select_for_update().get(pk=workshop.pk)
-            w.available_slots += seats
-            w.save(update_fields=['available_slots'])
+        if workshop:
+            with transaction.atomic():
+                w = Workshop.objects.select_for_update().get(pk=workshop.pk)
+                w.available_slots += seats
+                w.save(update_fields=['available_slots'])
         booking.payment_status = Booking.PaymentStatus.FAILED
         booking.save(update_fields=['payment_status'])
         return Response(
@@ -165,10 +189,13 @@ def initiate_workshop_payment(request):
         'currency': razorpay_order['currency'],
         'key_id': settings.RAZORPAY_KEY_ID,
         'name': 'Fun with Art',
-        'description': f'{workshop.title} — {seats} seat(s)',
+        'description': (
+            f'{workshop.title} — {seats} seat(s)'
+            if workshop else f'Home Tuition — {sessions} session(s)'
+        ),
         'prefill': {
-            'name': request.user.get_full_name() or request.user.username,
-            'email': request.user.email,
+            'name': customer_name,
+            'email': customer_email,
         },
     }, status=status.HTTP_201_CREATED)
 
@@ -335,16 +362,18 @@ def _handle_workshop_payment_failed(event_data):
         return
 
     # Only transition PENDING bookings — CONFIRMED ones stay
-    if booking.payment_status != Booking.PaymentStatus.PENDING:
-        return
-
     with transaction.atomic():
-        workshop = Workshop.objects.select_for_update().get(pk=booking.workshop_id)
-        workshop.available_slots += booking.seats
-        workshop.save(update_fields=['available_slots'])
+        booking = Booking.objects.select_for_update().get(pk=booking.pk)
+        if booking.payment_status != Booking.PaymentStatus.PENDING:
+            return
 
-    booking.payment_status = Booking.PaymentStatus.FAILED
-    booking.save(update_fields=['payment_status', 'updated_at'])
+        if booking.workshop_id:
+            workshop = Workshop.objects.select_for_update().get(pk=booking.workshop_id)
+            workshop.available_slots += booking.seats
+            workshop.save(update_fields=['available_slots'])
+
+        booking.payment_status = Booking.PaymentStatus.FAILED
+        booking.save(update_fields=['payment_status', 'updated_at'])
 
 
 # ──────────────────────────────────────────────

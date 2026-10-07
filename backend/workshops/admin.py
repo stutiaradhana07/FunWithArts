@@ -11,6 +11,9 @@ class WorkshopAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'workshop', 'seats', 'payment_status', 'booking_date')
+    list_display = (
+        'id', 'user', 'booking_type', 'workshop', 'sessions', 'seats', 'amount',
+        'customer_name', 'customer_phone', 'customer_email', 'payment_status', 'booking_date',
+    )
     list_filter = ('payment_status', 'booking_date')
-    search_fields = ('user__username', 'workshop__title')
+    search_fields = ('user__username', 'workshop__title', 'customer_name', 'customer_email', 'customer_phone')

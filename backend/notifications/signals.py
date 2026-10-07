@@ -142,11 +142,15 @@ def on_workshop_booked(sender, instance, created, **kwargs):
     *If payment_status transitions to CONFIRMED* → send WhatsApp confirmation.
     """
     if created:
-        _send_workshop_booked_email(instance)
+        if instance.booking_type == Booking.BookingType.WORKSHOP:
+            _send_workshop_booked_email(instance)
     else:
         old_payment_status = getattr(instance, '_old_payment_status', None)
         if old_payment_status != Booking.PaymentStatus.CONFIRMED and instance.payment_status == Booking.PaymentStatus.CONFIRMED:
-            _send_workshop_confirmed_whatsapp(instance)
+            if instance.booking_type == Booking.BookingType.HOME_TUITION:
+                _send_home_tuition_confirmed_whatsapp(instance)
+            else:
+                _send_workshop_confirmed_whatsapp(instance)
 
 
 def _send_workshop_booked_email(booking):
@@ -180,7 +184,7 @@ def _send_workshop_confirmed_whatsapp(booking):
     try:
         profile = getattr(booking.user, 'profile', None)
         phone = profile.phone if profile else ""
-        
+
         if not phone:
             logger.warning(
                 'Workshop booking %s user has no profile phone; skipping WhatsApp confirmation.',
@@ -200,6 +204,26 @@ def _send_workshop_confirmed_whatsapp(booking):
         send_whatsapp_async(phone, 'workshop_booked', variables)
     except Exception:
         logger.exception('Failed to trigger workshop confirmation WhatsApp message')
+
+
+def _send_home_tuition_confirmed_whatsapp(booking):
+    """Send the post-payment follow-up message to the submitted contact."""
+    try:
+        phone = booking.customer_phone
+        if not phone:
+            profile = getattr(booking.user, 'profile', None)
+            phone = profile.phone if profile else ''
+        if not phone:
+            logger.warning('Home Tuition booking %s has no phone; skipping WhatsApp confirmation.', booking.pk)
+            return
+
+        send_whatsapp_async(phone, 'home_tuition_booked', {
+            'name': booking.customer_name or booking.user.first_name or booking.user.username,
+            'sessions': str(booking.sessions),
+            'total_amount': f'{booking.amount:.2f}',
+        })
+    except Exception:
+        logger.exception('Failed to trigger Home Tuition confirmation WhatsApp message')
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -315,4 +339,4 @@ def _send_exchange_decision_email(exchange):
             'Failed to send exchange decision email for ExchangeRequest %s (non-fatal)',
             exchange.pk,
         )
-
+

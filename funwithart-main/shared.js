@@ -528,14 +528,16 @@
     return request(`/workshops/${workshopId}/`);
   }
 
-  async function initiateWorkshopPayment(workshopId, seats = 1) {
+  async function initiateWorkshopPayment(workshopId, seats = 1, bookingDetails = {}) {
     if (!isLoggedIn()) {
       showAuthModal("To reserve a seat in our pottery workshops and experience the wheel, please sign in or create an artisan account.");
       throw new Error("Authentication required");
     }
     return request('/workshops/initiate-payment/', {
       method: 'POST',
-      body: JSON.stringify({ workshop_id: workshopId, seats }),
+      body: JSON.stringify(bookingDetails.booking_type === 'home_tuition'
+        ? bookingDetails
+        : { workshop_id: workshopId, seats, ...bookingDetails }),
     });
   }
 

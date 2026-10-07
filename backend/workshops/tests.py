@@ -208,6 +208,7 @@ class WorkshopPaymentAPITests(TestCase):
         self.assertIsNotNone(booking)
         self.assertEqual(booking.payment_status, Booking.PaymentStatus.PENDING)
         self.assertEqual(booking.seats, 2)
+        self.assertEqual(booking.amount, Decimal('200.00'))
         self.assertEqual(booking.razorpay_order_id, 'order_test123')
 
         # Slots deducted
@@ -315,6 +316,88 @@ class WorkshopPaymentAPITests(TestCase):
             HTTP_AUTHORIZATION=f'Token {self.token.key}'
         )
         self.assertEqual(response.status_code, 201)
+
+    @patch('workshops.views._get_razorpay_client')
+    def test_home_tuition_uses_server_price_and_confirms_payment(self, mock_client):
+        mock_razorpay = MagicMock()
+        mock_razorpay.order.create.return_value = {
+            'id': 'order_tuition123',
+            'amount': 450000,
+            'currency': 'INR',
+            'status': 'created',
+        }
+        mock_razorpay.utility.verify_payment_signature.return_value = True
+        mock_client.return_value = mock_razorpay
+
+        response = self.client.post(
+            '/api/workshops/initiate-payment/',
+            data=json.dumps({
+                'booking_type': 'home_tuition',
+                'sessions': 3,
+                'amount': 1,
+                'customer_name': 'Asha Artist',
+                'customer_phone': '9876543210',
+                'customer_email': 'asha@example.com',
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {self.token.key}'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['amount'], 450000)
+        mock_razorpay.order.create.assert_called_once()
+        order_payload = mock_razorpay.order.create.call_args.args[0]
+        self.assertEqual(order_payload['amount'], 450000)
+
+        booking = Booking.objects.get(razorpay_order_id='order_tuition123')
+        self.assertEqual(booking.booking_type, Booking.BookingType.HOME_TUITION)
+        self.assertIsNone(booking.workshop)
+        self.assertEqual(booking.sessions, 3)
+        self.assertEqual(booking.amount, Decimal('4500.00'))
+        self.assertEqual(booking.customer_name, 'Asha Artist')
+        self.assertEqual(booking.customer_phone, '9876543210')
+        self.assertEqual(booking.customer_email, 'asha@example.com')
+
+        verify_response = self.client.post(
+            '/api/workshops/payment/verify/',
+            data=json.dumps({
+                'razorpay_order_id': 'order_tuition123',
+                'razorpay_payment_id': 'pay_tuition123',
+                'razorpay_signature': 'sig_tuition123',
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {self.token.key}'
+        )
+        self.assertEqual(verify_response.status_code, 200)
+        booking.refresh_from_db()
+        self.assertEqual(booking.payment_status, Booking.PaymentStatus.CONFIRMED)
+
+    def test_home_tuition_requires_contact_details(self):
+        response = self.client.post(
+            '/api/workshops/initiate-payment/',
+            data=json.dumps({'booking_type': 'home_tuition', 'sessions': 2}),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=f'Token {self.token.key}'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Booking.objects.exists())
+
+    @patch('workshops.views._get_razorpay_client')
+    def test_home_tuition_failed_webhook_does_not_need_workshop(self, mock_client):
+        from .views import _handle_workshop_payment_failed
+
+        booking = Booking.objects.create(
+            user=self.user,
+            booking_type=Booking.BookingType.HOME_TUITION,
+            sessions=2,
+            amount=Decimal('3000.00'),
+            razorpay_order_id='order_tuition_failed',
+        )
+        _handle_workshop_payment_failed({
+            'payload': {'payment': {'entity': {'order_id': 'order_tuition_failed'}}}
+        })
+        booking.refresh_from_db()
+        self.assertEqual(booking.payment_status, Booking.PaymentStatus.FAILED)
 
     # ── verify-payment ──
 

@@ -665,7 +665,7 @@
                         // ── Workshop Bookings (full-width) ──
                         '<div class="dashboard-card full-width" id="workshop-bookings-section">',
                             '<div class="card-header">',
-                                '<h2>Workshop Bookings</h2>',
+                                '<h2>Studio Bookings</h2>',
                                 '<div class="card-icon">&#127912;</div>',
                             '</div>',
                             renderWorkshopBookings(bookings),
@@ -807,14 +807,17 @@
                 if (!bookings || !bookings.length) {
                     return '<div class="empty-state">' +
                         '<div class="empty-icon">&#127912;</div>' +
-                        '<p>No workshop bookings yet.</p>' +
+                        '<p>No studio bookings yet.</p>' +
                         '<a href="/studio" class="btn btn-sm btn-accent">Browse Workshops</a>' +
                         '</div>';
                 }
 
                 return bookings.map(function (b) {
                     var w = b.workshop || {};
-                    var dateStr = window.UdaanAPI.formatWorkshopDate(w.date, w.time);
+                    var isHomeTuition = b.booking_type === 'home_tuition';
+                    var dateStr = isHomeTuition
+                        ? 'Schedule to be finalized by the studio team'
+                        : window.UdaanAPI.formatWorkshopDate(w.date, w.time);
                     var status = b.payment_status;
                     var badgeLabel = b.payment_status_display || status;
                     var badgeClass = status === 'confirmed' ? 'confirmed' :
@@ -823,16 +826,21 @@
 
                     return '<div class="mini-order" style="align-items:flex-start;">' +
                         '<div style="display:flex;gap:16px;align-items:center;flex:1;min-width:0;">' +
-                            (w.icon
-                                ? '<div style="font-size:2rem;flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:12px;">' + escapeHtml(w.icon) + '</div>'
-                                : '') +
+                            '<div style="font-size:2rem;flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:12px;">' +
+                                (isHomeTuition ? '🏠' : escapeHtml(w.icon || '🏺')) +
+                            '</div>' +
                             '<div style="min-width:0;">' +
-                                '<div style="font-family:var(--header-font);font-style:italic;font-size:1.1rem;margin-bottom:2px;">' + escapeHtml(w.title || 'Workshop') + '</div>' +
+                                '<div style="font-family:var(--header-font);font-style:italic;font-size:1.1rem;margin-bottom:2px;">' + escapeHtml(isHomeTuition ? 'Home Tuition' : (w.title || 'Workshop')) + '</div>' +
                                 '<div style="font-size:0.85rem;color:var(--text-muted);">' + dateStr + '</div>' +
                                 '<div style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">' +
-                                    b.seats + ' seat' + (b.seats !== 1 ? 's' : '') +
-                                    (w.price ? ' &middot; ' + window.UdaanAPI.formatMoney(w.price * b.seats) : '') +
+                                    (isHomeTuition
+                                        ? b.sessions + ' session' + (b.sessions !== 1 ? 's' : '') + ' &middot; ' + window.UdaanAPI.formatMoney(b.amount)
+                                        : b.seats + ' seat' + (b.seats !== 1 ? 's' : '') +
+                                            ' &middot; ' + window.UdaanAPI.formatMoney(Number(b.amount) || w.price * b.seats)) +
                                 '</div>' +
+                                (isHomeTuition
+                                    ? '<div style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">Our team will contact you personally to finalize the schedule.</div>'
+                                    : '') +
                             '</div>' +
                         '</div>' +
                         '<span class="status-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
